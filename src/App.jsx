@@ -421,8 +421,8 @@ function Ticker({ setTab }) {
 /* ─── NAVBAR ─────────────────────────────────────────────────────────────── */
 function Navbar({ tab, setTab }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["rules","Rules"]];
-  const handleNav = (id) => { setTab(id); setMenuOpen(false); };
+  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["subs","Sub Board"],["rules","Rules"],["admin","⚙ Admin"]];
+  const handleNav = (id) => { setTab(id); setMenuOpen(false); window.scrollTo(0,0); };
   return (
     <>
       <nav style={{background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 1px 6px rgba(0,0,0,0.07)",height:62,display:"flex",alignItems:"center",padding:"0 clamp(12px,3vw,32px)",position:"relative",zIndex:400}}>
@@ -929,7 +929,7 @@ function RulesPage() {
 
 /* ─── FOOTER ─────────────────────────────────────────────────────────────── */
 function Footer({ setTab }) {
-  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["rules","Rules"]];
+  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["subs","Sub Board"],["rules","Rules"]];
   return (
     <div style={{background:"#001a6e",borderTop:"3px solid #0057FF",padding:"32px clamp(12px,3vw,40px)"}}>
       <div style={{maxWidth:1400,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:16}}>
@@ -950,6 +950,294 @@ function Footer({ setTab }) {
           ))}
         </div>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,color:"rgba(255,255,255,0.25)"}}>© 2026 LASSL</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SUB BOARD PAGE ─────────────────────────────────────────────────────── */
+function SubBoardPage() {
+  const [filter, setFilter] = useState("all");
+  const [view, setView] = useState("board"); // "board" | "season"
+  const [posted, setPosted] = useState(false);
+  const [form, setForm] = useState({name:"",team:"",playing:"9:00 AM",available:"11:00 AM",field:"Cheviot Hills #1",contact:""});
+
+  const sampleAvail = [
+    {initials:"DC",name:"David Cohen",team:"VBS",playing:"9:00 AM",available:"11:00 AM",field:"Sepulveda Basin #4",contact:"310-555-1234",color:"#1d4ed8"},
+    {initials:"MK",name:"Mike Klein",team:"LBT",playing:"11:00 AM",available:"1:00 PM",field:"Cheviot Hills #1",contact:"310-555-5678",color:"#0f766e"},
+    {initials:"SR",name:"Steve Rosen",team:"AAE A's",playing:"9:00 AM",available:"Any game",field:"Sepulveda Basin #2",contact:"310-555-9012",color:"#b45309"},
+  ];
+
+  const sampleSubs = [
+    {initials:"GL",name:"Gary Lerner",team:"Emmanuel",field:"Any field",times:"Any time",div:"Any division",contact:"310-555-1111",color:"#1d4ed8"},
+    {initials:"AB",name:"Alan Berg",team:"LBT",field:"Cheviot Hills only",times:"Morning games",div:"Any division",contact:"310-555-2222",color:"#0f766e"},
+    {initials:"NF",name:"Neil Fisher",team:"TIOH",field:"Any field",times:"11am or 1pm",div:"My division only",contact:"310-555-3333",color:"#b45309"},
+    {initials:"PG",name:"Paul Gold",team:"Beth Am",field:"Sepulveda Basin only",times:"Any time",div:"Any division",contact:"310-555-4444",color:"#6d28d9"},
+  ];
+
+  const fields = ["Cheviot Hills #1","Cheviot Hills #3","Sepulveda Basin #2","Sepulveda Basin #3","Sepulveda Basin #4"];
+  const times = ["9:00 AM","11:00 AM","1:00 PM"];
+
+  return (
+    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+      <PageHero label="LASSL 2026" title="Sub Board" subtitle="Find a player · Play a double · No need to go through the league">
+        <TabBar items={["Game Day Board","Season Sub List"]} active={view==="board"?0:1} onChange={i => setView(i===0?"board":"season")} />
+      </PageHero>
+
+      <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
+
+        {view==="board" && <>
+          {/* Post form */}
+          <Card style={{marginBottom:20}}>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>List yourself as available today</div>
+              <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginTop:2}}>Playing this morning and want a second game? Post yourself here.</div>
+            </div>
+            {posted ? (
+              <div style={{padding:"24px 20px",textAlign:"center"}}>
+                <div style={{fontSize:32,marginBottom:8}}>✅</div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#111"}}>You're on the board!</div>
+                <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginTop:4}}>Managers can see you and will contact you directly.</div>
+                <button onClick={() => setPosted(false)} style={{marginTop:16,padding:"8px 20px",background:"none",border:"1px solid rgba(0,0,0,0.2)",borderRadius:8,cursor:"pointer",fontSize:13,color:"rgba(0,0,0,0.5)"}}>Post again</button>
+              </div>
+            ) : (
+              <div style={{padding:"16px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                {[["name","Your name","e.g. David Cohen"],["team","Your team","e.g. VBS"],["contact","Phone or email","e.g. 310-555-1234"]].map(([k,label,ph]) => (
+                  <div key={k} style={{display:"flex",flexDirection:"column",gap:4,gridColumn:k==="contact"?"1 / -1":"auto"}}>
+                    <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>{label}</label>
+                    <input placeholder={ph} value={form[k]} onChange={e => setForm({...form,[k]:e.target.value})} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
+                  </div>
+                ))}
+                <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                  <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Already playing at</label>
+                  <select value={form.playing} onChange={e => setForm({...form,playing:e.target.value})} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}}>
+                    {times.map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                  <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Available for</label>
+                  <select value={form.available} onChange={e => setForm({...form,available:e.target.value})} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}}>
+                    <option>11:00 AM</option><option>1:00 PM</option><option>Any game</option>
+                  </select>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:4,gridColumn:"1 / -1"}}>
+                  <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Field</label>
+                  <select value={form.field} onChange={e => setForm({...form,field:e.target.value})} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}}>
+                    {fields.map(f => <option key={f}>{f}</option>)}
+                  </select>
+                </div>
+                <div style={{gridColumn:"1 / -1"}}>
+                  <button onClick={() => setPosted(true)} style={{width:"100%",padding:"12px",background:"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>Post my availability</button>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {/* Available players */}
+          <div style={{marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Available this Sunday — Mar 22</div>
+            <span style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{sampleAvail.length} players</span>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {sampleAvail.map((p,i) => (
+              <Card key={i} style={{padding:0}}>
+                <div style={{padding:"14px 18px",display:"flex",alignItems:"center",gap:14}}>
+                  <div style={{width:44,height:44,borderRadius:"50%",background:`${p.color}18`,border:`2px solid ${p.color}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,color:p.color}}>{p.initials}</span>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#111"}}>{p.name} <span style={{fontWeight:500,fontSize:15,color:"rgba(0,0,0,0.4)"}}>· {p.team}</span></div>
+                    <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginTop:2}}>Playing {p.playing} · Available {p.available} · {p.field}</div>
+                  </div>
+                  <a href={`tel:${p.contact}`} style={{padding:"8px 16px",background:"#0057FF",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,textDecoration:"none",flexShrink:0}}>{p.contact}</a>
+                </div>
+              </Card>
+            ))}
+            <div style={{fontSize:12,color:"rgba(0,0,0,0.35)",textAlign:"center",marginTop:4}}>Board clears automatically every Sunday night · Contact players directly</div>
+          </div>
+        </>}
+
+        {view==="season" && <>
+          {/* Filter */}
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+            <span style={{fontSize:13,color:"rgba(0,0,0,0.4)",alignSelf:"center"}}>Filter:</span>
+            {["all","cheviot","sepulveda","morning"].map(f => (
+              <button key={f} onClick={() => setFilter(f)} style={{padding:"5px 14px",borderRadius:20,border:`1px solid ${filter===f?"#0057FF":"rgba(0,0,0,0.15)"}`,background:filter===f?"#0057FF":"#fff",color:filter===f?"#fff":"rgba(0,0,0,0.6)",fontSize:13,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,textTransform:"uppercase"}}>
+                {f==="all"?"All fields":f==="cheviot"?"Cheviot Hills":f==="sepulveda"?"Sepulveda Basin":"Morning only"}
+              </button>
+            ))}
+          </div>
+
+          <div style={{marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>2026 Season subs</div>
+            <span style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{sampleSubs.length} players registered</span>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
+            {sampleSubs.map((p,i) => (
+              <Card key={i} style={{padding:0}}>
+                <div style={{padding:"14px 18px",display:"flex",alignItems:"center",gap:14,borderLeft:`3px solid ${p.color}`}}>
+                  <div style={{width:44,height:44,borderRadius:"50%",background:`${p.color}18`,border:`2px solid ${p.color}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,color:p.color}}>{p.initials}</span>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#111"}}>{p.name} <span style={{fontWeight:500,fontSize:15,color:"rgba(0,0,0,0.4)"}}>· {p.team}</span></div>
+                    <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginTop:2}}>{p.field} · {p.times} · {p.div}</div>
+                  </div>
+                  <a href={`tel:${p.contact}`} style={{padding:"8px 16px",background:"#0057FF",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,textDecoration:"none",flexShrink:0}}>{p.contact}</a>
+                </div>
+              </Card>
+            ))}
+            <div style={{fontSize:12,color:"rgba(0,0,0,0.35)",textAlign:"center",marginTop:4}}>Contact players directly · List resets each season · League not involved</div>
+          </div>
+
+          {/* Add to season list form */}
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Add yourself to the season sub list</div>
+              <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginTop:2}}>Set it once. Stays all season.</div>
+            </div>
+            <div style={{padding:"16px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              {[["name","Your name","e.g. Gary Lerner"],["team","Your team","e.g. Emmanuel"],["contact","Phone or email","e.g. 310-555-1234"]].map(([k,label,ph]) => (
+                <div key={k} style={{display:"flex",flexDirection:"column",gap:4,gridColumn:k==="contact"?"1 / -1":"auto"}}>
+                  <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>{label}</label>
+                  <input placeholder={ph} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
+                </div>
+              ))}
+              {[["field","Preferred fields",["Any field","Cheviot Hills only","Sepulveda Basin only"]],["times","Preferred times",["Any time","9:00 AM only","11:00 AM only","1:00 PM only","Morning games only"]],["div","Division preference",["Any division","My division only","Any except A"]]].map(([k,label,opts]) => (
+                <div key={k} style={{display:"flex",flexDirection:"column",gap:4}}>
+                  <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>{label}</label>
+                  <select style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}}>
+                    {opts.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                </div>
+              ))}
+              <div style={{gridColumn:"1 / -1"}}>
+                <button style={{width:"100%",padding:"12px",background:"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>Add me to the sub list</button>
+              </div>
+            </div>
+          </Card>
+        </>}
+      </div>
+    </div>
+  );
+}
+
+/* ─── ADMIN PAGE ─────────────────────────────────────────────────────────── */
+function AdminPage() {
+  const [authed, setAuthed] = useState(false);
+  const [pw, setPw] = useState("");
+  const [pwError, setPwError] = useState(false);
+  const [alertType, setAlertType] = useState("rainout-all");
+  const [alertDate, setAlertDate] = useState("Sunday, March 23");
+  const [alertMsg, setAlertMsg] = useState("");
+  const [activeAlert, setActiveAlert] = useState(null);
+
+  const alertTypes = [
+    {id:"rainout-all",label:"⚠️ Rainout — all games cancelled"},
+    {id:"rainout-some",label:"⚠️ Rainout — select games cancelled"},
+    {id:"reschedule",label:"🔄 Games rescheduled"},
+    {id:"field-change",label:"🕐 Time or field change"},
+    {id:"general",label:"📢 General announcement"},
+  ];
+
+  const preview = alertTypes.find(a => a.id===alertType)?.label.split("—")[1]?.trim() || "";
+
+  if (!authed) return (
+    <div style={{minHeight:"100vh",background:"#f2f4f8",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <Card style={{maxWidth:380,width:"100%",padding:0}}>
+        <div style={{background:"#001a6e",padding:"24px 28px",borderRadius:"12px 12px 0 0",display:"flex",alignItems:"center",gap:12}}>
+          <img src={L_LEAGUE} alt="LASSL" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover"}} />
+          <div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#FFD700",textTransform:"uppercase"}}>LASSL Admin</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.45)"}}>League management portal</div>
+          </div>
+        </div>
+        <div style={{padding:"28px"}}>
+          <div style={{fontSize:14,color:"rgba(0,0,0,0.5)",marginBottom:16}}>Enter your admin password to continue.</div>
+          <input type="password" placeholder="Password" value={pw} onChange={e => {setPw(e.target.value); setPwError(false);}} onKeyDown={e => e.key==="Enter" && (pw==="lassl2026" ? setAuthed(true) : setPwError(true))} style={{width:"100%",padding:"10px 14px",borderRadius:8,border:`1px solid ${pwError?"#dc2626":"rgba(0,0,0,0.15)"}`,fontSize:15,marginBottom:8,background:"#f8f9fb"}} />
+          {pwError && <div style={{fontSize:12,color:"#dc2626",marginBottom:8}}>Incorrect password.</div>}
+          <button onClick={() => pw==="lassl2026" ? setAuthed(true) : setPwError(true)} style={{width:"100%",padding:"11px",background:"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>Log in</button>
+          <div style={{fontSize:11,color:"rgba(0,0,0,0.3)",textAlign:"center",marginTop:12}}>Demo password: lassl2026</div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  return (
+    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+      <div style={{background:"#001a6e",borderBottom:"3px solid #0057FF",padding:"16px clamp(12px,3vw,40px)"}}>
+        <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",gap:14}}>
+          <img src={L_LEAGUE} alt="LASSL" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",border:"2px solid rgba(255,255,255,0.2)"}} />
+          <div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#FFD700",textTransform:"uppercase"}}>LASSL Admin</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>Logged in as League Admin</div>
+          </div>
+          <button onClick={() => setAuthed(false)} style={{marginLeft:"auto",padding:"6px 14px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:13,cursor:"pointer"}}>Log out</button>
+        </div>
+      </div>
+
+      <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px",display:"flex",flexDirection:"column",gap:20}}>
+
+        {/* Current status */}
+        <div style={{background:activeAlert?"#fef2f2":"#f0fdf4",border:`1px solid ${activeAlert?"#fecaca":"#bbf7d0"}`,borderRadius:10,padding:"12px 18px",display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:10,height:10,borderRadius:"50%",background:activeAlert?"#dc2626":"#22c55e",flexShrink:0,boxShadow:`0 0 6px ${activeAlert?"#dc2626":"#22c55e"}`}} />
+          <span style={{fontSize:14,fontWeight:600,color:activeAlert?"#991b1b":"#166534"}}>
+            {activeAlert ? `Active alert: ${activeAlert}` : "No active alerts — site showing normal"}
+          </span>
+          {activeAlert && <button onClick={() => setActiveAlert(null)} style={{marginLeft:"auto",padding:"4px 12px",background:"none",border:"1px solid #fca5a5",borderRadius:6,color:"#dc2626",fontSize:12,cursor:"pointer"}}>Clear alert</button>}
+        </div>
+
+        {/* Post alert */}
+        <Card>
+          <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Post a league alert</div>
+          </div>
+          <div style={{padding:"20px",display:"flex",flexDirection:"column",gap:14}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              <div style={{display:"flex",flexDirection:"column",gap:5,gridColumn:"1 / -1"}}>
+                <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Alert type</label>
+                <select value={alertType} onChange={e => setAlertType(e.target.value)} style={{padding:"10px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}}>
+                  {alertTypes.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
+                </select>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Date affected</label>
+                <input value={alertDate} onChange={e => setAlertDate(e.target.value)} style={{padding:"10px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Additional message (optional)</label>
+                <input placeholder="e.g. Fields are waterlogged. Makeup dates TBD." value={alertMsg} onChange={e => setAlertMsg(e.target.value)} style={{padding:"10px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
+              </div>
+            </div>
+            {/* Preview */}
+            <div style={{background:"#fff3cd",border:"1px solid #ffc107",borderRadius:8,padding:"12px 16px"}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#856404",marginBottom:4,textTransform:"uppercase",letterSpacing:".08em"}}>Preview — what players see at the top of the site:</div>
+              <div style={{fontSize:14,color:"#111"}}>⚠️ <strong>{alertDate} — {preview || "All games cancelled."}</strong>{alertMsg ? ` ${alertMsg}` : ""}</div>
+            </div>
+            <button onClick={() => setActiveAlert(`${alertDate} — ${preview}`)} style={{padding:"13px",background:"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>Post alert to site now</button>
+          </div>
+        </Card>
+
+        {/* Quick actions */}
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111"}}>Quick Actions</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
+          {[
+            {icon:"📊",title:"Update scores",desc:"Enter this week's results"},
+            {icon:"📧",title:"Send weekly email",desc:"Blast scoreboard to league"},
+            {icon:"📱",title:"Send text blast",desc:"Push message to all 400 players"},
+            {icon:"📅",title:"Manage schedule",desc:"Add or edit games"},
+            {icon:"🙋",title:"Availability board",desc:"View or clear listings"},
+            {icon:"👥",title:"Season sub list",desc:"Manage registered subs"},
+          ].map((a,i) => (
+            <div key={i} style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderRadius:10,padding:"16px 18px",cursor:"pointer",transition:"box-shadow .15s"}}
+              onMouseEnter={e => e.currentTarget.style.boxShadow="0 4px 16px rgba(0,87,255,0.15)"}
+              onMouseLeave={e => e.currentTarget.style.boxShadow="none"}>
+              <div style={{fontSize:24,marginBottom:8}}>{a.icon}</div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#111",textTransform:"uppercase"}}>{a.title}</div>
+              <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:3}}>{a.desc}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -999,6 +1287,8 @@ export default function App() {
       {tab==="standings" && <StandingsPage />}
       {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
       {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => setTeamDetail(null)} />}
+      {tab==="subs"      && <SubBoardPage />}
+      {tab==="admin"     && <AdminPage />}
       {tab==="rules"     && <RulesPage />}
       <Footer setTab={handleSetTab} />
     </div>
