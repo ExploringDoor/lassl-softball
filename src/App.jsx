@@ -216,7 +216,7 @@ const RULES_DATA = [
 /* ─── SHARED COMPONENTS ─────────────────────────────────────────────────── */
 function TLogo({ name, size=80 }) {
   const src = TEAM_LOGOS[name];
-  if (src) return <img src={src} alt={name} style={{width:size*2.2,height:size*2.2,objectFit:"contain",display:"block",flexShrink:0}} />;
+  if (src) return <img src={src} alt={name} style={{width:size*1.3,height:size*1.3,objectFit:"contain",display:"block",flexShrink:0}} />;
   const color = TEAM_COLORS[name] || "#0057FF";
   return (
     <div style={{width:size,height:size,borderRadius:8,background:`${color}18`,border:`2px solid ${color}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
