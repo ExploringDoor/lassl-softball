@@ -361,7 +361,7 @@ function UpcomingCard({ away, home, time, date, field, isNext }) {
         {[away,home].map((t,i) => (
           <div key={i} style={{display:"flex",alignItems:"center",gap:12}}>
             <TLogo name={t} size={80} />
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(15px,2vw,26px)",textTransform:"uppercase",color:"#111",lineHeight:1,whiteSpace:"nowrap"}}>{t}</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(15px,2vw,26px)",textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"calc(100vw - 280px)"}}>{t}</div>
           </div>
         ))}
       </div>
@@ -386,16 +386,15 @@ function UpcomingCard({ away, home, time, date, field, isNext }) {
 function Ticker({ setTab }) {
   const games = SCHED[0].fields.flatMap(f => f.games.map(g => ({...g, field:f.name})));
   return (
-    <div style={{background:"#001a6e",borderBottom:"2px solid #0057FF",display:"flex",alignItems:"stretch",overflow:"hidden"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 16px",borderRight:"1px solid rgba(255,255,255,0.15)",flexShrink:0}}>
+    <div style={{background:"#001a6e",borderBottom:"2px solid #0057FF",display:"flex",alignItems:"stretch",overflow:"hidden",maxWidth:"100vw"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 12px",borderRight:"1px solid rgba(255,255,255,0.15)",flexShrink:0}}>
         <img src={L_LEAGUE} alt="LASSL" style={{height:28,width:28,objectFit:"cover",borderRadius:"50%"}} />
         <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:13,letterSpacing:".1em",textTransform:"uppercase",color:"#FFD700"}}>LASSL</span>
-        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:500,fontSize:11,color:"rgba(255,255,255,0.45)"}}>2026</span>
       </div>
-      <div style={{display:"flex",alignItems:"stretch",overflowX:"auto",scrollbarWidth:"none",flex:1}}>
+      <div style={{display:"flex",alignItems:"stretch",overflowX:"auto",scrollbarWidth:"none",flex:1,minWidth:0}}>
         {games.map((g,i) => (
-          <div key={i} style={{display:"flex",flexDirection:"column",justifyContent:"center",padding:"5px 14px",borderRight:"1px solid rgba(255,255,255,0.1)",flexShrink:0,gap:2}}>
-            <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",color:"#ff6b6b",textTransform:"uppercase",whiteSpace:"nowrap"}}>{g.time} · {g.field}</div>
+          <div key={i} style={{display:"flex",flexDirection:"column",justifyContent:"center",padding:"5px 12px",borderRight:"1px solid rgba(255,255,255,0.1)",flexShrink:0,gap:2}}>
+            <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",color:"#ff6b6b",textTransform:"uppercase",whiteSpace:"nowrap"}}>{g.time}</div>
             {[g.away,g.home].map((t,j) => (
               <div key={j} style={{display:"flex",alignItems:"center",gap:5}}>
                 <TLogo name={t} size={14} />
@@ -405,8 +404,8 @@ function Ticker({ setTab }) {
           </div>
         ))}
       </div>
-      <div style={{display:"flex",alignItems:"center",padding:"0 16px",flexShrink:0,borderLeft:"1px solid rgba(255,255,255,0.1)",cursor:"pointer"}} onClick={() => setTab("schedule")}>
-        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,color:"#FFD700",whiteSpace:"nowrap"}}>Full Schedule »</span>
+      <div style={{display:"flex",alignItems:"center",padding:"0 12px",flexShrink:0,borderLeft:"1px solid rgba(255,255,255,0.1)",cursor:"pointer"}} onClick={() => setTab("schedule")}>
+        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,color:"#FFD700",whiteSpace:"nowrap"}}>Schedule »</span>
       </div>
     </div>
   );
@@ -958,7 +957,7 @@ export default function App() {
   const handleTeamDetail = (name) => { setTeamDetail(name); setTab("teams"); };
 
   return (
-    <div style={{minHeight:"100vh",fontFamily:"'Barlow',sans-serif",overflowX:"hidden",maxWidth:"100vw"}}>
+    <div style={{minHeight:"100vh",fontFamily:"'Barlow',sans-serif",overflowX:"hidden",maxWidth:"100vw",position:"relative"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
