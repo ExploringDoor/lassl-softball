@@ -234,10 +234,10 @@ function TLogo({ name, size=80 }) {
 
 function PageHero({ label, title, subtitle, children }) {
   return (
-    <div style={{background:"#fff",borderBottom:"3px solid #0057FF",padding:"28px clamp(12px,3vw,40px) 0"}}>
-      <div style={{maxWidth:1400,margin:"0 auto"}}>
+    <div style={{background:"#fff",borderBottom:"3px solid #0057FF",padding:"28px clamp(12px,3vw,40px) 0",overflow:"hidden",width:"100%"}}>
+      <div style={{maxWidth:1400,margin:"0 auto",overflow:"hidden"}}>
         {label && <div style={{fontSize:11,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"#0057FF",marginBottom:4}}>{label}</div>}
-        <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(44px,7vw,80px)",textTransform:"uppercase",color:"#111",lineHeight:1}}>{title}</h1>
+        <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(36px,7vw,80px)",textTransform:"uppercase",color:"#111",lineHeight:1}}>{title}</h1>
         {subtitle && <div style={{fontSize:12,color:"rgba(0,0,0,0.38)",marginTop:4}}>{subtitle}</div>}
         {children}
       </div>
@@ -247,7 +247,7 @@ function PageHero({ label, title, subtitle, children }) {
 
 function TabBar({ items, active, onChange }) {
   return (
-    <div style={{display:"flex",gap:0,marginTop:14,borderTop:"1px solid rgba(0,0,0,0.07)",overflowX:"auto"}}>
+    <div style={{display:"flex",gap:0,marginTop:14,borderTop:"1px solid rgba(0,0,0,0.07)",overflowX:"auto",scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
       {items.map((item,i) => (
         <button key={i} onClick={() => onChange(i)} style={{
           fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,
@@ -303,58 +303,53 @@ function FinalCard({ g, onTeamClick }) {
   return (
     <>
       {showRecap && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}} onClick={() => setShowRecap(false)}>
-          <div style={{background:"#fff",borderRadius:16,maxWidth:520,width:"100%",overflow:"hidden",boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}} onClick={e => e.stopPropagation()}>
-            <div style={{background:"#001a6e",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",marginBottom:2}}>GAME RECAP · {g.div}</div>
-                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#fff",textTransform:"uppercase"}}>{g.away} vs {g.home}</div>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}} onClick={() => setShowRecap(false)}>
+          <div style={{background:"#fff",borderRadius:12,maxWidth:500,width:"100%",overflow:"hidden"}} onClick={e => e.stopPropagation()}>
+            <div style={{background:"#001a6e",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{minWidth:0,flex:1}}>
+                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",marginBottom:2}}>RECAP · {g.div}</div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#fff",textTransform:"uppercase",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.away} vs {g.home}</div>
               </div>
-              <button onClick={() => setShowRecap(false)} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#fff",borderRadius:6,width:30,height:30,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              <button onClick={() => setShowRecap(false)} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#fff",borderRadius:6,width:28,height:28,cursor:"pointer",flexShrink:0,marginLeft:8}}>✕</button>
             </div>
-            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+            <div style={{padding:"14px 16px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
               {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
-                <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i===0?10:0}}>
-                  <TLogo name={side.name} size={40} />
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:22,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.35)",flex:1}}>{side.name}</span>
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:40,color:side.won?"#111":"rgba(0,0,0,0.22)"}}>{side.score}</span>
+                <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i===0?8:0}}>
+                  <TLogo name={side.name} size={36} />
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:18,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.35)",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{side.name}</span>
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:36,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0}}>{side.score}</span>
                 </div>
               ))}
             </div>
-            <div style={{padding:"18px 20px"}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:8}}>📰 Game Recap</div>
-              <p style={{fontSize:14,color:"rgba(0,0,0,0.65)",lineHeight:1.7}}>{recap}</p>
+            <div style={{padding:"14px 16px"}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#0057FF",marginBottom:6,textTransform:"uppercase"}}>📰 Game Recap</div>
+              <p style={{fontSize:13,color:"rgba(0,0,0,0.65)",lineHeight:1.6}}>{recap}</p>
             </div>
           </div>
         </div>
       )}
-      <Card style={{display:"flex",flexDirection:"column"}}>
-        <div style={{padding:"8px 12px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <span style={{fontSize:9,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"rgba(0,0,0,0.25)"}}>FINAL</span>
+      <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderRadius:10,overflow:"hidden",display:"flex",flexDirection:"column",width:"100%"}}>
+        <div style={{padding:"8px 10px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,0,0,0.25)"}}>FINAL</span>
           <div style={{display:"flex",alignItems:"center",gap:6}}>
-            {g.note && <span style={{fontSize:9,fontWeight:700,color:"#dc2626",textTransform:"uppercase",letterSpacing:".06em"}}>{g.note}</span>}
-            <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.2)",textTransform:"uppercase",letterSpacing:".1em"}}>{g.div}</span>
+            {g.note && <span style={{fontSize:9,fontWeight:700,color:"#dc2626",textTransform:"uppercase"}}>{g.note}</span>}
+            <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.2)",textTransform:"uppercase"}}>{g.div}</span>
           </div>
         </div>
-        <div style={{padding:"6px 12px 10px",flex:1}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",marginBottom:4}}>
-            <span style={{width:38,textAlign:"center",fontSize:10,fontWeight:700,letterSpacing:".1em",color:"rgba(0,0,0,0.25)",textTransform:"uppercase"}}>R</span>
-          </div>
+        <div style={{padding:"6px 10px 10px"}}>
           {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
-            <div key={i} style={{display:"flex",alignItems:"center",marginBottom:i===0?6:0}}>
-              <div onClick={() => onTeamClick?.(side.name)} style={{display:"flex",alignItems:"center",gap:8,flex:1,minWidth:0,cursor:onTeamClick?"pointer":"default"}}>
-                <TLogo name={side.name} size={60} />
-                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:"clamp(13px,2vw,20px)",textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                  {side.name}
-                </div>
+            <div key={i} onClick={() => onTeamClick?.(side.name)} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i===0?6:0,cursor:onTeamClick?"pointer":"default",width:"100%"}}>
+              <TLogo name={side.name} size={52} />
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:18,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>
+                {side.name}
               </div>
-              <span style={{width:38,textAlign:"center",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:"clamp(26px,4vw,38px)",lineHeight:1,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0}}>{side.score}</span>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:36,lineHeight:1,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0,minWidth:32,textAlign:"right"}}>{side.score}</span>
             </div>
           ))}
         </div>
         <div style={{height:1,background:"rgba(0,0,0,0.05)"}} />
         <div onClick={() => setShowRecap(true)} style={{padding:"10px",background:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:".06em",textTransform:"uppercase",color:"#fff",textAlign:"center",cursor:"pointer"}}>📰 RECAP</div>
-      </Card>
+      </div>
     </>
   );
 }
