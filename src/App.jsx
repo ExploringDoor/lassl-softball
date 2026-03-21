@@ -354,21 +354,23 @@ function FinalCard({ g }) {
 
 function UpcomingCard({ away, home, time, date, field, isNext }) {
   return (
-    <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderLeft:isNext?"4px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderRadius:12,overflow:"hidden",display:"flex",alignItems:"stretch",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
-      <div style={{flex:1,padding:"16px 20px",display:"flex",flexDirection:"column",gap:10,minWidth:0}}>
-        {isNext && <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:-4}}>▶ NEXT GAME</div>}
-        {[away,home].map((t,i) => (
-          <div key={i} style={{display:"flex",alignItems:"center",gap:14}}>
-            <TLogo name={t} size={80} />
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:32,textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
-          </div>
-        ))}
-      </div>
-      <div style={{width:1,background:"rgba(0,0,0,0.07)",flexShrink:0}} />
-      <div style={{width:160,flexShrink:0,padding:"16px 18px",display:"flex",flexDirection:"column",justifyContent:"center",gap:4}}>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:34,color:"#0057FF",lineHeight:1}}>{time}</div>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,color:"rgba(0,0,0,0.6)",fontWeight:700}}>{date}</div>
-        <div style={{fontSize:13,color:"rgba(0,0,0,0.4)",fontWeight:500,lineHeight:1.3}}>{field}</div>
+    <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderLeft:isNext?"4px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
+      <div style={{display:"flex",alignItems:"stretch"}}>
+        <div style={{flex:1,padding:"14px 16px",display:"flex",flexDirection:"column",gap:10,minWidth:0}}>
+          {isNext && <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:-4}}>▶ NEXT GAME</div>}
+          {[away,home].map((t,i) => (
+            <div key={i} style={{display:"flex",alignItems:"center",gap:12}}>
+              <TLogo name={t} size={80} />
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(16px,2.5vw,28px)",textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{width:1,background:"rgba(0,0,0,0.07)",flexShrink:0}} />
+        <div style={{width:"clamp(110px,20vw,160px)",flexShrink:0,padding:"14px 14px",display:"flex",flexDirection:"column",justifyContent:"center",gap:3}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(20px,3vw,34px)",color:"#0057FF",lineHeight:1}}>{time}</div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"clamp(13px,1.5vw,16px)",color:"rgba(0,0,0,0.6)",fontWeight:700}}>{date}</div>
+          <div style={{fontSize:"clamp(11px,1.2vw,13px)",color:"rgba(0,0,0,0.4)",fontWeight:500,lineHeight:1.3}}>{field}</div>
+        </div>
       </div>
     </div>
   );
@@ -448,25 +450,28 @@ function Navbar({ tab, setTab }) {
       </nav>
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div style={{position:"fixed",top:62,left:0,right:0,background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:399}}>
+        <div style={{position:"fixed",top:62,left:0,right:0,bottom:0,zIndex:9999,display:"flex",flexDirection:"column"}}>
+          <div style={{background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 8px 24px rgba(0,0,0,0.2)"}}>
           <button onClick={() => handleNav("home")} style={{
             display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",
-            fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,
+            fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,
             letterSpacing:".06em",textTransform:"uppercase",
-            color:tab==="home"?"#0057FF":"#111",background:tab==="home"?"rgba(0,87,255,0.04)":"#f8f9fb",
+            color:"#0057FF",background:"rgba(0,87,255,0.06)",
             border:"none",borderBottom:"2px solid #0057FF",
             cursor:"pointer",padding:"18px 20px",
           }}>🏠 Home</button>
           {links.filter(([id])=>id!=="home").map(([id,label]) => (
             <button key={id} onClick={() => handleNav(id)} style={{
               display:"block",width:"100%",textAlign:"left",
-              fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:20,
+              fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:22,
               letterSpacing:".06em",textTransform:"uppercase",
               color:tab===id?"#0057FF":"#111",background:tab===id?"rgba(0,87,255,0.04)":"none",
               border:"none",borderBottom:"1px solid rgba(0,0,0,0.06)",
-              cursor:"pointer",padding:"16px 20px",
+              cursor:"pointer",padding:"18px 20px",
             }}>{label}</button>
           ))}
+          </div>
+          <div style={{flex:1,background:"rgba(0,0,0,0.3)"}} onClick={() => setMenuOpen(false)} />
         </div>
       )}
     </>
@@ -483,25 +488,24 @@ function HomePage({ setTab }) {
       {/* HERO */}
       <div style={{width:"100%",background:"#001a6e",position:"relative",overflow:"hidden",borderBottom:"4px solid #0057FF"}}>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,87,255,0.3) 0%, transparent 70%)",pointerEvents:"none"}} />
-        <div style={{position:"absolute",inset:0,backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(255,255,255,0.02) 48px,rgba(255,255,255,0.02) 49px),repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(255,255,255,0.02) 48px,rgba(255,255,255,0.02) 49px)",pointerEvents:"none"}} />
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"44px 20px 40px",position:"relative",textAlign:"center"}}>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"20px 20px 18px",position:"relative",textAlign:"center"}}>
           <img src={L_LEAGUE} alt="LASSL" style={{
-            width:"min(200px,50vw)", height:"min(200px,50vw)",
+            width:"min(140px,35vw)", height:"min(140px,35vw)",
             objectFit:"cover", objectPosition:"center",
             borderRadius:"50%",
             border:"3px solid rgba(0,87,255,0.7)",
-            boxShadow:"0 0 60px rgba(0,87,255,0.55), 0 0 120px rgba(0,87,255,0.25)",
-            marginBottom:22,
+            boxShadow:"0 0 40px rgba(0,87,255,0.55)",
+            marginBottom:12,
           }} />
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(32px,5vw,58px)",textTransform:"uppercase",letterSpacing:".04em",color:"#fff",lineHeight:1}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(28px,4vw,52px)",textTransform:"uppercase",letterSpacing:".04em",color:"#fff",lineHeight:1}}>
             Los Angeles<br/><span style={{color:"#FFD700"}}>Synagogue Softball</span>
           </div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"clamp(11px,1.5vw,14px)",fontWeight:600,letterSpacing:".2em",textTransform:"uppercase",color:"rgba(255,255,255,0.45)",marginTop:10,marginBottom:18}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"clamp(10px,1.2vw,13px)",fontWeight:600,letterSpacing:".2em",textTransform:"uppercase",color:"rgba(255,255,255,0.45)",marginTop:6,marginBottom:10}}>
             Celebrating 30 Years · 1995–2026 · est. 5755
           </div>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,215,0,0.15)",border:"1px solid rgba(255,215,0,0.45)",borderRadius:30,padding:"7px 20px"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,215,0,0.15)",border:"1px solid rgba(255,215,0,0.45)",borderRadius:30,padding:"5px 16px"}}>
             <span style={{width:7,height:7,borderRadius:"50%",background:"#22c55e",display:"inline-block",flexShrink:0,boxShadow:"0 0 6px #22c55e"}} />
-            <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,color:"#FFD700",letterSpacing:".08em",textTransform:"uppercase"}}>
+            <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,fontWeight:700,color:"#FFD700",letterSpacing:".08em",textTransform:"uppercase"}}>
               🏆 Playoffs Underway — Akiba-Red wins D Division!
             </span>
           </div>
@@ -682,7 +686,7 @@ function TeamDetailPage({ teamName, onBack }) {
         </div>
       </div>
 
-      <div style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px",display:"grid",gridTemplateColumns:"1fr 300px",gap:28,alignItems:"start"}}>
+      <div className="team-detail-grid" style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px",display:"grid",gridTemplateColumns:"1fr 300px",gap:28,alignItems:"start"}}>
         <div>
           {/* Roster */}
           {roster.length > 0 && (
