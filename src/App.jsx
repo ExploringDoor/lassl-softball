@@ -490,8 +490,9 @@ function HomePage({ setTab, setTeamDetail }) {
   const topTeams = [...ALL_TEAMS].sort((a,b) => parseFloat(b.pct) - parseFloat(a.pct)).slice(0,8);
   const nextGames = SCHED[0].fields.flatMap(f => f.games.map(g => ({...g,field:f.name}))).slice(0,5);
   const recent = SCORES[0].games;
+  const goTeam = (name) => { setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); };
   return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       {/* HERO */}
       <div style={{width:"100%",background:"#001a6e",position:"relative",overflow:"hidden",borderBottom:"4px solid #0057FF"}}>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,87,255,0.3) 0%, transparent 70%)",pointerEvents:"none"}} />
@@ -530,8 +531,8 @@ function HomePage({ setTab, setTeamDetail }) {
                 </div>
                 <span onClick={() => setTab("scores")} style={{color:"#0057FF",fontWeight:700,fontSize:13,cursor:"pointer",textDecoration:"none"}}>All Scores →</span>
               </div>
-              <div className="scores-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,gridAutoRows:"1fr"}}>
-                {recent.slice(0,6).map((g,i) => <FinalCard key={i} g={g} onTeamClick={name => { setTeamDetail(name); setTab("teams"); }} />)}
+              <div className="scores-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10,gridAutoRows:"1fr"}}>
+                {recent.slice(0,6).map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} />)}
               </div>
             </div>
             <div>
@@ -543,7 +544,7 @@ function HomePage({ setTab, setTeamDetail }) {
                 <span onClick={() => setTab("schedule")} style={{color:"#0057FF",fontWeight:700,fontSize:13,cursor:"pointer"}}>Full Schedule →</span>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {nextGames.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date="Mar 22" onTeamClick={name => { setTeamDetail(name); setTab("teams"); }} field={g.field} isNext={i===0} />)}
+                {nextGames.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date="Mar 22" onTeamClick={goTeam} field={g.field} isNext={i===0} />)}
               </div>
             </div>
           </div>
@@ -579,14 +580,15 @@ function HomePage({ setTab, setTeamDetail }) {
 /* ─── SCORES PAGE ─────────────────────────────────────────────────────────  */
 function ScoresPage({ setTab, setTeamDetail }) {
   const [wk,setWk] = useState(0);
+  const goTeam = (name) => { setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); };
   return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <PageHero label="2026 Season" title="Scores">
         <TabBar items={SCORES.map(s=>s.week)} active={wk} onChange={setWk} />
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:12}}>
-          {SCORES[wk].games.map((g,i) => <FinalCard key={i} g={g} onTeamClick={name => { setTeamDetail(name); setTab("teams"); }} />)}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(300px,100%),1fr))",gap:12}}>
+          {SCORES[wk].games.map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} />)}
         </div>
       </div>
     </div>
@@ -599,14 +601,15 @@ function SchedulePage({ setTab, setTeamDetail }) {
   const week = SCHED[wk];
   const games = week.fields.flatMap(f => f.games.map(g => ({...g,field:f.name})));
   const dateStr = week.label.split("–")[1]?.trim()||"";
+  const goTeam = (name) => { setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); };
   return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <PageHero label="2026 Season" title="Schedule" subtitle="Away team first (1B dugout) · Home team second (3B dugout)">
         <TabBar items={SCHED.map(s=>s.label)} active={wk} onChange={setWk} />
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {games.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date={dateStr} onTeamClick={name => { setTeamDetail(name); setTab("teams"); }} field={g.field} isNext={i===0} />)}
+          {games.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date={dateStr} onTeamClick={goTeam} field={g.field} isNext={i===0} />)}
         </div>
       </div>
     </div>
@@ -619,7 +622,7 @@ function StandingsPage({ setTab, setTeamDetail }) {
   const div = DIV[dk];
   const goTeam = (name) => { if(setTeamDetail){ setTeamDetail(name); setTab("teams"); } };
   return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <PageHero label="2026 Season" title="Standings">
         <TabBar items={Object.keys(DIV).map(d=>`Div ${d}`)} active={Object.keys(DIV).indexOf(dk)} onChange={i => setDk(Object.keys(DIV)[i])} />
       </PageHero>
@@ -643,7 +646,7 @@ function StandingsPage({ setTab, setTeamDetail }) {
       {/* DESKTOP standings table */}
       <div className="desktop-standings" style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
         <div className="standings-table">
-        <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.05)",minWidth:900}}>
+        <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.05)",minWidth:"unset"}}>
           <div style={{display:"grid",gridTemplateColumns:"50px minmax(300px,1fr) 60px 60px 60px 80px 60px 60px 60px 70px",padding:"10px 20px",background:"#f8f9fb",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
             {["#","Team","W","L","T","PCT","GP","RS","RA","DIFF"].map((h,i) => (
               <span key={h} style={{fontSize:11,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(0,0,0,0.3)",textAlign:i>1?"center":"left"}}>{h}</span>
@@ -677,15 +680,16 @@ function StandingsPage({ setTab, setTeamDetail }) {
 }
 
 /* ─── TEAM DETAIL PAGE ────────────────────────────────────────────────────── */
-function TeamDetailPage({ teamName, onBack }) {
+function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail }) {
   const team = ALL_TEAMS.find(t => t.name === teamName);
   const roster = TEAM_ROSTERS[teamName] || [];
   if (!team) return null;
   const color = TEAM_COLORS[teamName] || "#0057FF";
   const teamGames = SCORES.flatMap(w => w.games.filter(g => g.away===teamName||g.home===teamName)).slice(0,5);
   const upcoming = SCHED[0].fields.flatMap(f => f.games.map(g=>({...g,field:f.name}))).filter(g=>g.away===teamName||g.home===teamName);
+  const goTeam = (name) => { if(setTeamDetail){ setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); } };
   return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <div style={{background:`linear-gradient(135deg, ${color}15 0%, #fff 60%)`,borderBottom:"3px solid #0057FF",padding:"32px clamp(12px,3vw,40px) 0"}}>
         <div style={{maxWidth:1400,margin:"0 auto"}}>
           <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(0,0,0,0.4)",fontSize:13,fontWeight:600,marginBottom:16,padding:0,display:"flex",alignItems:"center",gap:6}}>← All Teams</button>
@@ -738,7 +742,7 @@ function TeamDetailPage({ teamName, onBack }) {
             <div>
               <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:26,textTransform:"uppercase",color:"#111",marginBottom:14}}>Recent Results</h2>
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
-                {teamGames.map((g,i) => <FinalCard key={i} g={g} onTeamClick={name => { setTeamDetail(name); setTab("teams"); }} />)}
+                {teamGames.map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} />)}
               </div>
             </div>
           )}
@@ -790,7 +794,7 @@ function TeamDetailPage({ teamName, onBack }) {
 /* ─── TEAMS PAGE ─────────────────────────────────────────────────────────── */
 function TeamsPage({ setTab, setTeamDetail }) {
   return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <PageHero label="2026 Season" title="Team Directory">
         <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:16,paddingBottom:2}}>
           {ALL_TEAMS.sort((a,b)=>parseFloat(b.pct)-parseFloat(a.pct)).map(t => {
@@ -875,7 +879,7 @@ function TeamsPage({ setTab, setTeamDetail }) {
 /* ─── RULES PAGE ─────────────────────────────────────────────────────────── */
 function RulesPage() {
   return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <PageHero label="LASSL Softball" title="Field Guide" subtitle="Official rules and guidelines for the 2026 season" />
       <div style={{maxWidth:900,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
         {/* Jump nav */}
@@ -975,7 +979,7 @@ function SubBoardPage() {
   const times = ["9:00 AM","11:00 AM","1:00 PM"];
 
   return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <PageHero label="LASSL 2026" title="Sub Board" subtitle="Find a player · Play a double · No need to go through the league">
         <TabBar items={["Game Day Board","Season Sub List"]} active={view==="board"?0:1} onChange={i => setView(i===0?"board":"season")} />
       </PageHero>
@@ -1160,7 +1164,7 @@ function AdminPage() {
   );
 
   return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <div style={{background:"#001a6e",borderBottom:"3px solid #0057FF",padding:"16px clamp(12px,3vw,40px)"}}>
         <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",gap:14}}>
           <img src={L_LEAGUE} alt="LASSL" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",border:"2px solid rgba(255,255,255,0.2)"}} />
@@ -1280,7 +1284,7 @@ export default function App() {
       {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
       {tab==="standings" && <StandingsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
       {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
-      {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => setTeamDetail(null)} />}
+      {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => { setTeamDetail(null); window.scrollTo(0,0); }} setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
       {tab==="subs"      && <SubBoardPage />}
       {tab==="admin"     && <AdminPage />}
       {tab==="rules"     && <RulesPage />}
