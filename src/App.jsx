@@ -216,11 +216,12 @@ const RULES_DATA = [
 /* ─── SHARED COMPONENTS ─────────────────────────────────────────────────── */
 function TLogo({ name, size=80 }) {
   const src = TEAM_LOGOS[name];
-  if (src) return <img src={src} alt={name} style={{width:size*1.3,height:size*1.3,objectFit:"contain",display:"block",flexShrink:0}} />;
+  if (src) return <img src={src} alt={name} style={{width:size*1.8,height:size*1.8,objectFit:"contain",display:"block",flexShrink:0}} />;
   const color = TEAM_COLORS[name] || "#0057FF";
+  const boxSize = size * 0.7;
   return (
-    <div style={{width:size,height:size,borderRadius:8,background:`${color}18`,border:`2px solid ${color}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:size*0.22,color,textTransform:"uppercase"}}>{name.slice(0,4)}</span>
+    <div style={{width:boxSize,height:boxSize,borderRadius:8,background:`${color}18`,border:`2px solid ${color}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:boxSize*0.28,color,textTransform:"uppercase"}}>{name.slice(0,4)}</span>
     </div>
   );
 }
