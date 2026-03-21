@@ -262,57 +262,110 @@ function Card({ children, style={}, topBlue=true }) {
   );
 }
 
+const FAKE_RECAPS = {
+  default: (away, aScore, home, hScore) => {
+    const winner = aScore > hScore ? away : home;
+    const loser = aScore > hScore ? home : away;
+    const winScore = Math.max(aScore, hScore);
+    const loseScore = Math.min(aScore, hScore);
+    const margin = winScore - loseScore;
+    const intros = [
+      `In a ${margin <= 2 ? "nail-biting finish" : margin >= 10 ? "dominant performance" : "solid outing"}, ${winner} took care of business against ${loser}, ${winScore}–${loseScore}.`,
+      `${winner} left no doubt on Saturday, dispatching ${loser} by a score of ${winScore}–${loseScore}.`,
+      `It was all ${winner} from the first pitch, as they cruised past ${loser} ${winScore}–${loseScore}.`,
+    ];
+    const middles = [
+      `The offense came alive in the middle innings, stringing together hits and capitalizing on a pair of errors. The defense held firm when it mattered most.`,
+      `A big third inning proved to be the difference, as ${winner} sent eight batters to the plate and never looked back. ${loser} mounted a late rally but couldn't close the gap.`,
+      `Timely hitting was the story of the day. ${winner} went 6-for-12 with runners in scoring position, while ${loser} left several key opportunities stranded on the bases.`,
+    ];
+    const outros = [
+      `${winner} improves their division record and stays in the hunt for a top playoff seed. ${loser} will look to bounce back next week.`,
+      `With the win, ${winner} moves up in the division standings. Both teams are back in action next Saturday at Cheviot Hills.`,
+      `A well-earned victory for ${winner}. Coach praised the team's focus and energy throughout the game.`,
+    ];
+    const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
+    return `${pick(intros)} ${pick(middles)} ${pick(outros)}`;
+  }
+};
+
 function FinalCard({ g }) {
+  const [showRecap, setShowRecap] = useState(false);
   const aWin = g.aScore > g.hScore, hWin = g.hScore > g.aScore;
+  const recap = FAKE_RECAPS.default(g.away, g.aScore, g.home, g.hScore);
   return (
-    <Card>
-      <div style={{padding:"10px 16px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <span style={{fontSize:9,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"rgba(0,0,0,0.25)"}}>FINAL</span>
-        <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.2)",textTransform:"uppercase",letterSpacing:".1em"}}>{g.div}</span>
-      </div>
-      <div style={{padding:"10px 16px 14px",flex:1}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",marginBottom:6}}>
-          <span style={{width:56,textAlign:"center",fontSize:10,fontWeight:700,letterSpacing:".1em",color:"rgba(0,0,0,0.25)",textTransform:"uppercase"}}>R</span>
-        </div>
-        {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
-          <div key={i} style={{display:"flex",alignItems:"center",marginBottom:i===0?10:0}}>
-            <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
-              <TLogo name={side.name} size={46} />
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:26,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                {side.name}
+    <>
+      {showRecap && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}} onClick={() => setShowRecap(false)}>
+          <div style={{background:"#fff",borderRadius:16,maxWidth:520,width:"100%",overflow:"hidden",boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}} onClick={e => e.stopPropagation()}>
+            <div style={{background:"#001a6e",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",marginBottom:2}}>GAME RECAP · {g.div}</div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#fff",textTransform:"uppercase"}}>{g.away} vs {g.home}</div>
               </div>
+              <button onClick={() => setShowRecap(false)} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#fff",borderRadius:6,width:30,height:30,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
-            <span style={{width:56,textAlign:"center",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:46,lineHeight:1,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0}}>{side.score}</span>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
+                <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i===0?10:0}}>
+                  <TLogo name={side.name} size={40} />
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:22,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.35)",flex:1}}>{side.name}</span>
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:40,color:side.won?"#111":"rgba(0,0,0,0.22)"}}>{side.score}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{padding:"18px 20px"}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:8}}>📰 Game Recap</div>
+              <p style={{fontSize:14,color:"rgba(0,0,0,0.65)",lineHeight:1.7}}>{recap}</p>
+            </div>
           </div>
-        ))}
-        {g.note && <div style={{marginTop:6,fontSize:10,fontWeight:700,color:"#dc2626",textTransform:"uppercase",letterSpacing:".06em"}}>{g.note}</div>}
-      </div>
-      <div style={{height:1,background:"rgba(0,0,0,0.05)"}} />
-      <div style={{display:"flex"}}>
-        <div style={{flex:1,padding:"11px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:".06em",textTransform:"uppercase",color:"#0057FF",textAlign:"center",cursor:"pointer",borderRight:"1px solid rgba(0,0,0,0.05)"}}>RECAP</div>
-        <div style={{flex:1,padding:"11px",background:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:".06em",textTransform:"uppercase",color:"#fff",textAlign:"center",cursor:"pointer"}}>BOX SCORE</div>
-      </div>
-    </Card>
+        </div>
+      )}
+      <Card>
+        <div style={{padding:"10px 16px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:9,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"rgba(0,0,0,0.25)"}}>FINAL</span>
+          <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.2)",textTransform:"uppercase",letterSpacing:".1em"}}>{g.div}</span>
+        </div>
+        <div style={{padding:"10px 16px 14px",flex:1}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",marginBottom:6}}>
+            <span style={{width:56,textAlign:"center",fontSize:10,fontWeight:700,letterSpacing:".1em",color:"rgba(0,0,0,0.25)",textTransform:"uppercase"}}>R</span>
+          </div>
+          {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
+            <div key={i} style={{display:"flex",alignItems:"center",marginBottom:i===0?10:0}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
+                <TLogo name={side.name} size={56} />
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:26,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                  {side.name}
+                </div>
+              </div>
+              <span style={{width:56,textAlign:"center",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:46,lineHeight:1,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0}}>{side.score}</span>
+            </div>
+          ))}
+          {g.note && <div style={{marginTop:6,fontSize:10,fontWeight:700,color:"#dc2626",textTransform:"uppercase",letterSpacing:".06em"}}>{g.note}</div>}
+        </div>
+        <div style={{height:1,background:"rgba(0,0,0,0.05)"}} />
+        <div style={{display:"flex"}}>
+          <div onClick={() => setShowRecap(true)} style={{flex:1,padding:"11px",background:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:".06em",textTransform:"uppercase",color:"#fff",textAlign:"center",cursor:"pointer"}}>📰 RECAP</div>
+        </div>
+      </Card>
+    </>
   );
 }
 
 function UpcomingCard({ away, home, time, date, field, isNext }) {
   return (
     <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderLeft:isNext?"3px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderRadius:12,overflow:"hidden",display:"flex",alignItems:"stretch",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
-      <div style={{flex:1,padding:"16px 20px",display:"flex",flexDirection:"column",gap:12,minWidth:0}}>
-        {isNext && <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:-4}}>▶ NEXT GAME</div>}
+      <div style={{flex:1,padding:"14px 16px",display:"flex",flexDirection:"column",gap:8,minWidth:0}}>
+        {isNext && <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:-2}}>▶ NEXT GAME</div>}
         {[away,home].map((t,i) => (
-          <div key={i} style={{display:"flex",alignItems:"center",gap:12}}>
+          <div key={i} style={{display:"flex",alignItems:"center",gap:10}}>
             <TLogo name={t} size={52} />
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:30,textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
+            <div style={{minWidth:0}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
+              {i===0 && <div style={{fontSize:11,color:"rgba(0,0,0,0.35)",marginTop:2,fontWeight:600}}>{time} · {date} · {field}</div>}
+            </div>
           </div>
         ))}
-      </div>
-      <div style={{width:1,background:"rgba(0,0,0,0.07)",flexShrink:0}} />
-      <div style={{width:150,flexShrink:0,padding:"16px 18px",display:"flex",flexDirection:"column",justifyContent:"center"}}>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:30,color:"#0057FF",lineHeight:1}}>{time}</div>
-        <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginTop:6,fontWeight:600}}>{date}</div>
-        <div style={{fontSize:12,color:"rgba(0,0,0,0.35)",marginTop:3}}>{field}</div>
       </div>
     </div>
   );
@@ -361,7 +414,7 @@ function Navbar({ tab, setTab }) {
             <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,color:"rgba(0,0,0,0.4)",letterSpacing:".04em",lineHeight:1}}>Los Angeles Synagogue Softball</div>
           </div>
         </div>
-        <ul style={{display:"flex",gap:0,listStyle:"none",margin:"0 auto",padding:0}}>
+        <ul style={{display:"flex",gap:0,listStyle:"none",margin:"0 auto",padding:0,overflowX:"auto",scrollbarWidth:"none",flexShrink:1,minWidth:0}}>
           {links.map(([id,label]) => (
             <li key={id}>
               <button onClick={() => setTab(id)} style={{
@@ -453,16 +506,16 @@ function HomePage({ setTab }) {
                 <span onClick={() => setTab("standings")} style={{color:"#0057FF",fontSize:13,fontWeight:700,cursor:"pointer"}}>Full →</span>
               </div>
               {topTeams.map((t,i) => (
-                <div key={t.name+t.divKey} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",borderBottom:"1px solid rgba(0,0,0,0.04)",transition:"background .15s",cursor:"pointer"}}
+                <div key={t.name+t.divKey} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",borderBottom:"1px solid rgba(0,0,0,0.04)",transition:"background .15s",cursor:"pointer"}}
                   onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
                   onMouseLeave={e => e.currentTarget.style.background="transparent"}>
                   <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#0057FF",width:22,textAlign:"center",flexShrink:0}}>{i+1}</span>
-                  <TLogo name={t.name} size={36} />
+                  <TLogo name={t.name} size={52} />
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:14,color:"#111",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name}</div>
+                    <div style={{fontSize:16,color:"#111",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{t.name}</div>
                     <div style={{fontSize:11,color:"rgba(0,0,0,0.38)"}}>{t.divName}</div>
                   </div>
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,fontWeight:700,color:"#111",flexShrink:0}}>{t.w}-{t.l}</span>
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:24,fontWeight:700,color:"#111",flexShrink:0}}>{t.w}-{t.l}</span>
                 </div>
               ))}
             </Card>
@@ -520,33 +573,35 @@ function StandingsPage() {
         <TabBar items={Object.keys(DIV).map(d=>`Div ${d}`)} active={Object.keys(DIV).indexOf(dk)} onChange={i => setDk(Object.keys(DIV)[i])} />
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
-        <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
-          <div style={{display:"grid",gridTemplateColumns:"48px minmax(180px,1fr) 56px 56px 56px 80px 60px 60px 60px 72px",padding:"10px 20px",background:"#f8f9fb",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+        <div className="standings-table">
+        <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.05)",minWidth:700}}>
+          <div style={{display:"grid",gridTemplateColumns:"56px minmax(220px,1fr) 70px 70px 70px 90px 70px 70px 70px 80px",padding:"10px 24px",background:"#f8f9fb",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
             {["#","Team","W","L","T","PCT","GP","RS","RA","DIFF"].map((h,i) => (
-              <span key={h} style={{fontSize:10,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(0,0,0,0.3)",textAlign:i>1?"center":"left"}}>{h}</span>
+              <span key={h} style={{fontSize:11,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(0,0,0,0.3)",textAlign:i>1?"center":"left"}}>{h}</span>
             ))}
           </div>
           {div.teams.map((t,i) => (
-            <div key={t.name} style={{display:"grid",gridTemplateColumns:"48px minmax(180px,1fr) 56px 56px 56px 80px 60px 60px 60px 72px",padding:"14px 20px",borderBottom:"1px solid rgba(0,0,0,0.04)",alignItems:"center",transition:"background .15s",cursor:"pointer"}}
+            <div key={t.name} style={{display:"grid",gridTemplateColumns:"56px minmax(220px,1fr) 70px 70px 70px 90px 70px 70px 70px 80px",padding:"18px 24px",borderBottom:"1px solid rgba(0,0,0,0.04)",alignItems:"center",transition:"background .15s",cursor:"pointer"}}
               onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
               onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:i===0?"#0057FF":"rgba(0,0,0,0.22)"}}>{t.seed}</span>
-              <div style={{display:"flex",alignItems:"center",gap:14}}>
-                <TLogo name={t.name} size={50} />
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,color:i===0?"#0057FF":"rgba(0,0,0,0.22)"}}>{t.seed}</span>
+              <div style={{display:"flex",alignItems:"center",gap:16}}>
+                <TLogo name={t.name} size={72} />
                 <div>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:i===0?900:700,fontSize:22,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
-                  <div style={{height:3,width:80,background:"rgba(0,0,0,0.07)",borderRadius:2,marginTop:5,overflow:"hidden"}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:i===0?900:700,fontSize:30,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
+                  <div style={{height:3,width:100,background:"rgba(0,0,0,0.07)",borderRadius:2,marginTop:6,overflow:"hidden"}}>
                     <div style={{height:"100%",background:i===0?"#0057FF":"rgba(0,0,0,0.18)",borderRadius:2,width:`${parseFloat(t.pct)*100}%`}} />
                   </div>
                 </div>
               </div>
               {[t.w,t.l,t.t,t.pct,t.gp,t.rs,t.ra].map((v,vi) => (
-                <span key={vi} style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:vi===3?17:22,fontWeight:vi===0?900:vi===3?700:400,color:vi===0?"#111":vi===3?"#0057FF":"rgba(0,0,0,0.55)",textAlign:"center",display:"block"}}>{v}</span>
+                <span key={vi} style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:vi===3?19:26,fontWeight:vi===0?900:vi===3?700:400,color:vi===0?"#111":vi===3?"#0057FF":"rgba(0,0,0,0.55)",textAlign:"center",display:"block"}}>{v}</span>
               ))}
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,fontWeight:700,textAlign:"center",display:"block",color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626"}}>{t.diff}</span>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:24,fontWeight:700,textAlign:"center",display:"block",color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626"}}>{t.diff}</span>
             </div>
           ))}
         </Card>
+        </div>
       </div>
     </div>
   );
@@ -836,22 +891,27 @@ export default function App() {
   const handleTeamDetail = (name) => { setTeamDetail(name); setTab("teams"); };
 
   return (
-    <div style={{minHeight:"100vh",fontFamily:"'Barlow',sans-serif"}}>
+    <div style={{minHeight:"100vh",fontFamily:"'Barlow',sans-serif",overflowX:"hidden",maxWidth:"100vw"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
-        body{background:#f2f4f8;color:#111;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+        html{overflow-x:hidden;max-width:100vw;}
+        body{background:#f2f4f8;color:#111;-webkit-font-smoothing:antialiased;overflow-x:hidden;max-width:100vw;}
+        #root{overflow-x:hidden;max-width:100vw;}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         a{text-decoration:none;}
         ::-webkit-scrollbar{width:5px;height:5px}
         ::-webkit-scrollbar-track{background:#f2f4f8}
         ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:3px}
+        .standings-table{overflow-x:auto;-webkit-overflow-scrolling:touch;}
         @media(max-width:900px){
           .home-two-col{grid-template-columns:1fr!important;}
           .team-detail-grid{grid-template-columns:1fr!important;}
         }
         @media(max-width:640px){
           .scores-grid{grid-template-columns:1fr!important;}
+          .navbar-links{display:none!important;}
+          .navbar-mobile-scroll{display:flex!important;}
         }
       `}</style>
       <div style={{position:"relative",zIndex:200}}><Ticker setTab={handleSetTab} /></div>
