@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const L_LEAGUE = "/league.png";
+const L_LEAGUE = "/league1.png";
 const L_VBS    = "/2.png";
 const L_AAE    = "/3.png";
 const L_EMAN   = "/4.png";
