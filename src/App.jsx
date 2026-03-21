@@ -216,12 +216,18 @@ const RULES_DATA = [
 /* ─── SHARED COMPONENTS ─────────────────────────────────────────────────── */
 function TLogo({ name, size=80 }) {
   const src = TEAM_LOGOS[name];
-  if (src) return <img src={src} alt={name} style={{width:size*1.8,height:size*1.8,objectFit:"contain",display:"block",flexShrink:0}} />;
+  if (src) return (
+    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"visible"}}>
+      <img src={src} alt={name} style={{width:size*1.7,height:size*1.7,objectFit:"contain",display:"block"}} />
+    </div>
+  );
   const color = TEAM_COLORS[name] || "#0057FF";
-  const boxSize = size * 0.7;
+  const boxSize = size * 0.75;
   return (
-    <div style={{width:boxSize,height:boxSize,borderRadius:8,background:`${color}18`,border:`2px solid ${color}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:boxSize*0.28,color,textTransform:"uppercase"}}>{name.slice(0,4)}</span>
+    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{width:boxSize,height:boxSize,borderRadius:8,background:`${color}18`,border:`2px solid ${color}50`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:boxSize*0.28,color,textTransform:"uppercase"}}>{name.slice(0,4)}</span>
+      </div>
     </div>
   );
 }
