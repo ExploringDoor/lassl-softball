@@ -574,7 +574,7 @@ function TeamDetailPage({ teamName, onBack }) {
                 <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginTop:4}}>#{team.seed} seed · {team.divName}</div>
               </div>
             </div>
-            <div style={{display:"flex",gap:12",flexWrap:"wrap",alignItems:"center"}}>
+            <div style={{display:"flex",gap:12,flexWrap:"wrap",alignItems:"center"}}>
               <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:`3px solid ${color}`,borderRadius:10,padding:"16px 24px",textAlign:"center"}}>
                 <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:44,color,lineHeight:1}}>{team.w}-{team.l}</div>
                 <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:4,fontFamily:"'Barlow Condensed',sans-serif"}}>{team.pct} PCT</div>
