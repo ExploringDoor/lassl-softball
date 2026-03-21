@@ -217,8 +217,8 @@ const RULES_DATA = [
 function TLogo({ name, size=80 }) {
   const src = TEAM_LOGOS[name];
   if (src) return (
-    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-      <img src={src} alt={name} style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}} />
+    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <img src={src} alt={name} style={{width:size*2,height:size*2,objectFit:"contain",display:"block",flexShrink:0}} />
     </div>
   );
   const color = TEAM_COLORS[name] || "#0057FF";
