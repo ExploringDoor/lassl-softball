@@ -217,8 +217,8 @@ const RULES_DATA = [
 function TLogo({ name, size=80 }) {
   const src = TEAM_LOGOS[name];
   if (src) return (
-    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <img src={src} alt={name} style={{width:size*1.5,height:size*1.5,objectFit:"contain",display:"block"}} />
+    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+      <img src={src} alt={name} style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}} />
     </div>
   );
   const color = TEAM_COLORS[name] || "#0057FF";
@@ -1248,13 +1248,12 @@ export default function App() {
   const handleTeamDetail = (name) => { setTeamDetail(name); setTab("teams"); };
 
   return (
-    <div style={{minHeight:"100vh",fontFamily:"'Barlow',sans-serif",overflowX:"hidden",maxWidth:"100vw",position:"relative"}}>
+    <div style={{minHeight:"100vh",fontFamily:"'Barlow',sans-serif",width:"100%",maxWidth:"100%",overflowX:"hidden"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
-        html{overflow-x:clip;max-width:100vw;}
-        body{background:#f2f4f8;color:#111;-webkit-font-smoothing:antialiased;overflow-x:clip;max-width:100vw;}
-        #root{overflow-x:clip;max-width:100vw;}
+        html,body,#root{overflow-x:hidden;width:100%;max-width:100%;}
+        body{background:#f2f4f8;color:#111;-webkit-font-smoothing:antialiased;position:relative;}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         a{text-decoration:none;}
         ::-webkit-scrollbar{width:5px;height:5px}
