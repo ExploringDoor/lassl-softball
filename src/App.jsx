@@ -321,10 +321,13 @@ function FinalCard({ g }) {
           </div>
         </div>
       )}
-      <Card>
+      <Card style={{display:"flex",flexDirection:"column"}}>
         <div style={{padding:"10px 16px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <span style={{fontSize:9,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"rgba(0,0,0,0.25)"}}>FINAL</span>
-          <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.2)",textTransform:"uppercase",letterSpacing:".1em"}}>{g.div}</span>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            {g.note && <span style={{fontSize:9,fontWeight:700,color:"#dc2626",textTransform:"uppercase",letterSpacing:".06em"}}>{g.note}</span>}
+            <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.2)",textTransform:"uppercase",letterSpacing:".1em"}}>{g.div}</span>
+          </div>
         </div>
         <div style={{padding:"10px 16px 14px",flex:1}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",marginBottom:6}}>
@@ -333,7 +336,7 @@ function FinalCard({ g }) {
           {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
             <div key={i} style={{display:"flex",alignItems:"center",marginBottom:i===0?10:0}}>
               <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
-                <TLogo name={side.name} size={56} />
+                <TLogo name={side.name} size={64} />
                 <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:26,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                   {side.name}
                 </div>
@@ -341,12 +344,9 @@ function FinalCard({ g }) {
               <span style={{width:56,textAlign:"center",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:46,lineHeight:1,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0}}>{side.score}</span>
             </div>
           ))}
-          {g.note && <div style={{marginTop:6,fontSize:10,fontWeight:700,color:"#dc2626",textTransform:"uppercase",letterSpacing:".06em"}}>{g.note}</div>}
         </div>
         <div style={{height:1,background:"rgba(0,0,0,0.05)"}} />
-        <div style={{display:"flex"}}>
-          <div onClick={() => setShowRecap(true)} style={{flex:1,padding:"11px",background:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:".06em",textTransform:"uppercase",color:"#fff",textAlign:"center",cursor:"pointer"}}>📰 RECAP</div>
-        </div>
+        <div onClick={() => setShowRecap(true)} style={{padding:"13px",background:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:".06em",textTransform:"uppercase",color:"#fff",textAlign:"center",cursor:"pointer"}}>📰 RECAP</div>
       </Card>
     </>
   );
@@ -354,18 +354,21 @@ function FinalCard({ g }) {
 
 function UpcomingCard({ away, home, time, date, field, isNext }) {
   return (
-    <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderLeft:isNext?"3px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderRadius:12,overflow:"hidden",display:"flex",alignItems:"stretch",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
-      <div style={{flex:1,padding:"14px 16px",display:"flex",flexDirection:"column",gap:8,minWidth:0}}>
-        {isNext && <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:-2}}>▶ NEXT GAME</div>}
+    <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderLeft:isNext?"4px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderRadius:12,overflow:"hidden",display:"flex",alignItems:"stretch",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
+      <div style={{flex:1,padding:"16px 20px",display:"flex",flexDirection:"column",gap:10,minWidth:0}}>
+        {isNext && <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:-4}}>▶ NEXT GAME</div>}
         {[away,home].map((t,i) => (
-          <div key={i} style={{display:"flex",alignItems:"center",gap:10}}>
-            <TLogo name={t} size={52} />
-            <div style={{minWidth:0}}>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
-              {i===0 && <div style={{fontSize:11,color:"rgba(0,0,0,0.35)",marginTop:2,fontWeight:600}}>{time} · {date} · {field}</div>}
-            </div>
+          <div key={i} style={{display:"flex",alignItems:"center",gap:14}}>
+            <TLogo name={t} size={64} />
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:32,textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
           </div>
         ))}
+      </div>
+      <div style={{width:1,background:"rgba(0,0,0,0.07)",flexShrink:0}} />
+      <div style={{width:160,flexShrink:0,padding:"16px 18px",display:"flex",flexDirection:"column",justifyContent:"center",gap:4}}>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:34,color:"#0057FF",lineHeight:1}}>{time}</div>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,color:"rgba(0,0,0,0.6)",fontWeight:700}}>{date}</div>
+        <div style={{fontSize:13,color:"rgba(0,0,0,0.4)",fontWeight:500,lineHeight:1.3}}>{field}</div>
       </div>
     </div>
   );
@@ -403,34 +406,62 @@ function Ticker({ setTab }) {
 
 /* ─── NAVBAR ─────────────────────────────────────────────────────────────── */
 function Navbar({ tab, setTab }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["rules","Rules"]];
+  const handleNav = (id) => { setTab(id); setMenuOpen(false); };
   return (
-    <nav style={{background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 1px 6px rgba(0,0,0,0.07)",height:62,display:"flex",alignItems:"center",padding:"0 clamp(12px,3vw,32px)"}}>
-      <div style={{maxWidth:1400,margin:"0 auto",width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",flexShrink:0}} onClick={() => setTab("home")}>
-          <img src={L_LEAGUE} alt="LASSL" style={{height:38,width:38,objectFit:"cover",borderRadius:"50%",border:"2px solid #0057FF"}} />
-          <div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,letterSpacing:".08em",textTransform:"uppercase",color:"#0057FF",lineHeight:1}}>LASSL</div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,color:"rgba(0,0,0,0.4)",letterSpacing:".04em",lineHeight:1}}>Los Angeles Synagogue Softball</div>
+    <>
+      <nav style={{background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 1px 6px rgba(0,0,0,0.07)",height:62,display:"flex",alignItems:"center",padding:"0 clamp(12px,3vw,32px)",position:"relative",zIndex:400}}>
+        <div style={{maxWidth:1400,margin:"0 auto",width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",flexShrink:0}} onClick={() => handleNav("home")}>
+            <img src={L_LEAGUE} alt="LASSL" style={{height:38,width:38,objectFit:"cover",borderRadius:"50%",border:"2px solid #0057FF"}} />
+            <div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,letterSpacing:".08em",textTransform:"uppercase",color:"#0057FF",lineHeight:1}}>LASSL</div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,color:"rgba(0,0,0,0.4)",letterSpacing:".04em",lineHeight:1}}>Los Angeles Synagogue Softball</div>
+            </div>
           </div>
+          {/* Desktop links */}
+          <ul style={{display:"flex",gap:0,listStyle:"none",margin:"0 auto",padding:0,flexShrink:1,minWidth:0}} className="desktop-nav">
+            {links.map(([id,label]) => (
+              <li key={id}>
+                <button onClick={() => handleNav(id)} style={{
+                  fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,
+                  letterSpacing:".06em",textTransform:"uppercase",
+                  color:tab===id?"#0057FF":"#555",background:"none",border:"none",
+                  cursor:"pointer",padding:"7px 12px",borderRadius:6,
+                  borderBottom:tab===id?"2px solid #0057FF":"2px solid transparent",
+                  transition:"color .15s",whiteSpace:"nowrap",
+                }}>{label}</button>
+              </li>
+            ))}
+          </ul>
+          {/* Hamburger button */}
+          <button onClick={() => setMenuOpen(!menuOpen)} className="hamburger" style={{
+            display:"none",background:"none",border:"none",cursor:"pointer",
+            padding:"8px",flexDirection:"column",gap:5,alignItems:"center",justifyContent:"center",
+          }}>
+            <span style={{display:"block",width:24,height:2,background:menuOpen?"#0057FF":"#111",borderRadius:2,transition:"all .2s",transform:menuOpen?"rotate(45deg) translate(5px,5px)":"none"}} />
+            <span style={{display:"block",width:24,height:2,background:"#111",borderRadius:2,transition:"all .2s",opacity:menuOpen?0:1}} />
+            <span style={{display:"block",width:24,height:2,background:menuOpen?"#0057FF":"#111",borderRadius:2,transition:"all .2s",transform:menuOpen?"rotate(-45deg) translate(5px,-5px)":"none"}} />
+          </button>
         </div>
-        <ul style={{display:"flex",gap:0,listStyle:"none",margin:"0 auto",padding:0,overflowX:"auto",scrollbarWidth:"none",flexShrink:1,minWidth:0}}>
+      </nav>
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <div style={{position:"fixed",top:62,left:0,right:0,background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:399}}>
           {links.map(([id,label]) => (
-            <li key={id}>
-              <button onClick={() => setTab(id)} style={{
-                fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,
-                letterSpacing:".06em",textTransform:"uppercase",
-                color:tab===id?"#0057FF":"#555",background:"none",border:"none",
-                cursor:"pointer",padding:"7px 12px",borderRadius:6,
-                borderBottom:tab===id?"2px solid #0057FF":"2px solid transparent",
-                transition:"color .15s",
-              }}>{label}</button>
-            </li>
+            <button key={id} onClick={() => handleNav(id)} style={{
+              display:"block",width:"100%",textAlign:"left",
+              fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:20,
+              letterSpacing:".06em",textTransform:"uppercase",
+              color:tab===id?"#0057FF":"#111",background:tab===id?"rgba(0,87,255,0.04)":"none",
+              border:"none",borderBottom:"1px solid rgba(0,0,0,0.06)",
+              cursor:"pointer",padding:"16px 20px",
+            }}>{label}</button>
           ))}
-        </ul>
-        <div style={{width:140,flexShrink:0}} />
-      </div>
-    </nav>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -470,7 +501,7 @@ function HomePage({ setTab }) {
       </div>
 
       <div style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 340px",gap:32,alignItems:"start"}}>
+        <div className="home-two-col" style={{display:"grid",gridTemplateColumns:"1fr 340px",gap:32,alignItems:"start"}}>
           <div>
             <div style={{marginBottom:32}}>
               <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",marginBottom:14}}>
@@ -480,7 +511,7 @@ function HomePage({ setTab }) {
                 </div>
                 <span onClick={() => setTab("scores")} style={{color:"#0057FF",fontWeight:700,fontSize:13,cursor:"pointer",textDecoration:"none"}}>All Scores →</span>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+              <div className="scores-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
                 {recent.slice(0,6).map((g,i) => <FinalCard key={i} g={g} />)}
               </div>
             </div>
@@ -498,8 +529,8 @@ function HomePage({ setTab }) {
             </div>
           </div>
 
-          {/* Standings sidebar */}
-          <div style={{position:"sticky",top:72}}>
+          {/* Standings sidebar - hidden on mobile */}
+          <div style={{position:"sticky",top:72}} className="sidebar-standings">
             <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
               <div style={{padding:"14px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Standings</span>
@@ -904,14 +935,13 @@ export default function App() {
         ::-webkit-scrollbar-track{background:#f2f4f8}
         ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:3px}
         .standings-table{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-        @media(max-width:900px){
+        @media(max-width:700px){
           .home-two-col{grid-template-columns:1fr!important;}
           .team-detail-grid{grid-template-columns:1fr!important;}
-        }
-        @media(max-width:640px){
+          .sidebar-standings{display:none!important;}
           .scores-grid{grid-template-columns:1fr!important;}
-          .navbar-links{display:none!important;}
-          .navbar-mobile-scroll{display:flex!important;}
+          .desktop-nav{display:none!important;}
+          .hamburger{display:flex!important;}
         }
       `}</style>
       <div style={{position:"relative",zIndex:200}}><Ticker setTab={handleSetTab} /></div>
