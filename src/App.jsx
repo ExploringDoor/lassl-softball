@@ -217,8 +217,8 @@ const RULES_DATA = [
 function TLogo({ name, size=80 }) {
   const src = TEAM_LOGOS[name];
   if (src) return (
-    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"visible"}}>
-      <img src={src} alt={name} style={{width:size*1.7,height:size*1.7,objectFit:"contain",display:"block"}} />
+    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <img src={src} alt={name} style={{width:size*1.5,height:size*1.5,objectFit:"contain",display:"block"}} />
     </div>
   );
   const color = TEAM_COLORS[name] || "#0057FF";
@@ -614,18 +614,19 @@ function SchedulePage({ setTab, setTeamDetail }) {
 }
 
 /* ─── STANDINGS PAGE ──────────────────────────────────────────────────────── */
-function StandingsPage() {
+function StandingsPage({ setTab, setTeamDetail }) {
   const [dk,setDk] = useState("A");
   const div = DIV[dk];
+  const goTeam = (name) => { if(setTeamDetail){ setTeamDetail(name); setTab("teams"); } };
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
       <PageHero label="2026 Season" title="Standings">
         <TabBar items={Object.keys(DIV).map(d=>`Div ${d}`)} active={Object.keys(DIV).indexOf(dk)} onChange={i => setDk(Object.keys(DIV)[i])} />
       </PageHero>
-      {/* MOBILE standings - simple, fits on screen */}
+      {/* MOBILE standings */}
       <div className="mobile-standings" style={{display:"none",padding:"16px 12px 60px"}}>
         {div.teams.map((t,i) => (
-          <div key={t.name} style={{background:"#fff",borderRadius:10,marginBottom:8,padding:"12px 14px",display:"flex",alignItems:"center",gap:10,border:"1px solid rgba(0,0,0,0.08)",borderLeft:`3px solid ${i===0?"#0057FF":div.accent}`}}>
+          <div key={t.name} onClick={() => goTeam(t.name)} style={{background:"#fff",borderRadius:10,marginBottom:8,padding:"12px 14px",display:"flex",alignItems:"center",gap:10,border:"1px solid rgba(0,0,0,0.08)",borderLeft:`3px solid ${i===0?"#0057FF":div.accent}`,cursor:"pointer"}}>
             <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:i===0?"#0057FF":"rgba(0,0,0,0.25)",width:24,flexShrink:0}}>{t.seed}</span>
             <TLogo name={t.name} size={50} />
             <div style={{flex:1,minWidth:0}}>
@@ -649,7 +650,7 @@ function StandingsPage() {
             ))}
           </div>
           {div.teams.map((t,i) => (
-            <div key={t.name} style={{display:"grid",gridTemplateColumns:"50px minmax(300px,1fr) 60px 60px 60px 80px 60px 60px 60px 70px",padding:"14px 20px",borderBottom:"1px solid rgba(0,0,0,0.04)",alignItems:"center",transition:"background .15s",cursor:"pointer"}}
+            <div key={t.name} onClick={() => goTeam(t.name)} style={{display:"grid",gridTemplateColumns:"50px minmax(300px,1fr) 60px 60px 60px 80px 60px 60px 60px 70px",padding:"14px 20px",borderBottom:"1px solid rgba(0,0,0,0.04)",alignItems:"center",transition:"background .15s",cursor:"pointer"}}
               onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
               onMouseLeave={e => e.currentTarget.style.background="transparent"}>
               <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:30,color:i===0?"#0057FF":"rgba(0,0,0,0.22)"}}>{t.seed}</span>
@@ -1278,7 +1279,7 @@ export default function App() {
       {tab==="home"      && <HomePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
       {tab==="scores"    && <ScoresPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
       {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
-      {tab==="standings" && <StandingsPage />}
+      {tab==="standings" && <StandingsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
       {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
       {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => setTeamDetail(null)} />}
       {tab==="subs"      && <SubBoardPage />}
