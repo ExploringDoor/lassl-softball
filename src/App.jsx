@@ -216,7 +216,7 @@ const RULES_DATA = [
 /* ─── SHARED COMPONENTS ─────────────────────────────────────────────────── */
 function TLogo({ name, size=80 }) {
   const src = TEAM_LOGOS[name];
-  if (src) return <img src={src} alt={name} style={{width:size,height:size,objectFit:"contain",display:"block",flexShrink:0}} />;
+  if (src) return <img src={src} alt={name} style={{width:size*2.2,height:size*2.2,objectFit:"contain",display:"block",flexShrink:0}} />;
   const color = TEAM_COLORS[name] || "#0057FF";
   return (
     <div style={{width:size,height:size,borderRadius:8,background:`${color}18`,border:`2px solid ${color}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -341,7 +341,7 @@ function FinalCard({ g }) {
                   {side.name}
                 </div>
               </div>
-              <span style={{width:56,textAlign:"center",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:46,lineHeight:1,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0}}>{side.score}</span>
+            <span style={{width:44,textAlign:"center",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:42,lineHeight:1,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0}}>{side.score}</span>
             </div>
           ))}
         </div>
@@ -375,7 +375,7 @@ function UpcomingCard({ away, home, time, date, field, isNext }) {
       {/* Divider */}
       <div style={{width:1,alignSelf:"stretch",background:"rgba(0,0,0,0.08)",flexShrink:0,margin:"0 4px"}} />
       {/* Field */}
-      <div style={{flex:1,minWidth:0}}>
+      <div className="upcoming-field" style={{flex:1,minWidth:0}}>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"clamp(14px,1.8vw,20px)",color:"#111",fontWeight:700,lineHeight:1.3}}>{field}</div>
       </div>
     </div>
@@ -621,7 +621,25 @@ function StandingsPage() {
       <PageHero label="2026 Season" title="Standings">
         <TabBar items={Object.keys(DIV).map(d=>`Div ${d}`)} active={Object.keys(DIV).indexOf(dk)} onChange={i => setDk(Object.keys(DIV)[i])} />
       </PageHero>
-      <div style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
+      {/* MOBILE standings - simple, fits on screen */}
+      <div className="mobile-standings" style={{display:"none",padding:"16px 12px 60px"}}>
+        {div.teams.map((t,i) => (
+          <div key={t.name} style={{background:"#fff",borderRadius:10,marginBottom:8,padding:"12px 14px",display:"flex",alignItems:"center",gap:10,border:"1px solid rgba(0,0,0,0.08)",borderLeft:`3px solid ${i===0?"#0057FF":div.accent}`}}>
+            <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:i===0?"#0057FF":"rgba(0,0,0,0.25)",width:24,flexShrink:0}}>{t.seed}</span>
+            <TLogo name={t.name} size={50} />
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name}</div>
+              <div style={{fontSize:11,color:"rgba(0,0,0,0.4)",marginTop:2}}>{t.pct} PCT · {t.gp} GP</div>
+            </div>
+            <div style={{textAlign:"right",flexShrink:0}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,color:"#111",lineHeight:1}}>{t.w}-{t.l}</div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,fontWeight:700,color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626"}}>{t.diff}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* DESKTOP standings table */}
+      <div className="desktop-standings" style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
         <div className="standings-table">
         <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.05)",minWidth:900}}>
           <div style={{display:"grid",gridTemplateColumns:"50px minmax(300px,1fr) 60px 60px 60px 80px 60px 60px 60px 70px",padding:"10px 20px",background:"#f8f9fb",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
@@ -953,6 +971,8 @@ export default function App() {
         ::-webkit-scrollbar-track{background:#f2f4f8}
         ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:3px}
         .standings-table{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .mobile-standings{display:none;}
+        .desktop-standings{display:block;}
         @media(max-width:700px){
           .home-two-col{grid-template-columns:1fr!important;}
           .team-detail-grid{grid-template-columns:1fr!important;}
@@ -960,6 +980,9 @@ export default function App() {
           .scores-grid{grid-template-columns:1fr!important;}
           .desktop-nav{display:none!important;}
           .hamburger{display:flex!important;}
+          .mobile-standings{display:block!important;}
+          .desktop-standings{display:none!important;}
+          .upcoming-field{display:none!important;}
         }
       `}</style>
       <div style={{position:"relative",zIndex:200}}><Ticker setTab={handleSetTab} /></div>
