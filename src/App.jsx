@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const L_LEAGUE = "/league2.png";
 const L_VBS    = "/2.png";
@@ -1122,21 +1122,82 @@ function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState(false);
-  const [alertType, setAlertType] = useState("rainout-all");
-  const [alertDate, setAlertDate] = useState("Sunday, March 23");
-  const [alertMsg, setAlertMsg] = useState("");
-  const [activeAlert, setActiveAlert] = useState(null);
 
-  const alertTypes = [
-    {id:"rainout-all",label:"⚠️ Rainout — all games cancelled"},
-    {id:"rainout-some",label:"⚠️ Rainout — select games cancelled"},
-    {id:"reschedule",label:"🔄 Games rescheduled"},
-    {id:"field-change",label:"🕐 Time or field change"},
-    {id:"general",label:"📢 General announcement"},
-  ];
+  // Firebase data
+  const [fbTeams, setFbTeams] = useState([]);
+  const [fbGames, setFbGames] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [connected, setConnected] = useState(false);
 
-  const preview = alertTypes.find(a => a.id===alertType)?.label.split("—")[1]?.trim() || "";
+  // Score entry state
+  const [selWeek, setSelWeek] = useState(null);
+  const [selGame, setSelGame] = useState(null);
+  const [awayScore, setAwayScore] = useState("");
+  const [homeScore, setHomeScore] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState(null);
 
+  // Load data from Firebase
+  const loadData = () => {
+    setLoading(true);
+    fetch('/api/get-data')
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(({ teams, games }) => {
+        setFbTeams(teams);
+        setFbGames(games.sort((a,b) => (a.wk||0) - (b.wk||0)));
+        setConnected(true);
+        setLoading(false);
+      })
+      .catch(() => { setConnected(false); setLoading(false); });
+  };
+
+  useEffect(() => { if (authed) loadData(); }, [authed]);
+
+  const teamName = (id) => fbTeams.find(t => t.id === id)?.name || id || "TBD";
+
+  // Group games by week
+  const weeks = [...new Set(fbGames.map(g => g.wk))].sort((a,b) => a - b);
+  const weekGames = selWeek !== null ? fbGames.filter(g => g.wk === selWeek) : [];
+
+  const handleSave = async () => {
+    if (!selGame) return;
+    const aScore = parseInt(awayScore);
+    const hScore = parseInt(homeScore);
+    if (isNaN(aScore) || isNaN(hScore)) { setSaveMsg({ ok: false, text: "Enter valid scores" }); return; }
+
+    setSaving(true);
+    setSaveMsg(null);
+    try {
+      const r = await fetch('/api/update-firebase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parsed: { awayScore: aScore, homeScore: hScore, awayBatters: [], homeBatters: [], awayPitchers: [], homePitchers: [], linescore: null, notes: '' },
+          gameId: selGame.id,
+          awayTeamId: selGame.away,
+          homeTeamId: selGame.home,
+          date: selGame.date || '',
+          week: selGame.wk || 0,
+          field: selGame.field || '',
+        }),
+      });
+      const data = await r.json();
+      if (data.success) {
+        setSaveMsg({ ok: true, text: `Saved! ${teamName(selGame.away)} ${aScore} – ${teamName(selGame.home)} ${hScore}` });
+        setSelGame(null);
+        setAwayScore("");
+        setHomeScore("");
+        loadData(); // refresh
+      } else {
+        setSaveMsg({ ok: false, text: data.error || "Save failed" });
+      }
+    } catch (e) {
+      setSaveMsg({ ok: false, text: e.message });
+    }
+    setSaving(false);
+  };
+
+  // ── LOGIN SCREEN ──
   if (!authed) return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <Card style={{maxWidth:380,width:"100%",padding:0}}>
@@ -1158,6 +1219,7 @@ function AdminPage() {
     </div>
   );
 
+  // ── ADMIN DASHBOARD ──
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <div style={{background:"#001a6e",borderBottom:"3px solid #0057FF",padding:"16px clamp(12px,3vw,40px)"}}>
@@ -1167,72 +1229,123 @@ function AdminPage() {
             <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#FFD700",textTransform:"uppercase"}}>LASSL Admin</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>Logged in as League Admin</div>
           </div>
-          <button onClick={() => setAuthed(false)} style={{marginLeft:"auto",padding:"6px 14px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:13,cursor:"pointer"}}>Log out</button>
+          <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:connected?"#22c55e":"#dc2626",boxShadow:`0 0 6px ${connected?"#22c55e":"#dc2626"}`}} />
+              <span style={{fontSize:12,color:"rgba(255,255,255,0.5)"}}>{loading ? "Loading..." : connected ? `${fbTeams.length} teams · ${fbGames.length} games` : "Disconnected"}</span>
+            </div>
+            <button onClick={() => setAuthed(false)} style={{padding:"6px 14px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:13,cursor:"pointer"}}>Log out</button>
+          </div>
         </div>
       </div>
 
       <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px",display:"flex",flexDirection:"column",gap:20}}>
 
-        {/* Current status */}
-        <div style={{background:activeAlert?"#fef2f2":"#f0fdf4",border:`1px solid ${activeAlert?"#fecaca":"#bbf7d0"}`,borderRadius:10,padding:"12px 18px",display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:10,height:10,borderRadius:"50%",background:activeAlert?"#dc2626":"#22c55e",flexShrink:0,boxShadow:`0 0 6px ${activeAlert?"#dc2626":"#22c55e"}`}} />
-          <span style={{fontSize:14,fontWeight:600,color:activeAlert?"#991b1b":"#166534"}}>
-            {activeAlert ? `Active alert: ${activeAlert}` : "No active alerts — site showing normal"}
+        {/* Connection status */}
+        <div style={{background:connected?"#f0fdf4":"#fef2f2",border:`1px solid ${connected?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:10,height:10,borderRadius:"50%",background:connected?"#22c55e":"#dc2626",flexShrink:0,boxShadow:`0 0 6px ${connected?"#22c55e":"#dc2626"}`}} />
+          <span style={{fontSize:14,fontWeight:600,color:connected?"#166534":"#991b1b"}}>
+            {connected ? "Connected to Firebase — ready to update scores" : loading ? "Connecting to Firebase..." : "Could not connect to Firebase"}
           </span>
-          {activeAlert && <button onClick={() => setActiveAlert(null)} style={{marginLeft:"auto",padding:"4px 12px",background:"none",border:"1px solid #fca5a5",borderRadius:6,color:"#dc2626",fontSize:12,cursor:"pointer"}}>Clear alert</button>}
+          {!connected && !loading && <button onClick={loadData} style={{marginLeft:"auto",padding:"4px 12px",background:"none",border:"1px solid #fca5a5",borderRadius:6,color:"#dc2626",fontSize:12,cursor:"pointer"}}>Retry</button>}
         </div>
 
-        {/* Post alert */}
+        {/* Save confirmation */}
+        {saveMsg && (
+          <div style={{background:saveMsg.ok?"#f0fdf4":"#fef2f2",border:`1px solid ${saveMsg.ok?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:14,fontWeight:600,color:saveMsg.ok?"#166534":"#991b1b"}}>{saveMsg.ok ? "✓" : "✗"} {saveMsg.text}</span>
+            <button onClick={() => setSaveMsg(null)} style={{marginLeft:"auto",padding:"4px 12px",background:"none",border:`1px solid ${saveMsg.ok?"#bbf7d0":"#fca5a5"}`,borderRadius:6,color:saveMsg.ok?"#166534":"#dc2626",fontSize:12,cursor:"pointer"}}>Dismiss</button>
+          </div>
+        )}
+
+        {/* Step 1: Pick a week */}
         <Card>
           <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Post a league alert</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>1. Select Week</div>
           </div>
-          <div style={{padding:"20px",display:"flex",flexDirection:"column",gap:14}}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              <div style={{display:"flex",flexDirection:"column",gap:5,gridColumn:"1 / -1"}}>
-                <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Alert type</label>
-                <select value={alertType} onChange={e => setAlertType(e.target.value)} style={{padding:"10px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}}>
-                  {alertTypes.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
-                </select>
+          <div style={{padding:"16px 20px"}}>
+            {weeks.length === 0 ? (
+              <div style={{fontSize:14,color:"rgba(0,0,0,0.4)"}}>{loading ? "Loading weeks..." : "No games found in Firebase."}</div>
+            ) : (
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:8}}>
+                {weeks.map(wk => {
+                  const wg = fbGames.filter(g => g.wk === wk);
+                  const done = wg.filter(g => g.done).length;
+                  const isActive = selWeek === wk;
+                  return (
+                    <button key={wk} onClick={() => { setSelWeek(wk); setSelGame(null); setAwayScore(""); setHomeScore(""); }}
+                      style={{background:isActive?"rgba(0,87,255,0.08)":"#f8f9fb",border:`1px solid ${isActive?"#0057FF":"rgba(0,0,0,0.1)"}`,borderRadius:8,padding:"10px 12px",cursor:"pointer",textAlign:"left",transition:"all .15s"}}>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,0,0,0.4)"}}>WK {wk}</div>
+                      <div style={{fontSize:15,fontWeight:700,color:"#111",marginTop:1}}>{wg[0]?.date || "—"}</div>
+                      <div style={{fontSize:10,marginTop:2,color:done===wg.length?"#22c55e":done>0?"#f59e0b":"rgba(0,0,0,0.3)",fontWeight:700}}>{done}/{wg.length} done</div>
+                    </button>
+                  );
+                })}
               </div>
-              <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Date affected</label>
-                <input value={alertDate} onChange={e => setAlertDate(e.target.value)} style={{padding:"10px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Additional message (optional)</label>
-                <input placeholder="e.g. Fields are waterlogged. Makeup dates TBD." value={alertMsg} onChange={e => setAlertMsg(e.target.value)} style={{padding:"10px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
-              </div>
-            </div>
-            {/* Preview */}
-            <div style={{background:"#fff3cd",border:"1px solid #ffc107",borderRadius:8,padding:"12px 16px"}}>
-              <div style={{fontSize:11,fontWeight:700,color:"#856404",marginBottom:4,textTransform:"uppercase",letterSpacing:".08em"}}>Preview — what players see at the top of the site:</div>
-              <div style={{fontSize:14,color:"#111"}}>⚠️ <strong>{alertDate} — {preview || "All games cancelled."}</strong>{alertMsg ? ` ${alertMsg}` : ""}</div>
-            </div>
-            <button onClick={() => setActiveAlert(`${alertDate} — ${preview}`)} style={{padding:"13px",background:"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>Post alert to site now</button>
+            )}
           </div>
         </Card>
 
-        {/* Quick actions */}
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111"}}>Quick Actions</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
-          {[
-            {icon:"📊",title:"Update scores",desc:"Enter this week's results"},
-            {icon:"📧",title:"Send weekly email",desc:"Blast scoreboard to league"},
-            {icon:"📱",title:"Send text blast",desc:"Push message to all 400 players"},
-            {icon:"📅",title:"Manage schedule",desc:"Add or edit games"},
-            {icon:"🙋",title:"Availability board",desc:"View or clear listings"},
-            {icon:"👥",title:"Season sub list",desc:"Manage registered subs"},
-          ].map((a,i) => (
-            <div key={i} style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderRadius:10,padding:"16px 18px",cursor:"pointer",transition:"box-shadow .15s"}}
-              onMouseEnter={e => e.currentTarget.style.boxShadow="0 4px 16px rgba(0,87,255,0.15)"}
-              onMouseLeave={e => e.currentTarget.style.boxShadow="none"}>
-              <div style={{fontSize:24,marginBottom:8}}>{a.icon}</div>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#111",textTransform:"uppercase"}}>{a.title}</div>
-              <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:3}}>{a.desc}</div>
+        {/* Step 2: Pick a game */}
+        {selWeek !== null && (
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>2. Select Game — Week {selWeek}</div>
             </div>
-          ))}
-        </div>
+            <div style={{padding:"16px 20px",display:"flex",flexDirection:"column",gap:6}}>
+              {weekGames.map(g => {
+                const isActive = selGame?.id === g.id;
+                return (
+                  <button key={g.id} onClick={() => { setSelGame(g); setAwayScore(g.done ? String(g.away_score ?? "") : ""); setHomeScore(g.done ? String(g.home_score ?? "") : ""); setSaveMsg(null); }}
+                    style={{background:isActive?"rgba(0,87,255,0.06)":"#f8f9fb",border:`1px solid ${isActive?"#0057FF":"rgba(0,0,0,0.1)"}`,borderRadius:8,padding:"12px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left",width:"100%",transition:"all .15s"}}>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:15,fontWeight:700,color:"#111"}}>{teamName(g.away)} vs {teamName(g.home)}</div>
+                      <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:2}}>{g.time || ""} · {g.field || "TBD"}</div>
+                    </div>
+                    {g.done ? (
+                      <span style={{fontSize:12,fontWeight:700,color:"#22c55e",background:"rgba(34,197,94,0.1)",borderRadius:4,padding:"2px 8px"}}>✓ {g.away_score}–{g.home_score}</span>
+                    ) : (
+                      <span style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.3)",background:"rgba(0,0,0,0.05)",borderRadius:4,padding:"2px 8px"}}>Pending</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+
+        {/* Step 3: Enter score */}
+        {selGame && (
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>3. Enter Score</div>
+              {selGame.done && <div style={{fontSize:12,color:"#f59e0b",fontWeight:600,marginTop:4}}>This game already has a score. Saving will overwrite it.</div>}
+            </div>
+            <div style={{padding:"24px 20px"}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:16,alignItems:"center",maxWidth:500,margin:"0 auto"}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:12,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(0,0,0,0.4)",marginBottom:8}}>Away</div>
+                  <TLogo name={teamName(selGame.away)} size={56} />
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",marginTop:8}}>{teamName(selGame.away)}</div>
+                  <input type="number" min="0" max="99" placeholder="0" value={awayScore} onChange={e => setAwayScore(e.target.value)}
+                    style={{width:88,fontSize:44,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:10,outline:"none"}} />
+                </div>
+                <div style={{fontSize:20,fontWeight:700,color:"rgba(0,0,0,0.2)"}}>VS</div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:12,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(0,0,0,0.4)",marginBottom:8}}>Home</div>
+                  <TLogo name={teamName(selGame.home)} size={56} />
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",marginTop:8}}>{teamName(selGame.home)}</div>
+                  <input type="number" min="0" max="99" placeholder="0" value={homeScore} onChange={e => setHomeScore(e.target.value)}
+                    style={{width:88,fontSize:44,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:10,outline:"none"}} />
+                </div>
+              </div>
+              <button onClick={handleSave} disabled={saving}
+                style={{display:"block",width:"100%",maxWidth:500,margin:"24px auto 0",padding:"14px",background:saving?"#94a3b8":"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,textTransform:"uppercase",cursor:saving?"not-allowed":"pointer",letterSpacing:".06em",transition:"background .15s"}}>
+                {saving ? "Saving..." : "Save Score & Update Standings"}
+              </button>
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );
