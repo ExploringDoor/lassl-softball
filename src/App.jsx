@@ -397,37 +397,69 @@ function Card({ children, style={}, topBlue=true }) {
   );
 }
 
-const FAKE_RECAPS = {
-  default: (away, aScore, home, hScore) => {
-    const winner = aScore > hScore ? away : home;
-    const loser = aScore > hScore ? home : away;
-    const winScore = Math.max(aScore, hScore);
-    const loseScore = Math.min(aScore, hScore);
-    const margin = winScore - loseScore;
-    const intros = [
-      `In a ${margin <= 2 ? "nail-biting finish" : margin >= 10 ? "dominant performance" : "solid outing"}, ${winner} took care of business against ${loser}, ${winScore}–${loseScore}.`,
-      `${winner} left no doubt on Saturday, dispatching ${loser} by a score of ${winScore}–${loseScore}.`,
-      `It was all ${winner} from the first pitch, as they cruised past ${loser} ${winScore}–${loseScore}.`,
-    ];
-    const middles = [
-      `The offense came alive in the middle innings, stringing together hits and capitalizing on a pair of errors. The defense held firm when it mattered most.`,
-      `A big third inning proved to be the difference, as ${winner} sent eight batters to the plate and never looked back. ${loser} mounted a late rally but couldn't close the gap.`,
-      `Timely hitting was the story of the day. ${winner} went 6-for-12 with runners in scoring position, while ${loser} left several key opportunities stranded on the bases.`,
-    ];
-    const outros = [
-      `${winner} improves their division record and stays in the hunt for a top playoff seed. ${loser} will look to bounce back next week.`,
-      `With the win, ${winner} moves up in the division standings. Both teams are back in action next Saturday at Cheviot Hills.`,
-      `A well-earned victory for ${winner}. Coach praised the team's focus and energy throughout the game.`,
-    ];
-    const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
-    return `${pick(intros)} ${pick(middles)} ${pick(outros)}`;
-  }
-};
+function buildRecap(g, allTeams, scores) {
+  const away = g.away, home = g.home;
+  const aScore = g.aScore, hScore = g.hScore;
+  const isTie = aScore === hScore;
+  const winner = aScore > hScore ? away : home;
+  const loser = aScore > hScore ? home : away;
+  const winScore = Math.max(aScore, hScore);
+  const loseScore = Math.min(aScore, hScore);
+  const margin = winScore - loseScore;
 
-function FinalCard({ g, onTeamClick }) {
+  // Get team records
+  const wTeam = allTeams.find(t => t.name === winner);
+  const lTeam = allTeams.find(t => t.name === loser);
+
+  // Head-to-head history
+  const h2h = scores.flatMap(w => w.games).filter(x =>
+    (x.away === away && x.home === home) || (x.away === home && x.home === away)
+  );
+  const h2hWins = (team) => h2h.filter(x =>
+    (x.away === team && x.aScore > x.hScore) || (x.home === team && x.hScore > x.aScore)
+  ).length;
+
+  const parts = [];
+
+  if (isTie) {
+    parts.push(`${away} and ${home} battled to a ${aScore}–${hScore} tie.`);
+  } else if (margin >= 10) {
+    parts.push(`${winner} dominated ${loser} with a convincing ${winScore}–${loseScore} victory.`);
+  } else if (margin <= 2) {
+    parts.push(`${winner} edged out ${loser} in a close one, ${winScore}–${loseScore}.`);
+  } else {
+    parts.push(`${winner} defeated ${loser} ${winScore}–${loseScore}.`);
+  }
+
+  if (g.note && g.note.toLowerCase().includes("forfeit")) {
+    parts[0] = `${winner} wins by forfeit over ${loser}, ${winScore}–${loseScore}.`;
+  }
+
+  // Records
+  if (wTeam && lTeam && !isTie) {
+    parts.push(`${winner} moves to ${wTeam.w}-${wTeam.l}${wTeam.t ? `-${wTeam.t}` : ""} on the season, while ${loser} falls to ${lTeam.w}-${lTeam.l}${lTeam.t ? `-${lTeam.t}` : ""}.`);
+  } else if (isTie && wTeam && lTeam) {
+    const aTeam = allTeams.find(t => t.name === away);
+    const hTeam = allTeams.find(t => t.name === home);
+    if (aTeam && hTeam) parts.push(`${away} sits at ${aTeam.w}-${aTeam.l}-${(aTeam.t||0)} and ${home} at ${hTeam.w}-${hTeam.l}-${(hTeam.t||0)}.`);
+  }
+
+  // Head-to-head
+  if (h2h.length > 1 && !isTie) {
+    const wH2H = h2hWins(winner);
+    const lH2H = h2hWins(loser);
+    if (wH2H > lH2H) parts.push(`${winner} leads the season series ${wH2H}-${lH2H} against ${loser}.`);
+    else if (lH2H > wH2H) parts.push(`Despite the loss, ${loser} still leads the season series ${lH2H}-${wH2H}.`);
+    else parts.push(`The season series is tied ${wH2H}-${lH2H}.`);
+  }
+
+  return parts.join(" ");
+}
+
+function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
   const [showRecap, setShowRecap] = useState(false);
   const aWin = g.aScore > g.hScore, hWin = g.hScore > g.aScore;
-  const recap = FAKE_RECAPS.default(g.away, g.aScore, g.home, g.hScore);
+  const recap = buildRecap(g, allTeams, scores);
   return (
     <>
       {showRecap && (
@@ -657,7 +689,7 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched }) {
                 <span onClick={() => setTab("scores")} style={{color:"#0057FF",fontWeight:700,fontSize:13,cursor:"pointer",textDecoration:"none"}}>All Scores →</span>
               </div>
               <div className="scores-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10,gridAutoRows:"1fr"}}>
-                {recent.slice(0,6).map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} />)}
+                {recent.slice(0,6).map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} allTeams={allTeams} scores={scores} />)}
               </div>
             </div>
             <div>
@@ -703,7 +735,7 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched }) {
 }
 
 /* ─── SCORES PAGE ─────────────────────────────────────────────────────────  */
-function ScoresPage({ setTab, setTeamDetail, scores }) {
+function ScoresPage({ setTab, setTeamDetail, scores, allTeams }) {
   const [wk,setWk] = useState(0);
   const goTeam = (name) => { setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); };
   return (
@@ -713,7 +745,7 @@ function ScoresPage({ setTab, setTeamDetail, scores }) {
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(300px,100%),1fr))",gap:12}}>
-          {(scores[wk]?.games || []).map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} />)}
+          {(scores[wk]?.games || []).map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} allTeams={allTeams} scores={scores} />)}
         </div>
       </div>
     </div>
@@ -868,7 +900,7 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
             <div>
               <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:26,textTransform:"uppercase",color:"#111",marginBottom:14}}>Recent Results</h2>
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
-                {teamGames.map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} />)}
+                {teamGames.map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} allTeams={allTeams} scores={scores} />)}
               </div>
             </div>
           )}
@@ -1524,7 +1556,7 @@ export default function App() {
       <div style={{position:"relative",zIndex:200,overflow:"hidden",width:"100%"}}><Ticker setTab={handleSetTab} sched={sched} /></div>
       <div style={{position:"sticky",top:0,zIndex:300,overflow:"hidden",width:"100%"}}><Navbar tab={tab} setTab={handleSetTab} /></div>
       {tab==="home"      && <HomePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} allTeams={allTeams} scores={scores} sched={sched} />}
-      {tab==="scores"    && <ScoresPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} scores={scores} />}
+      {tab==="scores"    && <ScoresPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} scores={scores} allTeams={allTeams} />}
       {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} sched={sched} />}
       {tab==="standings" && <StandingsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} />}
       {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} />}
