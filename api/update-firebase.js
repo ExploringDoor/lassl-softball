@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { parsed, gameId, awayTeamId, homeTeamId, date, week, field, recap } = req.body;
-  const FB_KEY = process.env.FIREBASE_API_KEY || 'AIzaSyA5ArGAOv6U2IRit574Qc4hTtvcJCwHOtE';
+  const FB_KEY = process.env.FIREBASE_API_KEY;
   const FB_PROJECT = 'la-softball';
   const FB_BASE = `https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents`;
 

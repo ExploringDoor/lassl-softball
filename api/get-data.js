@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const FB_KEY = process.env.FIREBASE_API_KEY || 'AIzaSyA5ArGAOv6U2IRit574Qc4hTtvcJCwHOtE';
+  const FB_KEY = process.env.FIREBASE_API_KEY;
   const FB_PROJECT = 'la-softball';
   const FB_BASE = `https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents`;
 
