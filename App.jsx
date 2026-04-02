@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const L_LEAGUE = "/league2.png";
 const L_VBS    = "/2.png";
@@ -52,9 +52,144 @@ const DIV = {
     ]},
 };
 
-const ALL_TEAMS = Object.entries(DIV).flatMap(([dk,div]) =>
+const ALL_TEAMS_STATIC = Object.entries(DIV).flatMap(([dk,div]) =>
   div.teams.map(t => ({...t, divKey:dk, divName:div.name, divAccent:div.accent}))
 );
+
+/* ─── DIVISION MAPPING (team name → division key) ─────────────────────── */
+const TEAM_DIV_MAP = {};
+Object.entries(DIV).forEach(([dk, div]) => {
+  div.teams.forEach(t => { TEAM_DIV_MAP[t.name] = dk; });
+});
+
+/* ─── FIREBASE DATA TRANSFORMER ───────────────────────────────────────── */
+function buildLiveData(fbTeams, fbGames) {
+  // Build DIV from Firebase teams
+  const liveDIV = JSON.parse(JSON.stringify(DIV)); // deep clone defaults
+
+  // Update team stats from Firebase
+  for (const fbT of fbTeams) {
+    const teamName = fbT.name;
+    const divKey = fbT.div || TEAM_DIV_MAP[teamName];
+    if (!divKey || !liveDIV[divKey]) continue;
+    const slot = liveDIV[divKey].teams.find(t => t.name === teamName || t.full === teamName);
+    if (!slot) continue;
+    slot.w = fbT.w ?? slot.w;
+    slot.l = fbT.l ?? slot.l;
+    slot.t = fbT.t ?? slot.t ?? 0;
+    const w = slot.w, l = slot.l;
+    slot.pct = (w + l) > 0 ? (w / (w + l)).toFixed(3).replace(/^0/, '') : ".000";
+    slot.gp = (fbT.gp ?? (w + l + (slot.t || 0)));
+    slot.rs = fbT.rs ?? slot.rs;
+    slot.ra = fbT.ra ?? slot.ra;
+    const d = slot.rs - slot.ra;
+    slot.diff = d > 0 ? `+${d}` : d === 0 ? "0" : `${d}`;
+    slot.fbId = fbT.id;
+  }
+
+  // Re-seed each division by win pct
+  Object.values(liveDIV).forEach(div => {
+    div.teams.sort((a, b) => parseFloat(b.pct) - parseFloat(a.pct));
+    div.teams.forEach((t, i) => { t.seed = i + 1; });
+  });
+
+  // Build team ID→name lookup
+  const idToName = {};
+  for (const t of fbTeams) { idToName[t.id] = t.name; }
+
+  // Build SCORES from completed Firebase games
+  const doneGames = fbGames.filter(g => g.done);
+  const weekMap = {};
+  for (const g of doneGames) {
+    const wk = g.wk || 0;
+    if (!weekMap[wk]) weekMap[wk] = { week: g.date ? `Week ${wk} – ${g.date}` : `Week ${wk}`, games: [] };
+    const awayName = idToName[g.away] || g.away;
+    const homeName = idToName[g.home] || g.home;
+    weekMap[wk].games.push({
+      away: awayName, aScore: g.away_score ?? 0,
+      home: homeName, hScore: g.home_score ?? 0,
+      div: findDivLabel(awayName, homeName),
+      note: g.note || undefined,
+    });
+  }
+  const liveScores = Object.entries(weekMap)
+    .sort(([a], [b]) => Number(b) - Number(a))
+    .map(([, v]) => v);
+
+  // Build SCHED from upcoming (not done) Firebase games
+  const upGames = fbGames.filter(g => !g.done);
+  const schedMap = {};
+  for (const g of upGames) {
+    const wk = g.wk || 0;
+    if (!schedMap[wk]) schedMap[wk] = { label: g.date ? `Week ${wk} – ${g.date}` : `Week ${wk}`, fieldMap: {} };
+    const fieldName = g.field || "TBD";
+    if (!schedMap[wk].fieldMap[fieldName]) schedMap[wk].fieldMap[fieldName] = [];
+    schedMap[wk].fieldMap[fieldName].push({
+      time: g.time || "TBD",
+      away: idToName[g.away] || g.away,
+      home: idToName[g.home] || g.home,
+    });
+  }
+  const liveSched = Object.entries(schedMap)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([, v]) => ({
+      label: v.label,
+      fields: Object.entries(v.fieldMap).map(([name, games]) => ({ name, games })),
+    }));
+
+  return { liveDIV, liveScores, liveSched };
+}
+
+function findDivLabel(away, home) {
+  const dA = TEAM_DIV_MAP[away], dB = TEAM_DIV_MAP[home];
+  if (dA && dB && dA === dB) return dA;
+  if (dA && dB) return `${dA}/${dB}`;
+  return dA || dB || "";
+}
+
+/* ─── DATA HOOK ────────────────────────────────────────────────────────── */
+function useLiveData() {
+  const [data, setData] = useState({ div: DIV, scores: SCORES, sched: SCHED, rosters: TEAM_ROSTERS, loading: true, live: false });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/get-data')
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(({ teams, games, players }) => {
+        if (cancelled) return;
+        const { liveDIV, liveScores, liveSched } = buildLiveData(teams, games);
+
+        // Build rosters from players
+        const liveRosters = { ...TEAM_ROSTERS };
+        const idToName = {};
+        for (const t of teams) idToName[t.id] = t.name;
+        const teamPlayers = {};
+        for (const p of players) {
+          const tName = idToName[p.team] || p.team;
+          if (!teamPlayers[tName]) teamPlayers[tName] = [];
+          teamPlayers[tName].push(p.name);
+        }
+        Object.entries(teamPlayers).forEach(([name, roster]) => {
+          if (roster.length > 0) liveRosters[name] = roster;
+        });
+
+        setData({
+          div: liveDIV,
+          scores: liveScores.length > 0 ? liveScores : SCORES,
+          sched: liveSched.length > 0 ? liveSched : SCHED,
+          rosters: liveRosters,
+          loading: false,
+          live: true,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setData(d => ({ ...d, loading: false, live: false }));
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  return data;
+}
 
 const TEAM_COLORS = {
   "VBS":"#1d4ed8","AAE A's":"#b45309","AAE Menchwarmers":"#b45309",
@@ -319,8 +454,8 @@ function UpcomingCard({ away, home, time, date, field, isNext }) {
 }
 
 /* ─── TICKER ─────────────────────────────────────────────────────────────── */
-function Ticker({ setTab }) {
-  const games = SCHED[0].fields.flatMap(f => f.games.map(g => ({...g, field:f.name})));
+function Ticker({ setTab, sched }) {
+  const games = (sched[0]?.fields || []).flatMap(f => f.games.map(g => ({...g, field:f.name})));
   return (
     <div style={{background:"#001a6e",borderBottom:"2px solid #0057FF",display:"flex",alignItems:"stretch",overflow:"hidden"}}>
       <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 16px",borderRight:"1px solid rgba(255,255,255,0.15)",flexShrink:0}}>
@@ -382,10 +517,10 @@ function Navbar({ tab, setTab }) {
 }
 
 /* ─── HOME PAGE ──────────────────────────────────────────────────────────── */
-function HomePage({ setTab }) {
-  const topTeams = [...ALL_TEAMS].sort((a,b) => parseFloat(b.pct) - parseFloat(a.pct)).slice(0,8);
-  const nextGames = SCHED[0].fields.flatMap(f => f.games.map(g => ({...g,field:f.name}))).slice(0,5);
-  const recent = SCORES[0].games;
+function HomePage({ setTab, allTeams, scores, sched }) {
+  const topTeams = [...allTeams].sort((a,b) => parseFloat(b.pct) - parseFloat(a.pct)).slice(0,8);
+  const nextGames = (sched[0]?.fields || []).flatMap(f => f.games.map(g => ({...g,field:f.name}))).slice(0,5);
+  const recent = scores[0]?.games || [];
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
       {/* HERO */}
@@ -474,16 +609,16 @@ function HomePage({ setTab }) {
 }
 
 /* ─── SCORES PAGE ─────────────────────────────────────────────────────────  */
-function ScoresPage() {
+function ScoresPage({ scores }) {
   const [wk,setWk] = useState(0);
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
       <PageHero label="2026 Season" title="Scores">
-        <TabBar items={SCORES.map(s=>s.week)} active={wk} onChange={setWk} />
+        <TabBar items={scores.map(s=>s.week)} active={wk} onChange={setWk} />
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:12}}>
-          {SCORES[wk].games.map((g,i) => <FinalCard key={i} g={g} />)}
+          {(scores[wk]?.games || []).map((g,i) => <FinalCard key={i} g={g} />)}
         </div>
       </div>
     </div>
@@ -491,15 +626,15 @@ function ScoresPage() {
 }
 
 /* ─── SCHEDULE PAGE ───────────────────────────────────────────────────────── */
-function SchedulePage() {
+function SchedulePage({ sched }) {
   const [wk,setWk] = useState(0);
-  const week = SCHED[wk];
+  const week = sched[wk] || { label: "", fields: [] };
   const games = week.fields.flatMap(f => f.games.map(g => ({...g,field:f.name})));
   const dateStr = week.label.split("–")[1]?.trim()||"";
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
       <PageHero label="2026 Season" title="Schedule" subtitle="Away team first (1B dugout) · Home team second (3B dugout)">
-        <TabBar items={SCHED.map(s=>s.label)} active={wk} onChange={setWk} />
+        <TabBar items={sched.map(s=>s.label)} active={wk} onChange={setWk} />
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -511,13 +646,13 @@ function SchedulePage() {
 }
 
 /* ─── STANDINGS PAGE ──────────────────────────────────────────────────────── */
-function StandingsPage() {
+function StandingsPage({ div: divData }) {
   const [dk,setDk] = useState("A");
-  const div = DIV[dk];
+  const div = divData[dk];
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
       <PageHero label="2026 Season" title="Standings">
-        <TabBar items={Object.keys(DIV).map(d=>`Div ${d}`)} active={Object.keys(DIV).indexOf(dk)} onChange={i => setDk(Object.keys(DIV)[i])} />
+        <TabBar items={Object.keys(divData).map(d=>`Div ${d}`)} active={Object.keys(divData).indexOf(dk)} onChange={i => setDk(Object.keys(divData)[i])} />
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
         <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
@@ -553,13 +688,13 @@ function StandingsPage() {
 }
 
 /* ─── TEAM DETAIL PAGE ────────────────────────────────────────────────────── */
-function TeamDetailPage({ teamName, onBack }) {
-  const team = ALL_TEAMS.find(t => t.name === teamName);
-  const roster = TEAM_ROSTERS[teamName] || [];
+function TeamDetailPage({ teamName, onBack, div: divData, allTeams, scores, sched, rosters }) {
+  const team = allTeams.find(t => t.name === teamName);
+  const roster = rosters[teamName] || [];
   if (!team) return null;
   const color = TEAM_COLORS[teamName] || "#0057FF";
-  const teamGames = SCORES.flatMap(w => w.games.filter(g => g.away===teamName||g.home===teamName)).slice(0,5);
-  const upcoming = SCHED[0].fields.flatMap(f => f.games.map(g=>({...g,field:f.name}))).filter(g=>g.away===teamName||g.home===teamName);
+  const teamGames = scores.flatMap(w => w.games.filter(g => g.away===teamName||g.home===teamName)).slice(0,5);
+  const upcoming = (sched[0]?.fields || []).flatMap(f => f.games.map(g=>({...g,field:f.name}))).filter(g=>g.away===teamName||g.home===teamName);
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
       <div style={{background:`linear-gradient(135deg, ${color}15 0%, #fff 60%)`,borderBottom:"3px solid #0057FF",padding:"32px clamp(12px,3vw,40px) 0"}}>
@@ -648,7 +783,7 @@ function TeamDetailPage({ teamName, onBack }) {
             <div style={{padding:"14px 16px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
               <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{team.divName}</span>
             </div>
-            {DIV[team.divKey].teams.map((t,i) => (
+            {divData[team.divKey].teams.map((t,i) => (
               <div key={t.name} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",borderBottom:"1px solid rgba(0,0,0,0.04)",background:t.name===teamName?"rgba(0,87,255,0.04)":"transparent"}}>
                 <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,color:i===0?"#0057FF":"rgba(0,0,0,0.25)",width:20,textAlign:"center"}}>{t.seed}</span>
                 <TLogo name={t.name} size={28} />
@@ -664,12 +799,12 @@ function TeamDetailPage({ teamName, onBack }) {
 }
 
 /* ─── TEAMS PAGE ─────────────────────────────────────────────────────────── */
-function TeamsPage({ setTab, setTeamDetail }) {
+function TeamsPage({ setTab, setTeamDetail, div: divData, allTeams }) {
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
       <PageHero label="2026 Season" title="Team Directory">
         <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:16,paddingBottom:2}}>
-          {ALL_TEAMS.sort((a,b)=>parseFloat(b.pct)-parseFloat(a.pct)).map(t => {
+          {[...allTeams].sort((a,b)=>parseFloat(b.pct)-parseFloat(a.pct)).map(t => {
             const color = TEAM_COLORS[t.name]||"#0057FF";
             return (
               <button key={t.name} onClick={() => setTeamDetail(t.name)} style={{
@@ -688,7 +823,7 @@ function TeamsPage({ setTab, setTeamDetail }) {
         </div>
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
-        {Object.entries(DIV).map(([dk,div]) => (
+        {Object.entries(divData).map(([dk,div]) => (
           <div key={dk} style={{marginBottom:36}}>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
               <div style={{width:4,height:28,background:div.accent,borderRadius:2}} />
@@ -831,6 +966,11 @@ function Footer({ setTab }) {
 export default function App() {
   const [tab, setTab] = useState("home");
   const [teamDetail, setTeamDetail] = useState(null);
+  const { div, scores, sched, rosters, loading, live } = useLiveData();
+
+  const allTeams = Object.entries(div).flatMap(([dk,d]) =>
+    d.teams.map(t => ({...t, divKey:dk, divName:d.name, divAccent:d.accent}))
+  );
 
   const handleSetTab = (t) => { setTab(t); setTeamDetail(null); };
   const handleTeamDetail = (name) => { setTeamDetail(name); setTab("teams"); };
@@ -854,14 +994,19 @@ export default function App() {
           .scores-grid{grid-template-columns:1fr!important;}
         }
       `}</style>
-      <div style={{position:"relative",zIndex:200}}><Ticker setTab={handleSetTab} /></div>
+      {live && (
+        <div style={{background:"#22c55e",padding:"4px 16px",textAlign:"center",fontSize:11,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"#fff"}}>
+          Live Data Connected
+        </div>
+      )}
+      <div style={{position:"relative",zIndex:200}}><Ticker setTab={handleSetTab} sched={sched} /></div>
       <div style={{position:"sticky",top:0,zIndex:300}}><Navbar tab={tab} setTab={handleSetTab} /></div>
-      {tab==="home"      && <HomePage setTab={handleSetTab} />}
-      {tab==="scores"    && <ScoresPage />}
-      {tab==="schedule"  && <SchedulePage />}
-      {tab==="standings" && <StandingsPage />}
-      {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} />}
-      {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => setTeamDetail(null)} />}
+      {tab==="home"      && <HomePage setTab={handleSetTab} allTeams={allTeams} scores={scores} sched={sched} />}
+      {tab==="scores"    && <ScoresPage scores={scores} />}
+      {tab==="schedule"  && <SchedulePage sched={sched} />}
+      {tab==="standings" && <StandingsPage div={div} />}
+      {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} />}
+      {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => setTeamDetail(null)} div={div} allTeams={allTeams} scores={scores} sched={sched} rosters={rosters} />}
       {tab==="rules"     && <RulesPage />}
       <Footer setTab={handleSetTab} />
     </div>
