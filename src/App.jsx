@@ -169,7 +169,7 @@ function useLiveData() {
         setData({
           div: liveDIV,
           scores: liveScores.length > 0 ? liveScores : SCORES,
-          sched: liveSched.length > 0 ? liveSched : SCHED,
+          sched: SCHED,
           rosters: liveRosters,
           loading: false,
           live: true,
