@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DVSL Admin — Box Score Entry</title>
+<title>LASSL Admin — Box Score Entry</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -136,7 +136,7 @@ body{background:var(--bg);color:var(--white);font-family:'Segoe UI',system-ui,sa
 </head>
 <body>
 <nav class="nav">
-  <div><div class="nav-logo">⬡ DVSL Admin</div><div class="nav-sub">Box Score Entry</div></div>
+  <div><div class="nav-logo">⬡ LASSL Admin</div><div class="nav-sub">Box Score Entry</div></div>
   <div class="conn"><div class="conn-dot" id="connDot"></div><div class="conn-txt" id="connTxt">Connecting...</div></div>
 </nav>
 <div class="wrap">
@@ -413,8 +413,7 @@ window.handlePdfDrop=async function(file){
       const page=await pdf.getPage(i);
       const content=await page.getTextContent();
       const pageText=content.items.map(item=>item.str).join(' ');
-      fullText+=pageText+'
-';
+      fullText+=pageText+'\n';
     }
 
     // Step 2: Send to Claude via Vercel serverless function

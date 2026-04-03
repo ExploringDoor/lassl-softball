@@ -572,7 +572,7 @@ function Ticker({ setTab, sched }) {
 /* ─── NAVBAR ─────────────────────────────────────────────────────────────── */
 function Navbar({ tab, setTab }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["subs","Sub Board"],["rules","Rules"],["admin","⚙ Admin"]];
+  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["gallery","Gallery"],["subs","Sub Board"],["rules","Rules"],["admin","⚙ Admin"]];
   const handleNav = (id) => { setTab(id); setMenuOpen(false); window.scrollTo(0,0); };
   return (
     <>
@@ -1030,6 +1030,47 @@ function TeamsPage({ setTab, setTeamDetail, div: divData, allTeams }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* ─── GALLERY PAGE ───────────────────────────────────────────────────────── */
+const GALLERY_PHOTOS = [
+  { src:"/gallery/DSC_0889-1-1024x680.jpg", caption:"Shomrei Torah — 2022" },
+  { src:"/gallery/IMG_2613-1-1024x768.jpg", caption:"Santa Monica Synagogue — 2022" },
+  { src:"/gallery/IMG_2614-1-1024x768.jpg", caption:"Leo Baeck — 2022" },
+  { src:"/gallery/IMG_2610-1024x768.jpg", caption:"Ron and Avery — Commissioners" },
+];
+
+function GalleryPage() {
+  const [selected, setSelected] = useState(null);
+  return (
+    <div style={{maxWidth:1100,margin:"0 auto",padding:"clamp(16px,4vw,48px) clamp(12px,3vw,32px)"}}>
+      <div style={{textAlign:"center",marginBottom:32}}>
+        <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(28px,5vw,44px)",letterSpacing:".04em",textTransform:"uppercase",color:"#001a6e",margin:0}}>Gallery</h1>
+        <p style={{fontFamily:"'Barlow',sans-serif",color:"#777",fontSize:14,marginTop:6}}>Highlights from LASSL seasons</p>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
+        {GALLERY_PHOTOS.map((p,i) => (
+          <div key={i} onClick={() => setSelected(i)} style={{cursor:"pointer",borderRadius:12,overflow:"hidden",boxShadow:"0 2px 12px rgba(0,0,0,0.10)",background:"#fff",transition:"transform .15s,box-shadow .15s"}}
+            onMouseEnter={e => { e.currentTarget.style.transform="scale(1.02)"; e.currentTarget.style.boxShadow="0 6px 24px rgba(0,0,0,0.18)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform="scale(1)"; e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,0.10)"; }}>
+            <img src={p.src} alt={p.caption} style={{width:"100%",height:220,objectFit:"cover",display:"block"}} />
+            <div style={{padding:"10px 14px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:".03em",color:"#333"}}>{p.caption}</div>
+          </div>
+        ))}
+      </div>
+      {selected !== null && (
+        <div onClick={() => setSelected(null)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.85)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",padding:20}}>
+          <div style={{position:"relative",maxWidth:"90vw",maxHeight:"90vh"}}>
+            <img src={GALLERY_PHOTOS[selected].src} alt={GALLERY_PHOTOS[selected].caption} style={{maxWidth:"90vw",maxHeight:"85vh",objectFit:"contain",borderRadius:8}} />
+            <div style={{textAlign:"center",color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,marginTop:12}}>{GALLERY_PHOTOS[selected].caption}</div>
+            <button onClick={() => setSelected(null)} style={{position:"absolute",top:-12,right:-12,background:"#fff",border:"none",borderRadius:"50%",width:32,height:32,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.3)"}}>✕</button>
+            {selected > 0 && <button onClick={e => { e.stopPropagation(); setSelected(selected-1); }} style={{position:"absolute",left:-16,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.9)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,cursor:"pointer",boxShadow:"0 2px 8px rgba(0,0,0,0.3)"}}>‹</button>}
+            {selected < GALLERY_PHOTOS.length-1 && <button onClick={e => { e.stopPropagation(); setSelected(selected+1); }} style={{position:"absolute",right:-16,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.9)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,cursor:"pointer",boxShadow:"0 2px 8px rgba(0,0,0,0.3)"}}>›</button>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1561,6 +1602,7 @@ export default function App() {
       {tab==="standings" && <StandingsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} />}
       {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} />}
       {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => { setTeamDetail(null); window.scrollTo(0,0); }} setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} scores={scores} sched={sched} rosters={rosters} />}
+      {tab==="gallery"   && <GalleryPage />}
       {tab==="subs"      && <SubBoardPage />}
       {tab==="admin"     && <AdminPage />}
       {tab==="rules"     && <RulesPage />}
