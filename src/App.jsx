@@ -1521,6 +1521,19 @@ function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
 
+  // Sign-ups
+  const [signups, setSignups] = useState([]);
+  const [signupsLoading, setSignupsLoading] = useState(false);
+  const [showSignups, setShowSignups] = useState(false);
+
+  const loadSignups = () => {
+    setSignupsLoading(true);
+    fetch('/api/get-signups')
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(({ signups: data }) => { setSignups(data || []); setSignupsLoading(false); })
+      .catch(() => { setSignupsLoading(false); });
+  };
+
   // Load data from Firebase
   const loadData = () => {
     setLoading(true);
@@ -1740,6 +1753,52 @@ function AdminPage() {
             </div>
           </Card>
         )}
+
+        {/* Sign-Ups Viewer */}
+        <Card>
+          <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Player Sign-Ups</div>
+            <button onClick={() => { setShowSignups(!showSignups); if (!showSignups && signups.length === 0) loadSignups(); }}
+              style={{padding:"6px 14px",background:showSignups?"rgba(0,87,255,0.08)":"#f8f9fb",border:"1px solid rgba(0,0,0,0.1)",borderRadius:6,fontSize:13,fontWeight:600,cursor:"pointer",color:showSignups?"#0057FF":"#555"}}>
+              {showSignups ? "Hide" : "View"} ({signups.length || "..."})
+            </button>
+          </div>
+          {showSignups && (
+            <div style={{padding:"16px 20px"}}>
+              {signupsLoading ? (
+                <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",textAlign:"center",padding:20}}>Loading sign-ups...</div>
+              ) : signups.length === 0 ? (
+                <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",textAlign:"center",padding:20}}>No sign-ups yet.</div>
+              ) : (
+                <div style={{overflowX:"auto"}}>
+                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+                    <thead>
+                      <tr style={{borderBottom:"2px solid rgba(0,0,0,0.1)",textAlign:"left"}}>
+                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Name</th>
+                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Team</th>
+                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Email</th>
+                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Phone</th>
+                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Preferences</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {signups.map((s, i) => (
+                        <tr key={i} style={{borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
+                          <td style={{padding:"10px",fontWeight:600,color:"#111"}}>{s.name}</td>
+                          <td style={{padding:"10px",color:"#555"}}>{s.team}</td>
+                          <td style={{padding:"10px",color:"#555"}}><a href={`mailto:${s.email}`} style={{color:"#0057FF"}}>{s.email}</a></td>
+                          <td style={{padding:"10px",color:"#555"}}>{s.phone}</td>
+                          <td style={{padding:"10px",color:"#555",fontSize:11}}>{(s.preferences || []).join(", ") || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",marginTop:12}}>{signups.length} player{signups.length !== 1 ? "s" : ""} signed up</div>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );
