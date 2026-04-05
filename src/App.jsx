@@ -1700,7 +1700,7 @@ function CaptainPage() {
                           fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
                           background:g.done?"#f59e0b":"#0057FF",color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",whiteSpace:"nowrap",
                         }}>{g.done ? "Edit Score" : "Quick Score"}</button>
-                        {!g.done && <a href="/live-score.html" target="_blank" rel="noopener noreferrer" style={{
+                        {!g.done && <a href={`/live-score.html?game=${g.id}`} target="_blank" rel="noopener noreferrer" style={{
                           fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
                           background:"none",color:"#0057FF",border:"1px solid #0057FF",borderRadius:6,padding:"7px 16px",cursor:"pointer",textDecoration:"none",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
                         }}>⚡ Live Score</a>}

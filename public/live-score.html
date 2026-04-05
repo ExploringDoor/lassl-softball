@@ -1109,6 +1109,13 @@ window.goBack = function() {
 };
 
 window.goToPickScreen = function() {
+  // If opened from captain page with ?game= param, go back to captain page
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('game') && window.history.length > 1) {
+    window.close(); // Try closing tab first (works if opened via target=_blank)
+    window.history.back(); // Fallback
+    return;
+  }
   showScreen('screen-pick');
   renderPickScreen();
 };
