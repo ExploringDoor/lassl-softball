@@ -1667,6 +1667,10 @@ function CaptainPage() {
                           fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
                           background:g.done?"#f59e0b":"#0057FF",color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",whiteSpace:"nowrap",
                         }}>{g.done ? "Edit Score" : "Quick Score"}</button>
+                        {g.done && <button onClick={async () => { if (!confirm('Clear this score and reset game to pending? Standings will be reversed.')) return; setCaptainMsg(null); try { const r = await fetch('/api/clear-score', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({gameId:g.id}) }); const d = await r.json(); if (d.success) { setCaptainMsg({ok:true,text:'Score cleared!'}); loadData(); } else { setCaptainMsg({ok:false,text:d.error||'Failed'}); } } catch(e) { setCaptainMsg({ok:false,text:e.message}); } }} style={{
+                          fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
+                          background:"none",color:"#dc2626",border:"1px solid #dc2626",borderRadius:6,padding:"7px 16px",cursor:"pointer",whiteSpace:"nowrap",
+                        }}>Clear Score</button>}
                         {!g.done && <a href={`/live-score.html?game=${g.id}`} target="_blank" rel="noopener noreferrer" style={{
                           fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
                           background:"none",color:"#0057FF",border:"1px solid #0057FF",borderRadius:6,padding:"7px 16px",cursor:"pointer",textDecoration:"none",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
