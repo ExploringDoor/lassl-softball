@@ -1047,62 +1047,29 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
 
 /* ─── TEAMS PAGE ─────────────────────────────────────────────────────────── */
 function TeamsPage({ setTab, setTeamDetail, div: divData, allTeams }) {
-  const [dk, setDk] = useState("A");
-  const div = divData[dk];
-  const divKeys = Object.keys(divData);
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
-      {/* Big division letter selector */}
-      <div style={{background:"#001a6e",borderBottom:"4px solid #0057FF",padding:"32px 20px 28px",textAlign:"center"}}>
-        <div style={{fontSize:11,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"rgba(255,255,255,0.4)",marginBottom:16}}>2026 Season · Select Division</div>
-        <div style={{display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}}>
-          {divKeys.map(d => (
-            <button key={d} onClick={() => setDk(d)} style={{
-              fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:48,
-              width:80,height:80,borderRadius:12,border:"none",cursor:"pointer",
-              background:dk===d?"#0057FF":"rgba(255,255,255,0.08)",
-              color:dk===d?"#FFD700":"rgba(255,255,255,0.4)",
-              transition:"all .15s",letterSpacing:".04em",
-              boxShadow:dk===d?"0 4px 20px rgba(0,87,255,0.4)":"none",
-            }}>{d}</button>
-          ))}
+      <div style={{background:"#fff",borderBottom:"3px solid #0057FF",padding:"28px clamp(12px,3vw,40px) 24px"}}>
+        <div style={{maxWidth:1200,margin:"0 auto"}}>
+          <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(40px,7vw,70px)",textTransform:"uppercase",color:"#111",lineHeight:1}}>2026 <span style={{color:"#0057FF"}}>Teams</span></h1>
         </div>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,color:"rgba(255,255,255,0.5)",marginTop:14,letterSpacing:".06em",textTransform:"uppercase"}}>{div.name} · {div.teams.length} Teams</div>
       </div>
-
-      {/* Full team list */}
-      <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
-        {div.teams.map((t,i) => {
-          const color = TEAM_COLORS[t.name]||div.accent;
-          return (
-            <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{
-              background:"#fff",border:"1px solid rgba(0,0,0,0.08)",borderLeft:`4px solid ${color}`,
-              borderRadius:12,padding:"20px 24px",marginBottom:12,cursor:"pointer",
-              transition:"all .15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",
-            }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow=`0 4px 20px ${color}18`}
-            onMouseLeave={e => e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"}>
-              <div style={{display:"flex",alignItems:"center",gap:16}}>
-                <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,color:i===0?"#0057FF":"rgba(0,0,0,0.15)",width:30,flexShrink:0,textAlign:"center"}}>{t.seed}</span>
-                <TLogo name={t.name} size={160} />
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
-                  <div style={{display:"flex",gap:16,marginTop:6,fontSize:13,color:"rgba(0,0,0,0.4)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:600}}>
-                    <span>{t.pct} PCT</span>
-                    <span>{t.gp} GP</span>
-                    <span>{t.rs} RF</span>
-                    <span>{t.ra} RA</span>
-                    <span style={{color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626",fontWeight:700}}>{t.diff}</span>
-                  </div>
+      <div style={{maxWidth:1200,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
+        {Object.entries(divData).map(([dk, div]) => (
+          <div key={dk} style={{marginBottom:32}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:4}}>Division {dk}</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))"}}>
+              {div.teams.map(t => (
+                <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 8px",borderBottom:"1px solid rgba(0,0,0,0.05)",cursor:"pointer",transition:"background .12s"}}
+                  onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.04)"}
+                  onMouseLeave={e => e.currentTarget.style.background="transparent"}>
+                  <TLogo name={t.name} size={40} />
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,color:"#111"}}>{t.name}</span>
                 </div>
-                <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:36,color,lineHeight:1}}>{t.w}-{t.l}</div>
-                </div>
-                <span style={{fontSize:16,color:"rgba(0,0,0,0.2)",flexShrink:0}}>→</span>
-              </div>
+              ))}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );
