@@ -570,10 +570,10 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
             <span style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.2)",textTransform:"uppercase"}}>{g.div}</span>
           </div>
         </div>
-        <div style={{padding:"8px 14px 12px"}}>
+        <div style={{padding:"6px 14px 8px"}}>
           {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
-            <div key={i} onClick={() => onTeamClick?.(side.name)} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i===0?8:0,cursor:onTeamClick?"pointer":"default",width:"100%"}}>
-              <TLogo name={side.name} size={100} />
+            <div key={i} onClick={() => onTeamClick?.(side.name)} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i===0?2:0,cursor:onTeamClick?"pointer":"default",width:"100%"}}>
+              <TLogo name={side.name} size={60} />
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:22,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>
                 {side.name}
               </div>
@@ -629,7 +629,7 @@ function Ticker({ setTab, sched }) {
             <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",color:"#ff6b6b",textTransform:"uppercase",whiteSpace:"nowrap"}}>{g.time}</div>
             {[g.away,g.home].map((t,j) => (
               <div key={j} style={{display:"flex",alignItems:"center",gap:5}}>
-                <TLogo name={t} size={112} />
+                <TLogo name={t} size={18} />
                 <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:12,color:"#fff",letterSpacing:".02em",whiteSpace:"nowrap"}}>{t}</span>
               </div>
             ))}
@@ -800,11 +800,11 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched, div }) {
                 ))}
               </div>
               {(div[sidebarDiv]?.teams || []).map((t,i) => (
-                <div key={t.name} onClick={() => { setTeamDetail(t.name); setTab("teams"); }} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderBottom:"1px solid rgba(0,0,0,0.04)",cursor:"pointer",transition:"background .15s"}}
+                <div key={t.name} onClick={() => { setTeamDetail(t.name); setTab("teams"); }} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 12px",borderBottom:"1px solid rgba(0,0,0,0.04)",cursor:"pointer",transition:"background .15s"}}
                   onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
                   onMouseLeave={e => e.currentTarget.style.background="transparent"}>
                   <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,color:i===0?"#0057FF":"rgba(0,0,0,0.2)",width:18,flexShrink:0,textAlign:"center"}}>{t.seed}</span>
-                  <TLogo name={t.name} size={72} />
+                  <TLogo name={t.name} size={36} />
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:15,color:"#111",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{t.name}</div>
                   </div>
