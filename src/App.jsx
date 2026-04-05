@@ -1050,24 +1050,29 @@ function TeamsPage({ setTab, setTeamDetail, div: divData, allTeams }) {
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <div style={{background:"#fff",borderBottom:"3px solid #0057FF",padding:"28px clamp(12px,3vw,40px) 24px"}}>
-        <div style={{maxWidth:1200,margin:"0 auto"}}>
+        <div style={{maxWidth:1400,margin:"0 auto"}}>
           <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(40px,7vw,70px)",textTransform:"uppercase",color:"#111",lineHeight:1}}>2026 <span style={{color:"#0057FF"}}>Teams</span></h1>
         </div>
       </div>
-      <div style={{maxWidth:1200,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
+      <div style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
         {Object.entries(divData).map(([dk, div]) => (
-          <div key={dk} style={{marginBottom:32}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:4}}>Division {dk}</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))"}}>
+          <div key={dk} style={{marginBottom:28}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,textTransform:"uppercase",color:"#111",marginBottom:12}}>Division {dk}</div>
+            <div style={{display:"flex",justifyContent:"flex-start",gap:0,flexWrap:"nowrap",overflowX:"auto"}}>
               {div.teams.map(t => (
-                <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 8px",borderBottom:"1px solid rgba(0,0,0,0.05)",cursor:"pointer",transition:"background .12s"}}
-                  onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.04)"}
-                  onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-                  <TLogo name={t.name} size={40} />
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,color:"#111"}}>{t.name}</span>
+                <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{
+                  flex:"1 1 0",minWidth:120,display:"flex",flexDirection:"column",alignItems:"center",
+                  padding:"16px 8px",cursor:"pointer",transition:"background .12s",textAlign:"center",
+                  borderRight:"1px solid rgba(0,0,0,0.06)",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.05)"}
+                onMouseLeave={e => e.currentTarget.style.background="transparent"}>
+                  <TLogo name={t.name} size={80} />
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:15,color:"#111",marginTop:8,textTransform:"uppercase",lineHeight:1.2}}>{t.name}</span>
                 </div>
               ))}
             </div>
+            <div style={{height:1,background:"rgba(0,0,0,0.08)"}} />
           </div>
         ))}
       </div>
