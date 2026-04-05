@@ -1711,61 +1711,132 @@ function AdminPage() {
   // ── CAPTAIN DASHBOARD ──
   if (role === "captain" && captainTeam) {
     const myGames = fbGames.filter(g => teamName(g.away) === captainTeam || teamName(g.home) === captainTeam);
-    const myDone = myGames.filter(g => g.done);
-    const myPending = myGames.filter(g => !g.done);
+    const myWeeks = [...new Set(myGames.map(g => g.wk))].sort((a,b) => a - b);
+
+    // Captain score entry
+    const [captainGame, setCaptainGame] = useState(null);
+    const [captainAway, setCaptainAway] = useState("");
+    const [captainHome, setCaptainHome] = useState("");
+    const [captainSaving, setCaptainSaving] = useState(false);
+    const [captainMsg, setCaptainMsg] = useState(null);
+
+    const handleCaptainSave = async () => {
+      if (!captainGame) return;
+      const aScore = parseInt(captainAway);
+      const hScore = parseInt(captainHome);
+      if (isNaN(aScore) || isNaN(hScore)) { setCaptainMsg({ ok: false, text: "Enter valid scores" }); return; }
+      setCaptainSaving(true);
+      try {
+        const r = await fetch('/api/update-firebase', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            parsed: { awayScore: aScore, homeScore: hScore, awayBatters: [], homeBatters: [], awayPitchers: [], homePitchers: [], linescore: null, notes: '' },
+            gameId: captainGame.id, awayTeamId: captainGame.away, homeTeamId: captainGame.home,
+            date: captainGame.date || '', week: captainGame.wk || 0, field: captainGame.field || '',
+          }),
+        });
+        const data = await r.json();
+        if (data.success) { setCaptainMsg({ ok: true, text: "Score saved!" }); setCaptainGame(null); loadData(); }
+        else setCaptainMsg({ ok: false, text: data.error || "Failed" });
+      } catch (e) { setCaptainMsg({ ok: false, text: e.message }); }
+      setCaptainSaving(false);
+    };
+
     return (
       <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
         <div style={{background:"#001a6e",borderBottom:"3px solid #FFD700",padding:"16px clamp(12px,3vw,40px)"}}>
-          <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",gap:14}}>
+          <div style={{maxWidth:1000,margin:"0 auto",display:"flex",alignItems:"center",gap:14}}>
             <TLogo name={captainTeam} size={56} />
             <div>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#FFD700",textTransform:"uppercase"}}>{captainTeam}</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>Captain Dashboard</div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#FFD700",textTransform:"uppercase"}}>{captainTeam}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.4)"}}>Captain Mode</div>
             </div>
-            <button onClick={() => { setRole(null); setCaptainTeam(null); setAuthed(false); }} style={{marginLeft:"auto",padding:"6px 14px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:13,cursor:"pointer"}}>Log out</button>
+            <button onClick={() => { setRole(null); setCaptainTeam(null); setAuthed(false); }} style={{marginLeft:"auto",padding:"8px 16px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:14,cursor:"pointer"}}>Log out</button>
           </div>
         </div>
-        <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px",display:"flex",flexDirection:"column",gap:16}}>
-          {/* Upcoming games */}
-          <Card>
-            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Upcoming Games</div>
+        <div style={{maxWidth:1000,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
+          <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:36,textTransform:"uppercase",color:"#111",marginBottom:4}}>Scores</h2>
+          <div style={{fontSize:15,color:"rgba(0,0,0,0.4)",marginBottom:24}}>Enter and manage game scores</div>
+
+          {captainMsg && (
+            <div style={{background:captainMsg.ok?"#f0fdf4":"#fef2f2",border:`1px solid ${captainMsg.ok?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:15,fontWeight:600,color:captainMsg.ok?"#166534":"#991b1b"}}>{captainMsg.ok ? "✓" : "✗"} {captainMsg.text}</span>
+              <button onClick={() => setCaptainMsg(null)} style={{marginLeft:"auto",padding:"4px 12px",background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,fontSize:13,cursor:"pointer"}}>Dismiss</button>
             </div>
-            <div style={{padding:"12px 20px"}}>
-              {myPending.length === 0 ? <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",padding:"12px 0"}}>No upcoming games.</div> :
-                myPending.map(g => (
-                  <div key={g.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
-                    <div style={{flex:1}}><span style={{fontWeight:700}}>{teamName(g.away)}</span> vs <span style={{fontWeight:700}}>{teamName(g.home)}</span></div>
-                    <span style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{g.time || "TBD"} · {g.field || "TBD"}</span>
+          )}
+
+          {/* Quick score modal */}
+          {captainGame && (
+            <Card style={{marginBottom:20}}>
+              <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Enter Score</div>
+                <button onClick={() => setCaptainGame(null)} style={{background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,padding:"4px 12px",fontSize:13,cursor:"pointer"}}>Cancel</button>
+              </div>
+              <div style={{padding:"20px"}}>
+                <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:16,alignItems:"center",maxWidth:450,margin:"0 auto"}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>AWAY</div>
+                    <TLogo name={teamName(captainGame.away)} size={50} />
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.away)}</div>
+                    <input type="number" min="0" max="99" placeholder="0" value={captainAway} onChange={e => setCaptainAway(e.target.value)}
+                      style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
                   </div>
-                ))
-              }
-            </div>
-          </Card>
-          {/* Results */}
-          <Card>
-            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Results</div>
-            </div>
-            <div style={{padding:"12px 20px"}}>
-              {myDone.length === 0 ? <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",padding:"12px 0"}}>No results yet.</div> :
-                myDone.map(g => {
-                  const isAway = teamName(g.away) === captainTeam;
-                  const myScore = isAway ? g.away_score : g.home_score;
-                  const oppScore = isAway ? g.home_score : g.away_score;
-                  const opp = isAway ? teamName(g.home) : teamName(g.away);
-                  const won = myScore > oppScore;
+                  <div style={{fontSize:20,fontWeight:700,color:"rgba(0,0,0,0.2)"}}>VS</div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>HOME</div>
+                    <TLogo name={teamName(captainGame.home)} size={50} />
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.home)}</div>
+                    <input type="number" min="0" max="99" placeholder="0" value={captainHome} onChange={e => setCaptainHome(e.target.value)}
+                      style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
+                  </div>
+                </div>
+                <button onClick={handleCaptainSave} disabled={captainSaving}
+                  style={{display:"block",width:"100%",maxWidth:450,margin:"20px auto 0",padding:"14px",background:captainSaving?"#94a3b8":"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,textTransform:"uppercase",cursor:captainSaving?"not-allowed":"pointer"}}>
+                  {captainSaving ? "Saving..." : "Save Score"}
+                </button>
+              </div>
+            </Card>
+          )}
+
+          {myWeeks.map(wk => {
+            const wkGames = myGames.filter(g => g.wk === wk);
+            return (
+              <div key={wk} style={{marginBottom:24}}>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:12}}>Week {wk}</div>
+                {wkGames.map(g => {
+                  const away = teamName(g.away);
+                  const home = teamName(g.home);
                   return (
-                    <div key={g.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
-                      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,color:won?"#22c55e":"#dc2626",width:24}}>{won?"W":"L"}</span>
-                      <span style={{flex:1,fontWeight:600}}>{isAway?"@":""} {opp}</span>
-                      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18}}>{myScore}-{oppScore}</span>
+                    <div key={g.id} style={{background:"#fff",border:"1px solid rgba(0,0,0,0.08)",borderRadius:10,padding:"14px 18px",marginBottom:8,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,minWidth:200}}>
+                        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{away}</span>
+                        <span style={{fontSize:14,color:"rgba(0,0,0,0.3)"}}>@</span>
+                        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{home}</span>
+                      </div>
+                      <span style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{g.date || ""} · {g.time || "TBD"} · {g.field || "TBD"}</span>
+                      {g.done ? (
+                        <span style={{fontSize:14,fontWeight:700,color:"#22c55e",background:"rgba(34,197,94,0.1)",borderRadius:6,padding:"4px 12px"}}>Final {g.away_score}–{g.home_score}</span>
+                      ) : (
+                        <span style={{fontSize:13,fontWeight:700,color:"#f59e0b",background:"rgba(245,158,11,0.1)",borderRadius:6,padding:"4px 10px"}}>Pending</span>
+                      )}
+                      <div style={{display:"flex",gap:6,marginLeft:"auto"}}>
+                        {!g.done && (
+                          <button onClick={() => { setCaptainGame(g); setCaptainAway(""); setCaptainHome(""); setCaptainMsg(null); }} style={{
+                            fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:13,letterSpacing:".04em",textTransform:"uppercase",
+                            background:"#0057FF",color:"#fff",border:"none",borderRadius:6,padding:"8px 14px",cursor:"pointer",whiteSpace:"nowrap",
+                          }}>Quick Score</button>
+                        )}
+                        <a href="/live-score.html" target="_blank" rel="noopener noreferrer" style={{
+                          fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:13,letterSpacing:".04em",textTransform:"uppercase",
+                          background:"none",color:"#0057FF",border:"1px solid #0057FF",borderRadius:6,padding:"7px 14px",cursor:"pointer",textDecoration:"none",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
+                        }}>⚡ Live Score</a>
+                      </div>
                     </div>
                   );
-                })
-              }
-            </div>
-          </Card>
+                })}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
