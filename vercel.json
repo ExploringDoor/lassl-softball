@@ -1,3 +1,6 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+  "rewrites": [
+    { "source": "/live-score.html", "destination": "/live-score.html" },
+    { "source": "/(.*)", "destination": "/" }
+  ]
 }
