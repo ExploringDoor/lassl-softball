@@ -1268,12 +1268,21 @@ function SubBoardPage() {
               </div>
             ) : (
               <div style={{padding:"16px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-                {[["name","Your name","e.g. David Cohen"],["team","Your team","e.g. VBS"],["contact","Phone or email","e.g. 310-555-1234"]].map(([k,label,ph]) => (
-                  <div key={k} style={{display:"flex",flexDirection:"column",gap:4,gridColumn:k==="contact"?"1 / -1":"auto"}}>
-                    <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>{label}</label>
-                    <input placeholder={ph} value={form[k]} onChange={e => setForm({...form,[k]:e.target.value})} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
-                  </div>
-                ))}
+                <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                  <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Your name</label>
+                  <input placeholder="e.g. David Cohen" value={form.name} onChange={e => setForm({...form,name:e.target.value})} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                  <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Your team</label>
+                  <select value={form.team||""} onChange={e => setForm({...form,team:e.target.value})} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}}>
+                    <option value="">Select your team</option>
+                    {ALL_TEAMS_STATIC.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
+                  </select>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:4,gridColumn:"1 / -1"}}>
+                  <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Phone or email</label>
+                  <input placeholder="e.g. 310-555-1234" value={form.contact} onChange={e => setForm({...form,contact:e.target.value})} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
+                </div>
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
                   <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Already playing at</label>
                   <select value={form.playing} onChange={e => setForm({...form,playing:e.target.value})} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}}>
@@ -1363,12 +1372,21 @@ function SubBoardPage() {
               <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginTop:2}}>Set it once. Stays all season.</div>
             </div>
             <div style={{padding:"16px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              {[["name","Your name","e.g. Gary Lerner"],["team","Your team","e.g. Emmanuel"],["contact","Phone or email","e.g. 310-555-1234"]].map(([k,label,ph]) => (
-                <div key={k} style={{display:"flex",flexDirection:"column",gap:4,gridColumn:k==="contact"?"1 / -1":"auto"}}>
-                  <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>{label}</label>
-                  <input placeholder={ph} style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
-                </div>
-              ))}
+              <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Your name</label>
+                <input placeholder="e.g. Gary Lerner" style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Your team</label>
+                <select style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}}>
+                  <option value="">Select your team</option>
+                  {ALL_TEAMS_STATIC.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
+                </select>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:4,gridColumn:"1 / -1"}}>
+                <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>Phone or email</label>
+                <input placeholder="e.g. 310-555-1234" style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:14,background:"#f8f9fb"}} />
+              </div>
               {[["field","Preferred fields",["Any field","Cheviot Hills only","Sepulveda Basin only"]],["times","Preferred times",["Any time","9:00 AM only","11:00 AM only","1:00 PM only","Morning games only"]],["div","Division preference",["Any division","My division only","Any except A"]]].map(([k,label,opts]) => (
                 <div key={k} style={{display:"flex",flexDirection:"column",gap:4}}>
                   <label style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontWeight:600}}>{label}</label>
@@ -1518,8 +1536,11 @@ function SignUpPage({ allTeams }) {
 /* ─── ADMIN PAGE ─────────────────────────────────────────────────────────── */
 function AdminPage() {
   const [authed, setAuthed] = useState(false);
+  const [role, setRole] = useState(null); // 'admin' | 'captain'
+  const [captainTeam, setCaptainTeam] = useState(null);
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState(false);
+  const [adminView, setAdminView] = useState("dashboard"); // dashboard, scores, signups, tracker
 
   // Firebase data
   const [fbTeams, setFbTeams] = useState([]);
@@ -1608,8 +1629,58 @@ function AdminPage() {
     setSaving(false);
   };
 
-  // ── LOGIN SCREEN ──
-  if (!authed) return (
+  // ── ROLE SELECT SCREEN ──
+  if (!role) return (
+    <div style={{minHeight:"100vh",background:"#f2f4f8",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{maxWidth:500,width:"100%"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <img src="/header.png" alt="LASSL" style={{width:200,objectFit:"contain",marginBottom:12}} />
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111"}}>Management Portal</div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <button onClick={() => setRole("admin")} style={{background:"#fff",border:"2px solid #0057FF",borderRadius:16,padding:"32px 20px",cursor:"pointer",textAlign:"center",transition:"all .15s",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
+            <div style={{fontSize:40,marginBottom:8}}>🔧</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#0057FF"}}>Admin</div>
+            <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:4}}>League management</div>
+          </button>
+          <button onClick={() => setRole("captain")} style={{background:"#fff",border:"2px solid #FFD700",borderRadius:16,padding:"32px 20px",cursor:"pointer",textAlign:"center",transition:"all .15s",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
+            <div style={{fontSize:40,marginBottom:8}}>👥</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#b45309"}}>Captain</div>
+            <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:4}}>Team management</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── CAPTAIN TEAM SELECT ──
+  if (role === "captain" && !captainTeam) return (
+    <div style={{minHeight:"100vh",background:"#f2f4f8",padding:20}}>
+      <div style={{maxWidth:600,margin:"0 auto"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111"}}>Select Your Team</div>
+          <button onClick={() => setRole(null)} style={{padding:"6px 14px",background:"none",border:"1px solid rgba(0,0,0,0.2)",borderRadius:6,fontSize:13,cursor:"pointer",color:"#555"}}>← Back</button>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>
+          {ALL_TEAMS_STATIC.map(t => (
+            <button key={t.name} onClick={() => { setCaptainTeam(t.name); setAuthed(true); }} style={{
+              background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderRadius:12,padding:"16px 12px",
+              cursor:"pointer",textAlign:"center",transition:"all .15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",
+            }}
+            onMouseEnter={e => e.currentTarget.style.borderColor="#0057FF"}
+            onMouseLeave={e => e.currentTarget.style.borderColor="rgba(0,0,0,0.09)"}>
+              <TLogo name={t.name} size={48} />
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,textTransform:"uppercase",color:"#111",marginTop:6}}>{t.name}</div>
+              <div style={{fontSize:11,color:"rgba(0,0,0,0.35)",marginTop:2}}>{t.w}-{t.l}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── ADMIN LOGIN ──
+  if (role === "admin" && !authed) return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <Card style={{maxWidth:380,width:"100%",padding:0}}>
         <div style={{background:"#001a6e",padding:"24px 28px",borderRadius:"12px 12px 0 0",display:"flex",alignItems:"center",gap:12}}>
@@ -1624,13 +1695,83 @@ function AdminPage() {
           <input type="password" placeholder="Password" value={pw} onChange={e => {setPw(e.target.value); setPwError(false);}} onKeyDown={e => e.key==="Enter" && (pw==="lassl2026" ? setAuthed(true) : setPwError(true))} style={{width:"100%",padding:"10px 14px",borderRadius:8,border:`1px solid ${pwError?"#dc2626":"rgba(0,0,0,0.15)"}`,fontSize:15,marginBottom:8,background:"#f8f9fb"}} />
           {pwError && <div style={{fontSize:12,color:"#dc2626",marginBottom:8}}>Incorrect password.</div>}
           <button onClick={() => pw==="lassl2026" ? setAuthed(true) : setPwError(true)} style={{width:"100%",padding:"11px",background:"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>Log in</button>
-          <div style={{fontSize:11,color:"rgba(0,0,0,0.3)",textAlign:"center",marginTop:12}}>Demo password: lassl2026</div>
+          <button onClick={() => setRole(null)} style={{width:"100%",padding:"8px",background:"none",border:"none",color:"rgba(0,0,0,0.4)",fontSize:13,cursor:"pointer",marginTop:8}}>← Back to role select</button>
         </div>
       </Card>
     </div>
   );
 
+  // ── CAPTAIN DASHBOARD ──
+  if (role === "captain" && captainTeam) {
+    const myGames = fbGames.filter(g => teamName(g.away) === captainTeam || teamName(g.home) === captainTeam);
+    const myDone = myGames.filter(g => g.done);
+    const myPending = myGames.filter(g => !g.done);
+    return (
+      <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
+        <div style={{background:"#001a6e",borderBottom:"3px solid #FFD700",padding:"16px clamp(12px,3vw,40px)"}}>
+          <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",gap:14}}>
+            <TLogo name={captainTeam} size={44} />
+            <div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#FFD700",textTransform:"uppercase"}}>{captainTeam}</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>Captain Dashboard</div>
+            </div>
+            <button onClick={() => { setRole(null); setCaptainTeam(null); setAuthed(false); }} style={{marginLeft:"auto",padding:"6px 14px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:13,cursor:"pointer"}}>Log out</button>
+          </div>
+        </div>
+        <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px",display:"flex",flexDirection:"column",gap:16}}>
+          {/* Upcoming games */}
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Upcoming Games</div>
+            </div>
+            <div style={{padding:"12px 20px"}}>
+              {myPending.length === 0 ? <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",padding:"12px 0"}}>No upcoming games.</div> :
+                myPending.map(g => (
+                  <div key={g.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
+                    <div style={{flex:1}}><span style={{fontWeight:700}}>{teamName(g.away)}</span> vs <span style={{fontWeight:700}}>{teamName(g.home)}</span></div>
+                    <span style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{g.time || "TBD"} · {g.field || "TBD"}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </Card>
+          {/* Results */}
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Results</div>
+            </div>
+            <div style={{padding:"12px 20px"}}>
+              {myDone.length === 0 ? <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",padding:"12px 0"}}>No results yet.</div> :
+                myDone.map(g => {
+                  const isAway = teamName(g.away) === captainTeam;
+                  const myScore = isAway ? g.away_score : g.home_score;
+                  const oppScore = isAway ? g.home_score : g.away_score;
+                  const opp = isAway ? teamName(g.home) : teamName(g.away);
+                  const won = myScore > oppScore;
+                  return (
+                    <div key={g.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
+                      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,color:won?"#22c55e":"#dc2626",width:24}}>{won?"W":"L"}</span>
+                      <span style={{flex:1,fontWeight:600}}>{isAway?"@":""} {opp}</span>
+                      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18}}>{myScore}-{oppScore}</span>
+                    </div>
+                  );
+                })
+              }
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   // ── ADMIN DASHBOARD ──
+  const adminCards = [
+    { icon: "⚡", title: "Live Game Tracker", desc: "Score games in real time", color: "#0057FF", borderColor: "#0057FF", action: () => window.open("/live-score.html", "_blank") },
+    { icon: "📊", title: "Enter Scores", desc: "Enter this week's results", color: "#0057FF", borderColor: "#0057FF", action: () => setAdminView("scores") },
+    { icon: "👥", title: "Player Sign-Ups", desc: "View player registrations", color: "#0057FF", borderColor: "#0057FF", action: () => { setAdminView("signups"); if (signups.length === 0) loadSignups(); } },
+    { icon: "📋", title: "Standings", desc: "View current standings", color: "#15803d", borderColor: "#22c55e", action: () => window.open("/", "_blank") },
+  ];
+
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <div style={{background:"#001a6e",borderBottom:"3px solid #0057FF",padding:"16px clamp(12px,3vw,40px)"}}>
@@ -1645,32 +1786,81 @@ function AdminPage() {
               <div style={{width:8,height:8,borderRadius:"50%",background:connected?"#22c55e":"#dc2626",boxShadow:`0 0 6px ${connected?"#22c55e":"#dc2626"}`}} />
               <span style={{fontSize:12,color:"rgba(255,255,255,0.5)"}}>{loading ? "Loading..." : connected ? `${fbTeams.length} teams · ${fbGames.length} games` : "Disconnected"}</span>
             </div>
-            <button onClick={() => setAuthed(false)} style={{padding:"6px 14px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:13,cursor:"pointer"}}>Log out</button>
+            <button onClick={() => { setAuthed(false); setRole(null); }} style={{padding:"6px 14px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:13,cursor:"pointer"}}>Log out</button>
           </div>
         </div>
       </div>
 
       <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px",display:"flex",flexDirection:"column",gap:20}}>
 
-        {/* Quick Links */}
-        <a href="/live-score.html" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:12,background:"linear-gradient(135deg,#001a6e,#0057FF)",border:"none",borderRadius:12,padding:"16px 20px",textDecoration:"none",cursor:"pointer"}}>
-          <span style={{fontSize:28}}>⚡</span>
-          <div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#FFD700",textTransform:"uppercase",letterSpacing:".06em"}}>Live Game Tracker</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:2}}>Score games in real time from your phone</div>
+        {/* Dashboard Grid */}
+        {adminView === "dashboard" && (
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16}}>
+            {adminCards.map((c,i) => (
+              <button key={i} onClick={c.action} style={{
+                background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:`4px solid ${c.borderColor}`,
+                borderRadius:12,padding:"24px 20px",cursor:"pointer",textAlign:"left",
+                transition:"all .15s",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",
+              }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)"}
+              onMouseLeave={e => e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)"}>
+                <div style={{fontSize:32,marginBottom:12}}>{c.icon}</div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",letterSpacing:".04em"}}>{c.title}</div>
+                <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:4}}>{c.desc}</div>
+              </button>
+            ))}
           </div>
-          <span style={{marginLeft:"auto",color:"rgba(255,255,255,0.5)",fontSize:18}}>→</span>
-        </a>
+        )}
 
-        {/* Connection status */}
-        <div style={{background:connected?"#f0fdf4":"#fef2f2",border:`1px solid ${connected?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:10,height:10,borderRadius:"50%",background:connected?"#22c55e":"#dc2626",flexShrink:0,boxShadow:`0 0 6px ${connected?"#22c55e":"#dc2626"}`}} />
-          <span style={{fontSize:14,fontWeight:600,color:connected?"#166534":"#991b1b"}}>
-            {connected ? "Connected to Firebase — ready to update scores" : loading ? "Connecting to Firebase..." : "Could not connect to Firebase"}
-          </span>
-          {!connected && !loading && <button onClick={loadData} style={{marginLeft:"auto",padding:"4px 12px",background:"none",border:"1px solid #fca5a5",borderRadius:6,color:"#dc2626",fontSize:12,cursor:"pointer"}}>Retry</button>}
-        </div>
+        {/* Back button when in sub-view */}
+        {adminView !== "dashboard" && (
+          <button onClick={() => setAdminView("dashboard")} style={{alignSelf:"flex-start",padding:"6px 14px",background:"none",border:"1px solid rgba(0,0,0,0.2)",borderRadius:6,fontSize:13,cursor:"pointer",color:"#555",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>← Dashboard</button>
+        )}
 
+        {/* Sign-ups view */}
+        {adminView === "signups" && (
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Player Sign-Ups</div>
+            </div>
+            <div style={{padding:"16px 20px"}}>
+              {signupsLoading ? (
+                <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",textAlign:"center",padding:20}}>Loading sign-ups...</div>
+              ) : signups.length === 0 ? (
+                <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",textAlign:"center",padding:20}}>No sign-ups yet.</div>
+              ) : (() => {
+                const byTeam = {};
+                signups.forEach(s => { const t = s.team || "Unknown"; if (!byTeam[t]) byTeam[t] = []; byTeam[t].push(s); });
+                const sortedTeams = Object.keys(byTeam).sort();
+                return (
+                  <div>
+                    <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",marginBottom:14}}>{signups.length} player{signups.length !== 1 ? "s" : ""} across {sortedTeams.length} team{sortedTeams.length !== 1 ? "s" : ""}</div>
+                    {sortedTeams.map(team => (
+                      <div key={team} style={{marginBottom:16}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                          <TLogo name={team} size={28} />
+                          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111"}}>{team}</span>
+                          <span style={{fontSize:12,color:"rgba(0,0,0,0.35)",fontWeight:600}}>({byTeam[team].length})</span>
+                        </div>
+                        {byTeam[team].map((s, i) => (
+                          <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 12px",borderBottom:"1px solid rgba(0,0,0,0.04)",fontSize:13}}>
+                            <span style={{fontWeight:600,color:"#111",minWidth:120}}>{s.name}</span>
+                            <a href={`mailto:${s.email}`} style={{color:"#0057FF",minWidth:160}}>{s.email}</a>
+                            <span style={{color:"#555",minWidth:110}}>{s.phone}</span>
+                            <span style={{color:"rgba(0,0,0,0.35)",fontSize:11}}>{(s.preferences || []).join(", ") || "—"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          </Card>
+        )}
+
+        {/* Scores view */}
+        {adminView === "scores" && <>
         {/* Save confirmation */}
         {saveMsg && (
           <div style={{background:saveMsg.ok?"#f0fdf4":"#fef2f2",border:`1px solid ${saveMsg.ok?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",display:"flex",alignItems:"center",gap:10}}>
@@ -1767,52 +1957,7 @@ function AdminPage() {
             </div>
           </Card>
         )}
-
-        {/* Sign-Ups Viewer */}
-        <Card>
-          <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Player Sign-Ups</div>
-            <button onClick={() => { setShowSignups(!showSignups); if (!showSignups && signups.length === 0) loadSignups(); }}
-              style={{padding:"6px 14px",background:showSignups?"rgba(0,87,255,0.08)":"#f8f9fb",border:"1px solid rgba(0,0,0,0.1)",borderRadius:6,fontSize:13,fontWeight:600,cursor:"pointer",color:showSignups?"#0057FF":"#555"}}>
-              {showSignups ? "Hide" : "View"} ({signups.length || "..."})
-            </button>
-          </div>
-          {showSignups && (
-            <div style={{padding:"16px 20px"}}>
-              {signupsLoading ? (
-                <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",textAlign:"center",padding:20}}>Loading sign-ups...</div>
-              ) : signups.length === 0 ? (
-                <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",textAlign:"center",padding:20}}>No sign-ups yet.</div>
-              ) : (() => {
-                const byTeam = {};
-                signups.forEach(s => { const t = s.team || "Unknown"; if (!byTeam[t]) byTeam[t] = []; byTeam[t].push(s); });
-                const sortedTeams = Object.keys(byTeam).sort();
-                return (
-                  <div>
-                    <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",marginBottom:14}}>{signups.length} player{signups.length !== 1 ? "s" : ""} across {sortedTeams.length} team{sortedTeams.length !== 1 ? "s" : ""}</div>
-                    {sortedTeams.map(team => (
-                      <div key={team} style={{marginBottom:16}}>
-                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                          <TLogo name={team} size={28} />
-                          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111"}}>{team}</span>
-                          <span style={{fontSize:12,color:"rgba(0,0,0,0.35)",fontWeight:600}}>({byTeam[team].length})</span>
-                        </div>
-                        {byTeam[team].map((s, i) => (
-                          <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 12px",borderBottom:"1px solid rgba(0,0,0,0.04)",fontSize:13}}>
-                            <span style={{fontWeight:600,color:"#111",minWidth:120}}>{s.name}</span>
-                            <a href={`mailto:${s.email}`} style={{color:"#0057FF",minWidth:160}}>{s.email}</a>
-                            <span style={{color:"#555",minWidth:110}}>{s.phone}</span>
-                            <span style={{color:"rgba(0,0,0,0.35)",fontSize:11}}>{(s.preferences || []).join(", ") || "—"}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-        </Card>
+        </>}
       </div>
     </div>
   );
