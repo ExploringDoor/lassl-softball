@@ -592,23 +592,21 @@ function UpcomingCard({ away, home, time, date, field, isNext, onTeamClick, allT
   const getRecord = (name) => { const t = (allTeams||[]).find(x => x.name === name || x.full === name || x.name.startsWith(name.split(" ")[0])); return t ? `(${t.w}-${t.l})` : ""; };
   return (
     <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderLeft:isNext?"4px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
-      <div style={{display:"flex",alignItems:"center",padding:"10px 14px",gap:12}}>
-        {/* Teams */}
-        <div style={{display:"flex",flexDirection:"column",gap:4,flex:1,minWidth:0}}>
-          {isNext && <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:-2}}>▶ NEXT GAME</div>}
+      {isNext && <div style={{padding:"6px 14px 0",fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF"}}>▶ NEXT GAME</div>}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 14px",gap:8}}>
+        <div style={{display:"flex",flexDirection:"column",gap:2}}>
           {[away,home].map((t,i) => (
-            <div key={i} onClick={() => onTeamClick?.(t)} style={{display:"flex",alignItems:"center",gap:10,cursor:onTeamClick?"pointer":"default"}}>
-              <div style={{width:60,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><TLogo name={t} size={60} /></div>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(14px,2vw,20px)",textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:600,color:"rgba(0,0,0,0.35)",flexShrink:0}}>{getRecord(t)}</span>
+            <div key={i} onClick={() => onTeamClick?.(t)} style={{display:"flex",alignItems:"center",gap:8,cursor:onTeamClick?"pointer":"default"}}>
+              <TLogo name={t} size={32} />
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t}</span>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.3)"}}>{getRecord(t)}</span>
             </div>
           ))}
         </div>
-        {/* Time + field stacked */}
-        <div style={{flexShrink:0,borderLeft:"1px solid rgba(0,0,0,0.08)",paddingLeft:14,textAlign:"right"}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(18px,2.5vw,26px)",color:"#0057FF",lineHeight:1}}>{time}</div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,color:"rgba(0,0,0,0.45)",fontWeight:600,marginTop:2}}>{date}</div>
-          <div style={{fontSize:11,color:"rgba(0,0,0,0.35)",marginTop:1,fontWeight:500}}>{field}</div>
+        <div style={{flexShrink:0,textAlign:"right"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#0057FF",lineHeight:1}}>{time}</div>
+          <div style={{fontSize:11,color:"rgba(0,0,0,0.4)",marginTop:2}}>{date}</div>
+          <div style={{fontSize:11,color:"rgba(0,0,0,0.3)"}}>{field}</div>
         </div>
       </div>
     </div>
@@ -780,7 +778,7 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched, div }) {
                 <span onClick={() => setTab("schedule")} style={{color:"#0057FF",fontWeight:700,fontSize:13,cursor:"pointer"}}>Full Schedule →</span>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {nextGames.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date="Mar 22" onTeamClick={goTeam} field={g.field} isNext={i===0} />)}
+                {nextGames.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date={sched[0]?.label?.split("–")[1]?.trim()||""} onTeamClick={goTeam} field={g.field} isNext={i===0} allTeams={allTeams} />)}
               </div>
             </div>
           </div>
@@ -1021,7 +1019,7 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
                     <TLogo name={opp} size={70} />
                     <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{isHome?"vs":"@"} {opp}</span>
                   </div>
-                  <div style={{fontSize:12,color:"rgba(0,0,0,0.4)"}}>{g.time} · Mar 22 · {g.field}</div>
+                  <div style={{fontSize:12,color:"rgba(0,0,0,0.4)"}}>{g.time} · {g.field}</div>
                 </div>
               );
             })}
@@ -1319,7 +1317,7 @@ function SubBoardPage() {
 
           {/* Available players */}
           <div style={{marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Available this Sunday — Mar 22</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Available this Sunday</div>
             <span style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{sampleAvail.length} players</span>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -1916,7 +1914,7 @@ function AdminPage() {
               {weekGames.map(g => {
                 const isActive = selGame?.id === g.id;
                 return (
-                  <button key={g.id} onClick={() => { setSelGame(g); setAwayScore(g.done ? String(g.away_score ?? "") : ""); setHomeScore(g.done ? String(g.home_score ?? "") : ""); setSaveMsg(null); }}
+                  <button key={g.id} onClick={() => { setSelGame(g); setAwayScore(g.done ? String(g.away_score ?? "") : ""); setHomeScore(g.done ? String(g.home_score ?? "") : ""); setSaveMsg(null); setTimeout(() => document.getElementById('score-entry')?.scrollIntoView({behavior:'smooth'}), 100); }}
                     style={{background:isActive?"rgba(0,87,255,0.06)":"#f8f9fb",border:`1px solid ${isActive?"#0057FF":"rgba(0,0,0,0.1)"}`,borderRadius:8,padding:"12px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left",width:"100%",transition:"all .15s"}}>
                     <div style={{flex:1}}>
                       <div style={{fontSize:15,fontWeight:700,color:"#111"}}>{teamName(g.away)} vs {teamName(g.home)}</div>
@@ -1937,7 +1935,7 @@ function AdminPage() {
         {/* Step 3: Enter score */}
         {selGame && (
           <Card>
-            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+            <div id="score-entry" style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>3. Enter Score</div>
               {selGame.done && <div style={{fontSize:12,color:"#f59e0b",fontWeight:600,marginTop:4}}>This game already has a score. Saving will overwrite it.</div>}
             </div>
