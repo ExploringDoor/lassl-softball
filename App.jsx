@@ -1662,7 +1662,7 @@ function CaptainPage() {
                       ) : (
                         <span style={{fontSize:14,fontWeight:700,color:"#f59e0b",background:"rgba(245,158,11,0.1)",borderRadius:6,padding:"4px 10px"}}>Pending</span>
                       )}
-                      <div style={{display:"flex",gap:6,marginLeft:"auto"}}>
+                      <div style={{display:"flex",gap:6,marginLeft:"auto",flexWrap:"wrap",justifyContent:"flex-end"}}>
                         <button onClick={() => { setCaptainGame(g); setCaptainAway(g.done ? String(g.away_score ?? "") : ""); setCaptainHome(g.done ? String(g.home_score ?? "") : ""); setCaptainMsg(null); setTimeout(() => document.getElementById('captain-score-entry')?.scrollIntoView({behavior:'smooth'}), 100); }} style={{
                           fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
                           background:g.done?"#f59e0b":"#0057FF",color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",whiteSpace:"nowrap",
