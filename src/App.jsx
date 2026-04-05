@@ -588,25 +588,27 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
   );
 }
 
-function UpcomingCard({ away, home, time, date, field, isNext, onTeamClick }) {
+function UpcomingCard({ away, home, time, date, field, isNext, onTeamClick, allTeams }) {
+  const getRecord = (name) => { const t = (allTeams||[]).find(x => x.name === name); return t ? `(${t.w}-${t.l})` : ""; };
   return (
     <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderLeft:isNext?"4px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
-      <div style={{display:"flex",alignItems:"center",padding:"12px 14px",gap:12,flexWrap:"wrap"}}>
+      <div style={{display:"flex",alignItems:"center",padding:"10px 14px",gap:12}}>
         {/* Teams */}
-        <div style={{display:"flex",flexDirection:"column",gap:8,flex:"1 1 200px",minWidth:0}}>
+        <div style={{display:"flex",flexDirection:"column",gap:4,flex:1,minWidth:0}}>
           {isNext && <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:-2}}>▶ NEXT GAME</div>}
           {[away,home].map((t,i) => (
             <div key={i} onClick={() => onTeamClick?.(t)} style={{display:"flex",alignItems:"center",gap:10,cursor:onTeamClick?"pointer":"default"}}>
-              <TLogo name={t} size={60} />
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(14px,2vw,24px)",textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
+              <div style={{width:36,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><TLogo name={t} size={36} /></div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(14px,2vw,20px)",textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:600,color:"rgba(0,0,0,0.35)",flexShrink:0}}>{getRecord(t)}</span>
             </div>
           ))}
         </div>
         {/* Time + field stacked */}
-        <div style={{flexShrink:0,borderLeft:"1px solid rgba(0,0,0,0.08)",paddingLeft:14}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(20px,3vw,32px)",color:"#0057FF",lineHeight:1}}>{time}</div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"clamp(12px,1.5vw,15px)",color:"rgba(0,0,0,0.55)",fontWeight:700,marginTop:3}}>{date}</div>
-          <div style={{fontSize:"clamp(11px,1.2vw,13px)",color:"rgba(0,0,0,0.4)",marginTop:2,fontWeight:500}}>{field}</div>
+        <div style={{flexShrink:0,borderLeft:"1px solid rgba(0,0,0,0.08)",paddingLeft:14,textAlign:"right"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(18px,2.5vw,26px)",color:"#0057FF",lineHeight:1}}>{time}</div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,color:"rgba(0,0,0,0.45)",fontWeight:600,marginTop:2}}>{date}</div>
+          <div style={{fontSize:11,color:"rgba(0,0,0,0.35)",marginTop:1,fontWeight:500}}>{field}</div>
         </div>
       </div>
     </div>
@@ -810,7 +812,7 @@ function ScoresPage({ setTab, setTeamDetail, scores, allTeams }) {
 }
 
 /* ─── SCHEDULE PAGE ───────────────────────────────────────────────────────── */
-function SchedulePage({ setTab, setTeamDetail, sched }) {
+function SchedulePage({ setTab, setTeamDetail, sched, allTeams }) {
   const [wk,setWk] = useState(0);
   const week = sched[wk] || { label: "", fields: [] };
   const games = (week.fields || []).flatMap(f => f.games.map(g => ({...g,field:f.name})));
@@ -823,7 +825,7 @@ function SchedulePage({ setTab, setTeamDetail, sched }) {
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {games.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date={dateStr} onTeamClick={goTeam} field={g.field} isNext={i===0} />)}
+          {games.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date={dateStr} onTeamClick={goTeam} field={g.field} isNext={i===0} allTeams={allTeams} />)}
         </div>
       </div>
     </div>
@@ -861,29 +863,29 @@ function StandingsPage({ setTab, setTeamDetail, div: divData }) {
       <div className="desktop-standings" style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
         <div className="standings-table">
         <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.05)",minWidth:"unset"}}>
-          <div style={{display:"grid",gridTemplateColumns:"50px minmax(300px,1fr) 60px 60px 60px 80px 60px 60px 60px 70px",padding:"10px 20px",background:"#f8f9fb",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+          <div style={{display:"grid",gridTemplateColumns:"36px minmax(200px,1fr) 50px 50px 50px 70px 50px 50px 50px 60px",padding:"8px 16px",background:"#f8f9fb",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
             {["#","Team","W","L","T","PCT","GP","RS","RA","DIFF"].map((h,i) => (
-              <span key={h} style={{fontSize:11,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(0,0,0,0.3)",textAlign:i>1?"center":"left"}}>{h}</span>
+              <span key={h} style={{fontSize:10,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(0,0,0,0.3)",textAlign:i>1?"center":"left"}}>{h}</span>
             ))}
           </div>
           {div.teams.map((t,i) => (
-            <div key={t.name} onClick={() => goTeam(t.name)} style={{display:"grid",gridTemplateColumns:"50px minmax(300px,1fr) 60px 60px 60px 80px 60px 60px 60px 70px",padding:"14px 20px",borderBottom:"1px solid rgba(0,0,0,0.04)",alignItems:"center",transition:"background .15s",cursor:"pointer"}}
+            <div key={t.name} onClick={() => goTeam(t.name)} style={{display:"grid",gridTemplateColumns:"36px minmax(200px,1fr) 50px 50px 50px 70px 50px 50px 50px 60px",padding:"10px 16px",borderBottom:"1px solid rgba(0,0,0,0.04)",alignItems:"center",transition:"background .15s",cursor:"pointer"}}
               onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
               onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:30,color:i===0?"#0057FF":"rgba(0,0,0,0.22)"}}>{t.seed}</span>
-              <div style={{display:"flex",alignItems:"center",gap:14}}>
-                <TLogo name={t.name} size={130} />
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:i===0?"#0057FF":"rgba(0,0,0,0.22)"}}>{t.seed}</span>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <TLogo name={t.name} size={40} />
                 <div>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:38,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
-                  <div style={{height:3,width:120,background:"rgba(0,0,0,0.07)",borderRadius:2,marginTop:6,overflow:"hidden"}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
+                  <div style={{height:2,width:80,background:"rgba(0,0,0,0.07)",borderRadius:2,marginTop:4,overflow:"hidden"}}>
                     <div style={{height:"100%",background:i===0?"#0057FF":"rgba(0,0,0,0.18)",borderRadius:2,width:`${parseFloat(t.pct)*100}%`}} />
                   </div>
                 </div>
               </div>
               {[t.w,t.l,t.t,t.pct,t.gp,t.rs,t.ra].map((v,vi) => (
-                <span key={vi} style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:vi===3?18:28,fontWeight:vi===0?900:vi===3?700:400,color:vi===0?"#111":vi===3?"#0057FF":"rgba(0,0,0,0.55)",textAlign:"center",display:"block"}}>{v}</span>
+                <span key={vi} style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:vi===3?14:18,fontWeight:vi===0?900:vi===3?700:400,color:vi===0?"#111":vi===3?"#0057FF":"rgba(0,0,0,0.55)",textAlign:"center",display:"block"}}>{v}</span>
               ))}
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:24,fontWeight:700,textAlign:"center",display:"block",color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626"}}>{t.diff}</span>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,fontWeight:700,textAlign:"center",display:"block",color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626"}}>{t.diff}</span>
             </div>
           ))}
         </Card>
@@ -1008,84 +1010,60 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
 
 /* ─── TEAMS PAGE ─────────────────────────────────────────────────────────── */
 function TeamsPage({ setTab, setTeamDetail, div: divData, allTeams }) {
+  const [openDiv, setOpenDiv] = useState(null);
+  const toggleDiv = (dk) => setOpenDiv(openDiv === dk ? null : dk);
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
-      <PageHero label="2026 Season" title="Team Directory">
-        <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:16,paddingBottom:2}}>
-          {[...allTeams].sort((a,b)=>parseFloat(b.pct)-parseFloat(a.pct)).map(t => {
-            const color = TEAM_COLORS[t.name]||"#0057FF";
-            return (
-              <button key={t.name} onClick={() => setTeamDetail(t.name)} style={{
-                display:"flex",alignItems:"center",gap:8,
-                background:"#fff",border:`1px solid ${color}40`,
-                borderRadius:8,padding:"7px 14px",cursor:"pointer",
-                transition:"all .15s",fontFamily:"'Barlow Condensed',sans-serif",
-              }}
-              onMouseEnter={e => e.currentTarget.style.borderColor=color}
-              onMouseLeave={e => e.currentTarget.style.borderColor=`${color}40`}>
-                <TLogo name={t.name} size={80} />
-                <span style={{fontWeight:700,fontSize:15,color:"#111",textTransform:"uppercase"}}>{t.name}</span>
+      <PageHero label="2026 Season" title="Teams" />
+      <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px",display:"flex",flexDirection:"column",gap:10}}>
+        {Object.entries(divData).map(([dk,div]) => {
+          const isOpen = openDiv === dk;
+          return (
+            <div key={dk}>
+              <button onClick={() => toggleDiv(dk)} style={{
+                width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
+                background:isOpen?"#0057FF":"#fff",border:"1px solid rgba(0,0,0,0.09)",
+                borderRadius:isOpen?"12px 12px 0 0":"12px",padding:"14px 20px",cursor:"pointer",
+                transition:"all .15s",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",
+              }}>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{width:4,height:24,background:isOpen?"#FFD700":div.accent,borderRadius:2}} />
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:isOpen?"#fff":"#111",letterSpacing:".04em"}}>{div.name}</span>
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,fontWeight:600,color:isOpen?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.35)"}}>{div.teams.length} teams</span>
+                </div>
+                <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,color:isOpen?"#FFD700":"rgba(0,0,0,0.3)",transition:"transform .2s",display:"inline-block",transform:isOpen?"rotate(180deg)":"rotate(0)"}}>{isOpen?"▲":"▼"}</span>
               </button>
-            );
-          })}
-        </div>
-      </PageHero>
-      <div style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
-        {Object.entries(divData).map(([dk,div]) => (
-          <div key={dk} style={{marginBottom:36}}>
-            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-              <div style={{width:4,height:28,background:div.accent,borderRadius:2}} />
-              <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111"}}>{div.name}</h2>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
-              {div.teams.map((t,i) => {
-                const color = TEAM_COLORS[t.name]||div.accent;
-                return (
-                  <button key={t.name} onClick={() => setTeamDetail(t.name)} style={{
-                    background:"#fff",border:"1px solid rgba(0,0,0,0.09)",
-                    borderLeft:`3px solid ${color}`,borderTop:"3px solid #0057FF",
-                    borderRadius:12,padding:"18px 20px",cursor:"pointer",
-                    textAlign:"left",transition:"all .15s",
-                    boxShadow:"0 1px 4px rgba(0,0,0,0.05)",display:"block",width:"100%",
-                  }}
-                  onMouseEnter={e => {e.currentTarget.style.boxShadow=`0 4px 16px ${color}25`;e.currentTarget.style.borderColor=color;}}
-                  onMouseLeave={e => {e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)";e.currentTarget.style.borderColor="rgba(0,0,0,0.09)";e.currentTarget.style.borderLeftColor=color;}}>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-                      <div style={{display:"flex",alignItems:"center",gap:14}}>
-                        <TLogo name={t.name} size={100} />
-                        <div>
-                          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
-                          <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:3}}>#{t.seed} seed · {div.name}</div>
+              {isOpen && (
+                <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"none",borderRadius:"0 0 12px 12px",overflow:"hidden"}}>
+                  {div.teams.map((t,i) => {
+                    const color = TEAM_COLORS[t.name]||div.accent;
+                    return (
+                      <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{
+                        display:"flex",alignItems:"center",gap:12,padding:"12px 20px",
+                        borderBottom:i<div.teams.length-1?"1px solid rgba(0,0,0,0.05)":"none",
+                        cursor:"pointer",transition:"background .15s",
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
+                      onMouseLeave={e => e.currentTarget.style.background="transparent"}>
+                        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:i===0?"#0057FF":"rgba(0,0,0,0.2)",width:24,flexShrink:0,textAlign:"center"}}>{t.seed}</span>
+                        <div style={{width:40,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><TLogo name={t.name} size={40} /></div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
+                          <div style={{fontSize:11,color:"rgba(0,0,0,0.4)",marginTop:2}}>{t.pct} PCT · {t.rs}RF · {t.ra}RA</div>
                         </div>
+                        <div style={{textAlign:"right",flexShrink:0}}>
+                          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color,lineHeight:1}}>{t.w}-{t.l}</div>
+                          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626"}}>{t.diff}</div>
+                        </div>
+                        <span style={{fontSize:12,fontWeight:700,color:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif",flexShrink:0}}>→</span>
                       </div>
-                      <div style={{textAlign:"right",flexShrink:0}}>
-                        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:30,color,lineHeight:1}}>{t.w}-{t.l}</div>
-                        <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontFamily:"'Barlow Condensed',sans-serif"}}>{t.pct}</div>
-                      </div>
-                    </div>
-                    <div style={{display:"flex",gap:16,paddingTop:10,borderTop:"1px solid rgba(0,0,0,0.05)"}}>
-                      <div style={{textAlign:"center"}}>
-                        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,color:"#111"}}>{t.rs}</div>
-                        <div style={{fontSize:10,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:".08em"}}>Runs For</div>
-                      </div>
-                      <div style={{textAlign:"center"}}>
-                        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,color:"#111"}}>{t.ra}</div>
-                        <div style={{fontSize:10,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:".08em"}}>Runs Against</div>
-                      </div>
-                      <div style={{textAlign:"center"}}>
-                        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"#111":"#dc2626"}}>{t.diff}</div>
-                        <div style={{fontSize:10,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:".08em"}}>Differential</div>
-                      </div>
-                      <div style={{marginLeft:"auto",display:"flex",alignItems:"center"}}>
-                        <span style={{fontSize:12,fontWeight:700,color:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif"}}>View Team →</span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -1773,33 +1751,33 @@ function AdminPage() {
                 <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",textAlign:"center",padding:20}}>Loading sign-ups...</div>
               ) : signups.length === 0 ? (
                 <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",textAlign:"center",padding:20}}>No sign-ups yet.</div>
-              ) : (
-                <div style={{overflowX:"auto"}}>
-                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-                    <thead>
-                      <tr style={{borderBottom:"2px solid rgba(0,0,0,0.1)",textAlign:"left"}}>
-                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Name</th>
-                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Team</th>
-                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Email</th>
-                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Phone</th>
-                        <th style={{padding:"8px 10px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:12,textTransform:"uppercase",letterSpacing:".06em",color:"rgba(0,0,0,0.4)"}}>Preferences</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {signups.map((s, i) => (
-                        <tr key={i} style={{borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
-                          <td style={{padding:"10px",fontWeight:600,color:"#111"}}>{s.name}</td>
-                          <td style={{padding:"10px",color:"#555"}}>{s.team}</td>
-                          <td style={{padding:"10px",color:"#555"}}><a href={`mailto:${s.email}`} style={{color:"#0057FF"}}>{s.email}</a></td>
-                          <td style={{padding:"10px",color:"#555"}}>{s.phone}</td>
-                          <td style={{padding:"10px",color:"#555",fontSize:11}}>{(s.preferences || []).join(", ") || "—"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",marginTop:12}}>{signups.length} player{signups.length !== 1 ? "s" : ""} signed up</div>
-                </div>
-              )}
+              ) : (() => {
+                const byTeam = {};
+                signups.forEach(s => { const t = s.team || "Unknown"; if (!byTeam[t]) byTeam[t] = []; byTeam[t].push(s); });
+                const sortedTeams = Object.keys(byTeam).sort();
+                return (
+                  <div>
+                    <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",marginBottom:14}}>{signups.length} player{signups.length !== 1 ? "s" : ""} across {sortedTeams.length} team{sortedTeams.length !== 1 ? "s" : ""}</div>
+                    {sortedTeams.map(team => (
+                      <div key={team} style={{marginBottom:16}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                          <TLogo name={team} size={28} />
+                          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111"}}>{team}</span>
+                          <span style={{fontSize:12,color:"rgba(0,0,0,0.35)",fontWeight:600}}>({byTeam[team].length})</span>
+                        </div>
+                        {byTeam[team].map((s, i) => (
+                          <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 12px",borderBottom:"1px solid rgba(0,0,0,0.04)",fontSize:13}}>
+                            <span style={{fontWeight:600,color:"#111",minWidth:120}}>{s.name}</span>
+                            <a href={`mailto:${s.email}`} style={{color:"#0057FF",minWidth:160}}>{s.email}</a>
+                            <span style={{color:"#555",minWidth:110}}>{s.phone}</span>
+                            <span style={{color:"rgba(0,0,0,0.35)",fontSize:11}}>{(s.preferences || []).join(", ") || "—"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </Card>
@@ -1851,7 +1829,7 @@ export default function App() {
       <div style={{position:"sticky",top:0,zIndex:300,overflow:"hidden",width:"100%"}}><Navbar tab={tab} setTab={handleSetTab} /></div>
       {tab==="home"      && <HomePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} allTeams={allTeams} scores={scores} sched={sched} />}
       {tab==="scores"    && <ScoresPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} scores={scores} allTeams={allTeams} />}
-      {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} sched={sched} />}
+      {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} sched={sched} allTeams={allTeams} />}
       {tab==="standings" && <StandingsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} />}
       {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} />}
       {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => { setTeamDetail(null); window.scrollTo(0,0); }} setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} scores={scores} sched={sched} rosters={rosters} />}
