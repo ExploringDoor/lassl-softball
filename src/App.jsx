@@ -1629,6 +1629,16 @@ function AdminPage() {
 
       <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px",display:"flex",flexDirection:"column",gap:20}}>
 
+        {/* Quick Links */}
+        <a href="/live-score.html" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:12,background:"linear-gradient(135deg,#001a6e,#0057FF)",border:"none",borderRadius:12,padding:"16px 20px",textDecoration:"none",cursor:"pointer"}}>
+          <span style={{fontSize:28}}>⚡</span>
+          <div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#FFD700",textTransform:"uppercase",letterSpacing:".06em"}}>Live Game Tracker</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:2}}>Score games in real time from your phone</div>
+          </div>
+          <span style={{marginLeft:"auto",color:"rgba(255,255,255,0.5)",fontSize:18}}>→</span>
+        </a>
+
         {/* Connection status */}
         <div style={{background:connected?"#f0fdf4":"#fef2f2",border:`1px solid ${connected?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:10,height:10,borderRadius:"50%",background:connected?"#22c55e":"#dc2626",flexShrink:0,boxShadow:`0 0 6px ${connected?"#22c55e":"#dc2626"}`}} />
