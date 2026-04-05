@@ -1104,18 +1104,23 @@ window.startGame = function() {
   syncToFirebase();
 };
 
+function goBackToCaptain() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('game')) {
+    // Opened from captain page — navigate back to main site captain tab
+    window.location.href = '/';
+    return true;
+  }
+  return false;
+}
+
 window.goBack = function() {
+  if (goBackToCaptain()) return;
   showScreen('screen-pick');
 };
 
 window.goToPickScreen = function() {
-  // If opened from captain page with ?game= param, go back to captain page
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('game') && window.history.length > 1) {
-    window.close(); // Try closing tab first (works if opened via target=_blank)
-    window.history.back(); // Fallback
-    return;
-  }
+  if (goBackToCaptain()) return;
   showScreen('screen-pick');
   renderPickScreen();
 };
