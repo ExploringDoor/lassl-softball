@@ -438,9 +438,9 @@ function PageHero({ label, title, subtitle, children }) {
   return (
     <div style={{background:"#fff",borderBottom:"3px solid #0057FF",padding:"28px clamp(12px,3vw,40px) 0",overflow:"hidden",width:"100%"}}>
       <div style={{maxWidth:1400,margin:"0 auto",overflow:"hidden"}}>
-        {label && <div style={{fontSize:11,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"#0057FF",marginBottom:4}}>{label}</div>}
-        <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(36px,7vw,80px)",textTransform:"uppercase",color:"#111",lineHeight:1}}>{title}</h1>
-        {subtitle && <div style={{fontSize:12,color:"rgba(0,0,0,0.38)",marginTop:4}}>{subtitle}</div>}
+        {label && <div style={{fontSize:14,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"#0057FF",marginBottom:4}}>{label}</div>}
+        <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(40px,7vw,80px)",textTransform:"uppercase",color:"#111",lineHeight:1}}>{title}</h1>
+        {subtitle && <div style={{fontSize:14,color:"rgba(0,0,0,0.38)",marginTop:4}}>{subtitle}</div>}
         {children}
       </div>
     </div>
@@ -563,26 +563,26 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
         </div>
       )}
       <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderRadius:10,overflow:"hidden",display:"flex",flexDirection:"column",width:"100%"}}>
-        <div style={{padding:"8px 10px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <span style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,0,0,0.25)"}}>FINAL</span>
+        <div style={{padding:"10px 14px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,0,0,0.25)"}}>FINAL</span>
           <div style={{display:"flex",alignItems:"center",gap:6}}>
-            {g.note && <span style={{fontSize:9,fontWeight:700,color:"#dc2626",textTransform:"uppercase"}}>{g.note}</span>}
-            <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.2)",textTransform:"uppercase"}}>{g.div}</span>
+            {g.note && <span style={{fontSize:12,fontWeight:700,color:"#dc2626",textTransform:"uppercase"}}>{g.note}</span>}
+            <span style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.2)",textTransform:"uppercase"}}>{g.div}</span>
           </div>
         </div>
-        <div style={{padding:"6px 10px 10px"}}>
+        <div style={{padding:"8px 14px 12px"}}>
           {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
-            <div key={i} onClick={() => onTeamClick?.(side.name)} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i===0?6:0,cursor:onTeamClick?"pointer":"default",width:"100%"}}>
-              <TLogo name={side.name} size={70} />
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:18,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>
+            <div key={i} onClick={() => onTeamClick?.(side.name)} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i===0?8:0,cursor:onTeamClick?"pointer":"default",width:"100%"}}>
+              <TLogo name={side.name} size={50} />
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:22,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>
                 {side.name}
               </div>
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:36,lineHeight:1,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0,minWidth:32,textAlign:"right"}}>{side.score}</span>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:40,lineHeight:1,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0,minWidth:36,textAlign:"right"}}>{side.score}</span>
             </div>
           ))}
         </div>
         <div style={{height:1,background:"rgba(0,0,0,0.05)"}} />
-        <div onClick={() => setShowRecap(true)} style={{padding:"10px",background:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:".06em",textTransform:"uppercase",color:"#fff",textAlign:"center",cursor:"pointer"}}>📰 RECAP</div>
+        <div onClick={() => setShowRecap(true)} style={{padding:"12px",background:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,letterSpacing:".06em",textTransform:"uppercase",color:"#fff",textAlign:"center",cursor:"pointer"}}>📰 RECAP</div>
       </div>
     </>
   );
@@ -591,22 +591,22 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
 function UpcomingCard({ away, home, time, date, field, isNext, onTeamClick, allTeams }) {
   const getRecord = (name) => { const t = (allTeams||[]).find(x => x.name === name || x.full === name || x.name.startsWith(name.split(" ")[0])); return t ? `(${t.w}-${t.l})` : ""; };
   return (
-    <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderLeft:isNext?"4px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
-      {isNext && <div style={{padding:"6px 14px 0",fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF"}}>▶ NEXT GAME</div>}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 14px",gap:8}}>
-        <div style={{display:"flex",flexDirection:"column",gap:2}}>
+    <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderLeft:isNext?"4px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",maxWidth:700}}>
+      {isNext && <div style={{padding:"6px 14px 0",fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF"}}>▶ NEXT GAME</div>}
+      <div style={{display:"grid",gridTemplateColumns:"1fr auto",alignItems:"center",padding:"10px 14px",gap:16}}>
+        <div style={{display:"flex",flexDirection:"column",gap:4}}>
           {[away,home].map((t,i) => (
-            <div key={i} onClick={() => onTeamClick?.(t)} style={{display:"flex",alignItems:"center",gap:8,cursor:onTeamClick?"pointer":"default"}}>
-              <TLogo name={t} size={32} />
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t}</span>
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.3)"}}>{getRecord(t)}</span>
+            <div key={i} onClick={() => onTeamClick?.(t)} style={{display:"flex",alignItems:"center",gap:10,cursor:onTeamClick?"pointer":"default"}}>
+              <TLogo name={t} size={44} />
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t}</span>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:600,color:"rgba(0,0,0,0.3)"}}>{getRecord(t)}</span>
             </div>
           ))}
         </div>
-        <div style={{flexShrink:0,textAlign:"right"}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#0057FF",lineHeight:1}}>{time}</div>
-          <div style={{fontSize:11,color:"rgba(0,0,0,0.4)",marginTop:2}}>{date}</div>
-          <div style={{fontSize:11,color:"rgba(0,0,0,0.3)"}}>{field}</div>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,color:"#0057FF",lineHeight:1}}>{time}</div>
+          <div style={{fontSize:13,color:"rgba(0,0,0,0.4)",marginTop:3}}>{date}</div>
+          <div style={{fontSize:13,color:"rgba(0,0,0,0.3)"}}>{field}</div>
         </div>
       </div>
     </div>
@@ -760,10 +760,10 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched, div }) {
             <div style={{marginBottom:32}}>
               <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",marginBottom:14}}>
                 <div>
-                  <div style={{fontSize:11,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"#0057FF",marginBottom:4}}>2026 Season</div>
-                  <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:34,textTransform:"uppercase",color:"#111",lineHeight:1}}>Recent Results</h2>
+                  <div style={{fontSize:14,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"#0057FF",marginBottom:4}}>2026 Season</div>
+                  <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:40,textTransform:"uppercase",color:"#111",lineHeight:1}}>Recent Results</h2>
                 </div>
-                <span onClick={() => setTab("scores")} style={{color:"#0057FF",fontWeight:700,fontSize:13,cursor:"pointer",textDecoration:"none"}}>All Scores →</span>
+                <span onClick={() => setTab("scores")} style={{color:"#0057FF",fontWeight:700,fontSize:16,cursor:"pointer",textDecoration:"none"}}>All Scores →</span>
               </div>
               <div className="scores-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10,gridAutoRows:"1fr"}}>
                 {recent.slice(0,6).map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} allTeams={allTeams} scores={scores} />)}
@@ -772,10 +772,10 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched, div }) {
             <div>
               <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",marginBottom:14}}>
                 <div>
-                  <div style={{fontSize:11,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"#0057FF",marginBottom:4}}>On Deck</div>
-                  <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:34,textTransform:"uppercase",color:"#111",lineHeight:1}}>Upcoming</h2>
+                  <div style={{fontSize:14,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"#0057FF",marginBottom:4}}>On Deck</div>
+                  <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:40,textTransform:"uppercase",color:"#111",lineHeight:1}}>Upcoming</h2>
                 </div>
-                <span onClick={() => setTab("schedule")} style={{color:"#0057FF",fontWeight:700,fontSize:13,cursor:"pointer"}}>Full Schedule →</span>
+                <span onClick={() => setTab("schedule")} style={{color:"#0057FF",fontWeight:700,fontSize:16,cursor:"pointer"}}>Full Schedule →</span>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {nextGames.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date={sched[0]?.label?.split("–")[1]?.trim()||""} onTeamClick={goTeam} field={g.field} isNext={i===0} allTeams={allTeams} />)}
@@ -806,7 +806,7 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched, div }) {
                   <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,color:i===0?"#0057FF":"rgba(0,0,0,0.2)",width:18,flexShrink:0,textAlign:"center"}}>{t.seed}</span>
                   <TLogo name={t.name} size={36} />
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:13,color:"#111",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{t.name}</div>
+                    <div style={{fontSize:15,color:"#111",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{t.name}</div>
                   </div>
                   <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,fontWeight:700,color:"#111",flexShrink:0}}>{t.w}-{t.l}</span>
                 </div>
