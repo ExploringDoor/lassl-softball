@@ -352,7 +352,7 @@ body{display:flex;flex-direction:column}
         <button class="topbar-btn" onclick="goToPickScreen()">← Games</button>
         <button class="topbar-btn" onclick="showEndGameModal()">End Game</button>
         <button class="topbar-btn danger" onclick="resetCurrentInning()">↺ Inning</button>
-        <button class="topbar-btn danger" onclick="openModal('modal-endgame');showResetConfirm()">↺ Game</button>
+        <button class="topbar-btn danger" onclick="resetAndGoBack()">Reset</button>
       </div>
       <div class="sync-indicator">
         <div class="sync-dot" id="sync-dot"></div>
@@ -1104,11 +1104,13 @@ window.startGame = function() {
   syncToFirebase();
 };
 
+function isFromCaptain() {
+  return !!(new URLSearchParams(window.location.search).get('game'));
+}
+
 function goBackToCaptain() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('game')) {
-    // Opened from captain page — navigate back to main site captain tab
-    window.location.href = '/';
+  if (isFromCaptain()) {
+    window.history.back();
     return true;
   }
   return false;
@@ -1123,6 +1125,28 @@ window.goToPickScreen = function() {
   if (goBackToCaptain()) return;
   showScreen('screen-pick');
   renderPickScreen();
+};
+
+window.resetAndGoBack = function() {
+  if (!confirm('Are you sure you want to reset this game? All progress will be lost.')) return;
+  // Clear localStorage for this game
+  if (STATE.gameId) localStorage.removeItem('lassl_live_' + STATE.gameId);
+  // Reset state
+  STATE.status = 'final';
+  STATE.inning = 1; STATE.half = 'top'; STATE.outs = 0;
+  STATE.bases = { first: null, second: null, third: null };
+  STATE.awayRuns = 0; STATE.homeRuns = 0;
+  STATE.awayHits = 0; STATE.homeHits = 0;
+  STATE.awayErrors = 0; STATE.homeErrors = 0;
+  STATE.awayInnings = []; STATE.homeInnings = [];
+  STATE.playLog = []; STATE.history = [];
+  // Go back
+  if (isFromCaptain()) {
+    window.history.back();
+  } else {
+    showScreen('screen-pick');
+    renderPickScreen();
+  }
 };
 
 // ═══════════════════════════════════════════════════════════════════
