@@ -725,14 +725,8 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched }) {
       {/* HERO */}
       <div style={{width:"100%",background:"#001a6e",position:"relative",overflow:"hidden",borderBottom:"4px solid #0057FF"}}>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,87,255,0.3) 0%, transparent 70%)",pointerEvents:"none"}} />
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"24px 20px 20px",position:"relative",textAlign:"center"}}>
-          <img src="/header.png" alt="Synagogue Softball" style={{width:"min(400px,80vw)",objectFit:"contain",marginBottom:12}} />
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,215,0,0.15)",border:"1px solid rgba(255,215,0,0.45)",borderRadius:30,padding:"5px 16px"}}>
-            <span style={{width:7,height:7,borderRadius:"50%",background:"#22c55e",display:"inline-block",flexShrink:0,boxShadow:"0 0 6px #22c55e"}} />
-            <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,fontWeight:700,color:"#FFD700",letterSpacing:".08em",textTransform:"uppercase"}}>
-              🏆 Playoffs Underway — Akiba-Red wins D Division!
-            </span>
-          </div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 20px 28px",position:"relative",textAlign:"center"}}>
+          <img src="/header.png" alt="Synagogue Softball" style={{width:"min(600px,90vw)",objectFit:"contain"}} />
         </div>
       </div>
 
