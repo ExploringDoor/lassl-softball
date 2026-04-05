@@ -635,12 +635,8 @@ function Navbar({ tab, setTab }) {
     <>
       <nav style={{background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 1px 6px rgba(0,0,0,0.07)",height:62,display:"flex",alignItems:"center",padding:"0 clamp(12px,3vw,32px)",position:"relative",zIndex:400}}>
         <div style={{maxWidth:1400,margin:"0 auto",width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",flexShrink:0}} onClick={() => handleNav("home")}>
-            <img src={L_LEAGUE} alt="LASSL" style={{height:38,width:38,objectFit:"cover",borderRadius:"50%",border:"2px solid #0057FF"}} />
-            <div>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,letterSpacing:".08em",textTransform:"uppercase",color:"#0057FF",lineHeight:1}}>LASSL</div>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,color:"rgba(0,0,0,0.4)",letterSpacing:".04em",lineHeight:1}}>Los Angeles Synagogue Softball</div>
-            </div>
+          <div style={{display:"flex",alignItems:"center",cursor:"pointer",flexShrink:0}} onClick={() => handleNav("home")}>
+            <img src="/header.png" alt="Synagogue Softball" style={{height:50,objectFit:"contain"}} />
           </div>
           {/* Desktop links */}
           <ul style={{display:"flex",gap:0,listStyle:"none",margin:"0 auto",padding:0,flexShrink:1,minWidth:0}} className="desktop-nav">
@@ -1431,7 +1427,7 @@ function SignUpPage({ allTeams }) {
         <Card>
           <div style={{ padding: "28px 24px" }}>
             <p style={{ fontSize: 15, color: "rgba(0,0,0,0.55)", lineHeight: 1.7, marginBottom: 28 }}>
-              Welcome to LASSL's new direct communication system! Fill out this form to receive playoff updates, game reminders, and score alerts directly on your phone or email. Takes 30 seconds. Your information will only be used for LASSL league communications.
+              Welcome to Synagogue Softball's new direct communication system! Fill out this form to receive playoff updates, game reminders, and score alerts directly on your phone or email. Takes 30 seconds. Your information will only be used for Synagogue Softball league communications.
             </p>
 
             {/* Full Name */}
@@ -1497,7 +1493,7 @@ function SignUpPage({ allTeams }) {
               {status === "sending" ? "Submitting..." : "Sign Me Up ⚾"}
             </button>
 
-            <p style={{ fontSize: 12, color: "rgba(0,0,0,0.3)", textAlign: "center", marginTop: 16 }}>Your information will only be used for LASSL league communications. No spam, ever.</p>
+            <p style={{ fontSize: 12, color: "rgba(0,0,0,0.3)", textAlign: "center", marginTop: 16 }}>Your information will only be used for Synagogue Softball league communications. No spam, ever.</p>
           </div>
         </Card>
       </div>
