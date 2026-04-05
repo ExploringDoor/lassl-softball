@@ -629,7 +629,7 @@ function Ticker({ setTab, sched }) {
 /* ─── NAVBAR ─────────────────────────────────────────────────────────────── */
 function Navbar({ tab, setTab }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["gallery","Gallery"],["subs","Sub Board"],["rules","Rules"],["admin","⚙ Admin"]];
+  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["gallery","Gallery"],["subs","Sub Board"],["signup","Sign Up"],["rules","Rules"],["admin","⚙ Admin"]];
   const handleNav = (id) => { setTab(id); setMenuOpen(false); window.scrollTo(0,0); };
   return (
     <>
@@ -1185,7 +1185,7 @@ function RulesPage() {
 
 /* ─── FOOTER ─────────────────────────────────────────────────────────────── */
 function Footer({ setTab }) {
-  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["subs","Sub Board"],["rules","Rules"]];
+  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["subs","Sub Board"],["signup","Sign Up"],["rules","Rules"]];
   return (
     <div style={{background:"#001a6e",borderTop:"3px solid #0057FF",padding:"32px clamp(12px,3vw,40px)"}}>
       <div style={{maxWidth:1400,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:16}}>
@@ -1373,6 +1373,133 @@ function SubBoardPage() {
             </div>
           </Card>
         </>}
+      </div>
+    </div>
+  );
+}
+
+/* ─── SIGN UP PAGE ──────────────────────────────────────────────────────── */
+function SignUpPage({ allTeams }) {
+  const [form, setForm] = useState({ name: "", team: "", email: "", phone: "", notes: "" });
+  const [prefs, setPrefs] = useState({ reminders: false, scores: false, bracket: false, rainout: false });
+  const [status, setStatus] = useState("idle"); // idle | sending | done | error
+
+  const teamNames = [...new Set(allTeams.map(t => t.name))].sort();
+
+  const togglePref = (key) => setPrefs(p => ({ ...p, [key]: !p[key] }));
+  const update = (key, val) => setForm(f => ({ ...f, [key]: val }));
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.team || !form.email || !form.phone) return;
+    setStatus("sending");
+    try {
+      const preferences = Object.entries(prefs).filter(([, v]) => v).map(([k]) => {
+        const labels = { reminders: "Game day reminders (text)", scores: "Score & standings updates (email)", bracket: "Playoff bracket updates (email)", rainout: "Rainout alerts (text)" };
+        return labels[k];
+      });
+      const r = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, preferences }),
+      });
+      if (!r.ok) throw new Error();
+      setStatus("done");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  const inputStyle = { width: "100%", padding: "14px 16px", fontSize: 15, fontFamily: "'Barlow',sans-serif", border: "2px solid rgba(0,0,0,0.1)", borderRadius: 10, outline: "none", background: "#fff", transition: "border .2s" };
+  const labelStyle = { fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: ".04em", textTransform: "uppercase", color: "#333", marginBottom: 6, display: "block" };
+
+  if (status === "done") {
+    return (
+      <div style={{ minHeight: "100vh", background: "#f2f4f8", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ background: "#fff", borderRadius: 16, padding: "60px 40px", textAlign: "center", maxWidth: 500, boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
+          <div style={{ fontSize: 60, marginBottom: 16 }}>⚾</div>
+          <h2 style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 36, textTransform: "uppercase", color: "#0057FF", marginBottom: 12 }}>You're In!</h2>
+          <p style={{ fontSize: 16, color: "rgba(0,0,0,0.5)", lineHeight: 1.6 }}>Thanks for signing up, {form.name.split(" ")[0]}! You'll start receiving playoff updates soon. Good luck to {form.team}!</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#f2f4f8", overflowX: "hidden", width: "100%" }}>
+      <PageHero label="Playoffs 2026" title="Player Sign Up" />
+      <div style={{ maxWidth: 600, margin: "0 auto", padding: "32px clamp(12px,3vw,40px) 60px" }}>
+        <Card>
+          <div style={{ padding: "28px 24px" }}>
+            <p style={{ fontSize: 15, color: "rgba(0,0,0,0.55)", lineHeight: 1.7, marginBottom: 28 }}>
+              Welcome to LASSL's new direct communication system! Fill out this form to receive playoff updates, game reminders, and score alerts directly on your phone or email. Takes 30 seconds. Your information will only be used for LASSL league communications.
+            </p>
+
+            {/* Full Name */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Full Name *</label>
+              <input value={form.name} onChange={e => update("name", e.target.value)} placeholder="John Smith" style={inputStyle} onFocus={e => e.target.style.borderColor = "#0057FF"} onBlur={e => e.target.style.borderColor = "rgba(0,0,0,0.1)"} />
+            </div>
+
+            {/* Team Name */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Team Name *</label>
+              <select value={form.team} onChange={e => update("team", e.target.value)} style={{ ...inputStyle, cursor: "pointer", appearance: "none", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 16px center" }}>
+                <option value="">Select your team</option>
+                {teamNames.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+
+            {/* Email */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Email Address *</label>
+              <input type="email" value={form.email} onChange={e => update("email", e.target.value)} placeholder="you@email.com" style={inputStyle} onFocus={e => e.target.style.borderColor = "#0057FF"} onBlur={e => e.target.style.borderColor = "rgba(0,0,0,0.1)"} />
+            </div>
+
+            {/* Phone */}
+            <div style={{ marginBottom: 28 }}>
+              <label style={labelStyle}>Cell Phone Number *</label>
+              <input type="tel" value={form.phone} onChange={e => update("phone", e.target.value)} placeholder="(310) 555-1234" style={inputStyle} onFocus={e => e.target.style.borderColor = "#0057FF"} onBlur={e => e.target.style.borderColor = "rgba(0,0,0,0.1)"} />
+            </div>
+
+            {/* Preferences */}
+            <div style={{ marginBottom: 28 }}>
+              <label style={labelStyle}>What would you like to receive?</label>
+              {[
+                ["reminders", "Game day reminders (text)"],
+                ["scores", "Score & standings updates (email)"],
+                ["bracket", "Playoff bracket updates (email)"],
+                ["rainout", "Rainout alerts (text)"],
+              ].map(([key, label]) => (
+                <div key={key} onClick={() => togglePref(key)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", marginBottom: 6, borderRadius: 10, background: prefs[key] ? "rgba(0,87,255,0.06)" : "#f8f9fb", border: prefs[key] ? "2px solid #0057FF" : "2px solid transparent", cursor: "pointer", transition: "all .15s" }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, border: prefs[key] ? "2px solid #0057FF" : "2px solid rgba(0,0,0,0.15)", background: prefs[key] ? "#0057FF" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .15s" }}>
+                    {prefs[key] && <span style={{ color: "#fff", fontSize: 14, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+                  </div>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: prefs[key] ? "#0057FF" : "#333" }}>{label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Notes */}
+            <div style={{ marginBottom: 28 }}>
+              <label style={labelStyle}>Anything else? <span style={{ fontWeight: 400, textTransform: "none", color: "rgba(0,0,0,0.3)" }}>(optional)</span></label>
+              <textarea value={form.notes} onChange={e => update("notes", e.target.value)} placeholder="Questions, comments, or anything you'd like us to know..." rows={3} style={{ ...inputStyle, resize: "vertical" }} onFocus={e => e.target.style.borderColor = "#0057FF"} onBlur={e => e.target.style.borderColor = "rgba(0,0,0,0.1)"} />
+            </div>
+
+            {/* Submit */}
+            {status === "error" && <p style={{ color: "#dc2626", fontSize: 14, marginBottom: 12 }}>Something went wrong. Please try again.</p>}
+            <button onClick={handleSubmit} disabled={!form.name || !form.team || !form.email || !form.phone || status === "sending"} style={{
+              width: "100%", padding: "16px", fontSize: 16, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900,
+              letterSpacing: ".08em", textTransform: "uppercase", color: "#fff",
+              background: (!form.name || !form.team || !form.email || !form.phone) ? "rgba(0,0,0,0.15)" : "#0057FF",
+              border: "none", borderRadius: 12, cursor: (!form.name || !form.team || !form.email || !form.phone) ? "not-allowed" : "pointer",
+              transition: "background .2s",
+            }}>
+              {status === "sending" ? "Submitting..." : "Sign Me Up ⚾"}
+            </button>
+
+            <p style={{ fontSize: 12, color: "rgba(0,0,0,0.3)", textAlign: "center", marginTop: 16 }}>Your information will only be used for LASSL league communications. No spam, ever.</p>
+          </div>
+        </Card>
       </div>
     </div>
   );
@@ -1661,6 +1788,7 @@ export default function App() {
       {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => { setTeamDetail(null); window.scrollTo(0,0); }} setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} scores={scores} sched={sched} rosters={rosters} />}
       {tab==="gallery"   && <GalleryPage />}
       {tab==="subs"      && <SubBoardPage />}
+      {tab==="signup"    && <SignUpPage allTeams={allTeams} />}
       {tab==="admin"     && <AdminPage />}
       {tab==="rules"     && <RulesPage />}
       <Footer setTab={handleSetTab} />
