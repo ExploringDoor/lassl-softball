@@ -549,7 +549,7 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
             <div style={{padding:"14px 16px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
               {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
                 <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i===0?8:0}}>
-                  <TLogo name={side.name} size={70} />
+                  <TLogo name={side.name} size={140} />
                   <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:18,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.35)",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{side.name}</span>
                   <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:36,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0}}>{side.score}</span>
                 </div>
@@ -573,7 +573,7 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
         <div style={{padding:"8px 14px 12px"}}>
           {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
             <div key={i} onClick={() => onTeamClick?.(side.name)} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i===0?8:0,cursor:onTeamClick?"pointer":"default",width:"100%"}}>
-              <TLogo name={side.name} size={50} />
+              <TLogo name={side.name} size={100} />
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:22,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>
                 {side.name}
               </div>
@@ -597,7 +597,7 @@ function UpcomingCard({ away, home, time, date, field, isNext, onTeamClick, allT
         <div style={{display:"flex",flexDirection:"column",gap:4}}>
           {[away,home].map((t,i) => (
             <div key={i} onClick={() => onTeamClick?.(t)} style={{display:"flex",alignItems:"center",gap:10,cursor:onTeamClick?"pointer":"default"}}>
-              <TLogo name={t} size={44} />
+              <TLogo name={t} size={88} />
               <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t}</span>
               <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:600,color:"rgba(0,0,0,0.3)"}}>{getRecord(t)}</span>
             </div>
@@ -629,7 +629,7 @@ function Ticker({ setTab, sched }) {
             <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",color:"#ff6b6b",textTransform:"uppercase",whiteSpace:"nowrap"}}>{g.time}</div>
             {[g.away,g.home].map((t,j) => (
               <div key={j} style={{display:"flex",alignItems:"center",gap:5}}>
-                <TLogo name={t} size={28} />
+                <TLogo name={t} size={112} />
                 <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:12,color:"#fff",letterSpacing:".02em",whiteSpace:"nowrap"}}>{t}</span>
               </div>
             ))}
@@ -804,7 +804,7 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched, div }) {
                   onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
                   onMouseLeave={e => e.currentTarget.style.background="transparent"}>
                   <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,color:i===0?"#0057FF":"rgba(0,0,0,0.2)",width:18,flexShrink:0,textAlign:"center"}}>{t.seed}</span>
-                  <TLogo name={t.name} size={36} />
+                  <TLogo name={t.name} size={72} />
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:15,color:"#111",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{t.name}</div>
                   </div>
@@ -884,7 +884,7 @@ function StandingsPage({ setTab, setTeamDetail, div: divData }) {
         {div.teams.map((t,i) => (
           <div key={t.name} onClick={() => goTeam(t.name)} style={{background:"#fff",borderRadius:10,marginBottom:8,padding:"12px 14px",display:"flex",alignItems:"center",gap:10,border:"1px solid rgba(0,0,0,0.08)",borderLeft:`3px solid ${i===0?"#0057FF":div.accent}`,cursor:"pointer"}}>
             <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:i===0?"#0057FF":"rgba(0,0,0,0.25)",width:24,flexShrink:0}}>{t.seed}</span>
-            <TLogo name={t.name} size={100} />
+            <TLogo name={t.name} size={200} />
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name}</div>
               <div style={{fontSize:11,color:"rgba(0,0,0,0.4)",marginTop:2}}>{t.pct} PCT · {t.gp} GP</div>
@@ -911,7 +911,7 @@ function StandingsPage({ setTab, setTeamDetail, div: divData }) {
               onMouseLeave={e => e.currentTarget.style.background="transparent"}>
               <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,color:i===0?"#0057FF":"rgba(0,0,0,0.22)"}}>{t.seed}</span>
               <div style={{display:"flex",alignItems:"center",gap:12}}>
-                <TLogo name={t.name} size={90} />
+                <TLogo name={t.name} size={180} />
                 <div>
                   <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
                   <div style={{height:3,width:100,background:"rgba(0,0,0,0.07)",borderRadius:2,marginTop:5,overflow:"hidden"}}>
@@ -949,7 +949,7 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
           <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(0,0,0,0.4)",fontSize:13,fontWeight:600,marginBottom:16,padding:0,display:"flex",alignItems:"center",gap:6}}>← All Teams</button>
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:24,marginBottom:24}}>
             <div style={{display:"flex",alignItems:"center",gap:20}}>
-              <TLogo name={teamName} size={120} />
+              <TLogo name={teamName} size={240} />
               <div>
                 <div style={{fontSize:11,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color,marginBottom:4}}>{team.divName}</div>
                 <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(36px,5vw,60px)",textTransform:"uppercase",color:"#111",lineHeight:1}}>{teamName}</h1>
@@ -1016,7 +1016,7 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
               return (
                 <div key={i} style={{padding:"12px 16px",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-                    <TLogo name={opp} size={70} />
+                    <TLogo name={opp} size={140} />
                     <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{isHome?"vs":"@"} {opp}</span>
                   </div>
                   <div style={{fontSize:12,color:"rgba(0,0,0,0.4)"}}>{g.time} · {g.field}</div>
@@ -1033,7 +1033,7 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
             {(div[team.divKey]?.teams || []).map((t,i) => (
               <div key={t.name} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",borderBottom:"1px solid rgba(0,0,0,0.04)",background:t.name===teamName?"rgba(0,87,255,0.04)":"transparent"}}>
                 <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,color:i===0?"#0057FF":"rgba(0,0,0,0.25)",width:20,textAlign:"center"}}>{t.seed}</span>
-                <TLogo name={t.name} size={90} />
+                <TLogo name={t.name} size={180} />
                 <span style={{flex:1,fontSize:13,fontWeight:t.name===teamName?700:500,color:t.name===teamName?color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name}</span>
                 <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,fontWeight:700,color:"#111",flexShrink:0}}>{t.w}-{t.l}</span>
               </div>
@@ -1084,7 +1084,7 @@ function TeamsPage({ setTab, setTeamDetail, div: divData, allTeams }) {
             onMouseLeave={e => e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"}>
               <div style={{display:"flex",alignItems:"center",gap:16}}>
                 <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,color:i===0?"#0057FF":"rgba(0,0,0,0.15)",width:30,flexShrink:0,textAlign:"center"}}>{t.seed}</span>
-                <TLogo name={t.name} size={80} />
+                <TLogo name={t.name} size={160} />
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
                   <div style={{display:"flex",gap:16,marginTop:6,fontSize:13,color:"rgba(0,0,0,0.4)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:600}}>
@@ -1604,7 +1604,7 @@ function CaptainPage() {
             }}
             onMouseEnter={e => e.currentTarget.style.borderColor="#0057FF"}
             onMouseLeave={e => e.currentTarget.style.borderColor="rgba(0,0,0,0.09)"}>
-              <TLogo name={t.name} size={56} />
+              <TLogo name={t.name} size={112} />
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,textTransform:"uppercase",color:"#111",marginTop:6}}>{t.name}</div>
               <div style={{fontSize:12,color:"rgba(0,0,0,0.35)",marginTop:2}}>{t.w}-{t.l}</div>
             </button>
@@ -1623,7 +1623,7 @@ function CaptainPage() {
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <div style={{background:"#001a6e",borderBottom:"3px solid #FFD700",padding:"16px clamp(12px,3vw,40px)"}}>
         <div style={{maxWidth:1000,margin:"0 auto",display:"flex",alignItems:"center",gap:14}}>
-          <TLogo name={captainTeam} size={56} />
+          <TLogo name={captainTeam} size={112} />
           <div>
             <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#FFD700",textTransform:"uppercase"}}>{captainTeam}</div>
             <div style={{fontSize:13,color:"rgba(255,255,255,0.4)"}}>Captain Mode</div>
@@ -1652,7 +1652,7 @@ function CaptainPage() {
               <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:16,alignItems:"center",maxWidth:450,margin:"0 auto"}}>
                 <div style={{textAlign:"center"}}>
                   <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>AWAY</div>
-                  <TLogo name={teamName(captainGame.away)} size={50} />
+                  <TLogo name={teamName(captainGame.away)} size={100} />
                   <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.away)}</div>
                   <input type="number" min="0" max="99" placeholder="0" value={captainAway} onChange={e => setCaptainAway(e.target.value)}
                     style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
@@ -1660,7 +1660,7 @@ function CaptainPage() {
                 <div style={{fontSize:20,fontWeight:700,color:"rgba(0,0,0,0.2)"}}>VS</div>
                 <div style={{textAlign:"center"}}>
                   <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>HOME</div>
-                  <TLogo name={teamName(captainGame.home)} size={50} />
+                  <TLogo name={teamName(captainGame.home)} size={100} />
                   <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.home)}</div>
                   <input type="number" min="0" max="99" placeholder="0" value={captainHome} onChange={e => setCaptainHome(e.target.value)}
                     style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
@@ -1870,7 +1870,7 @@ function AdminPage() {
       <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
         <div style={{background:"#001a6e",borderBottom:"3px solid #FFD700",padding:"16px clamp(12px,3vw,40px)"}}>
           <div style={{maxWidth:1000,margin:"0 auto",display:"flex",alignItems:"center",gap:14}}>
-            <TLogo name={captainTeam} size={56} />
+            <TLogo name={captainTeam} size={112} />
             <div>
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#FFD700",textTransform:"uppercase"}}>{captainTeam}</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,0.4)"}}>Captain Mode</div>
@@ -1900,7 +1900,7 @@ function AdminPage() {
                 <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:16,alignItems:"center",maxWidth:450,margin:"0 auto"}}>
                   <div style={{textAlign:"center"}}>
                     <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>AWAY</div>
-                    <TLogo name={teamName(captainGame.away)} size={50} />
+                    <TLogo name={teamName(captainGame.away)} size={100} />
                     <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.away)}</div>
                     <input type="number" min="0" max="99" placeholder="0" value={captainAway} onChange={e => setCaptainAway(e.target.value)}
                       style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
@@ -1908,7 +1908,7 @@ function AdminPage() {
                   <div style={{fontSize:20,fontWeight:700,color:"rgba(0,0,0,0.2)"}}>VS</div>
                   <div style={{textAlign:"center"}}>
                     <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>HOME</div>
-                    <TLogo name={teamName(captainGame.home)} size={50} />
+                    <TLogo name={teamName(captainGame.home)} size={100} />
                     <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.home)}</div>
                     <input type="number" min="0" max="99" placeholder="0" value={captainHome} onChange={e => setCaptainHome(e.target.value)}
                       style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
@@ -2040,7 +2040,7 @@ function AdminPage() {
                     {sortedTeams.map(team => (
                       <div key={team} style={{marginBottom:16}}>
                         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                          <TLogo name={team} size={40} />
+                          <TLogo name={team} size={80} />
                           <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111"}}>{team}</span>
                           <span style={{fontSize:12,color:"rgba(0,0,0,0.35)",fontWeight:600}}>({byTeam[team].length})</span>
                         </div>
@@ -2138,7 +2138,7 @@ function AdminPage() {
               <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:16,alignItems:"center",maxWidth:500,margin:"0 auto"}}>
                 <div style={{textAlign:"center"}}>
                   <div style={{fontSize:12,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(0,0,0,0.4)",marginBottom:8}}>Away</div>
-                  <TLogo name={teamName(selGame.away)} size={56} />
+                  <TLogo name={teamName(selGame.away)} size={112} />
                   <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",marginTop:8}}>{teamName(selGame.away)}</div>
                   <input type="number" min="0" max="99" placeholder="0" value={awayScore} onChange={e => setAwayScore(e.target.value)}
                     style={{width:88,fontSize:44,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:10,outline:"none"}} />
@@ -2146,7 +2146,7 @@ function AdminPage() {
                 <div style={{fontSize:20,fontWeight:700,color:"rgba(0,0,0,0.2)"}}>VS</div>
                 <div style={{textAlign:"center"}}>
                   <div style={{fontSize:12,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(0,0,0,0.4)",marginBottom:8}}>Home</div>
-                  <TLogo name={teamName(selGame.home)} size={56} />
+                  <TLogo name={teamName(selGame.home)} size={112} />
                   <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",marginTop:8}}>{teamName(selGame.home)}</div>
                   <input type="number" min="0" max="99" placeholder="0" value={homeScore} onChange={e => setHomeScore(e.target.value)}
                     style={{width:88,fontSize:44,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:10,outline:"none"}} />
