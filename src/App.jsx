@@ -419,8 +419,8 @@ const RULES_DATA = [
 function TLogo({ name, size=80 }) {
   const src = TEAM_LOGOS[name];
   if (src) return (
-    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-      <img src={src} alt={name} style={{width:size,height:size,objectFit:"contain",display:"block",flexShrink:0}} />
+    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",borderRadius:4}}>
+      <img src={src} alt={name} style={{width:size*1.4,height:size*1.4,objectFit:"contain",display:"block",flexShrink:0}} />
     </div>
   );
   const color = TEAM_COLORS[name] || "#0057FF";
@@ -792,16 +792,16 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched }) {
                 <span onClick={() => setTab("standings")} style={{color:"#0057FF",fontSize:13,fontWeight:700,cursor:"pointer"}}>Full →</span>
               </div>
               {topTeams.map((t,i) => (
-                <div key={t.name+t.divKey} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",borderBottom:"1px solid rgba(0,0,0,0.04)",transition:"background .15s",cursor:"pointer"}}
+                <div key={t.name+t.divKey} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 14px",borderBottom:"1px solid rgba(0,0,0,0.04)",transition:"background .15s",cursor:"pointer"}}
                   onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
                   onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#0057FF",width:22,textAlign:"center",flexShrink:0}}>{i+1}</span>
-                  <TLogo name={t.name} size={110} />
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,color:"#0057FF",width:18,textAlign:"center",flexShrink:0}}>{i+1}</span>
+                  <TLogo name={t.name} size={36} />
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:16,color:"#111",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{t.name}</div>
-                    <div style={{fontSize:11,color:"rgba(0,0,0,0.38)"}}>{t.divName}</div>
+                    <div style={{fontSize:14,color:"#111",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{t.name}</div>
+                    <div style={{fontSize:10,color:"rgba(0,0,0,0.38)"}}>{t.divName}</div>
                   </div>
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:24,fontWeight:700,color:"#111",flexShrink:0}}>{t.w}-{t.l}</span>
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,fontWeight:700,color:"#111",flexShrink:0}}>{t.w}-{t.l}</span>
                 </div>
               ))}
             </Card>
