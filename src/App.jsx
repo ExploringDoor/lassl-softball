@@ -11,6 +11,22 @@ const TEAM_LOGOS = {
   "AAE Mensch Warmers": L_AAE, "Emmanuel": L_EMAN,
   "Emanuel": L_EMAN, "Isaiah-Nouveau": L_ISAIAH, "Isaiah Nouveau": L_ISAIAH,
   "Isaiah OG's": L_ISAIAH,
+  "Bagel Dawgs": "/logo/1.png",
+  "Akiba-Red": "/logo/2.png",
+  "Akiba-Blue": "/logo/3.png",
+  "Hamakom-Miller": "/logo/4.png",
+  "Beth Am": "/logo/5.png",
+  "Or Ami": "/logo/6.png",
+  "Santa Monica": "/logo/7.png",
+  "Sinai Swingers": "/logo/8.png",
+  "Judea": "/logo/9.png",
+  "Kehillat Israel": "/logo/10.png",
+  "Beth Am/Sinai/Ikar": "/logo/11.png",
+  "Beth Shir Shalom": "/logo/12.png",
+  "Hamakom-Epstein": "/logo/13.png",
+  "TIOH": "/logo/14.png",
+  "Uni/Beth Hillel": "/logo/15.png",
+  "LBT": "/logo/16.png",
 };
 
 const DIV = {
