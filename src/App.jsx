@@ -573,7 +573,7 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
         <div style={{padding:"6px 10px 10px"}}>
           {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
             <div key={i} onClick={() => onTeamClick?.(side.name)} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i===0?6:0,cursor:onTeamClick?"pointer":"default",width:"100%"}}>
-              <TLogo name={side.name} size={80} />
+              <TLogo name={side.name} size={36} />
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:18,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>
                 {side.name}
               </div>
@@ -589,7 +589,7 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
 }
 
 function UpcomingCard({ away, home, time, date, field, isNext, onTeamClick, allTeams }) {
-  const getRecord = (name) => { const t = (allTeams||[]).find(x => x.name === name); return t ? `(${t.w}-${t.l})` : ""; };
+  const getRecord = (name) => { const t = (allTeams||[]).find(x => x.name === name || x.full === name || x.name.startsWith(name.split(" ")[0])); return t ? `(${t.w}-${t.l})` : ""; };
   return (
     <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"3px solid #0057FF",borderLeft:isNext?"4px solid #0057FF":"1px solid rgba(0,0,0,0.09)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
       <div style={{display:"flex",alignItems:"center",padding:"10px 14px",gap:12}}>
@@ -813,18 +813,29 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched }) {
 }
 
 /* ─── SCORES PAGE ─────────────────────────────────────────────────────────  */
-function ScoresPage({ setTab, setTeamDetail, scores, allTeams }) {
+function ScoresPage({ setTab, setTeamDetail, scores, allTeams, sched }) {
+  const upcomingWeeks = (sched||[]).map(s => ({ week: s.label, games: [], upcoming: true }));
+  const allWeeks = [...scores, ...upcomingWeeks];
   const [wk,setWk] = useState(0);
   const goTeam = (name) => { setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); };
+  const current = allWeeks[wk];
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <PageHero label="2026 Season" title="Scores">
-        <TabBar items={scores.map(s=>s.week)} active={wk} onChange={setWk} />
+        <TabBar items={allWeeks.map(s=>s.week)} active={wk} onChange={setWk} />
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(300px,100%),1fr))",gap:12}}>
-          {(scores[wk]?.games || []).map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} allTeams={allTeams} scores={scores} />)}
-        </div>
+        {current?.upcoming ? (
+          <div style={{textAlign:"center",padding:"60px 20px"}}>
+            <div style={{fontSize:48,marginBottom:12}}>⏳</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,textTransform:"uppercase",color:"rgba(0,0,0,0.2)"}}>No Scores Posted Yet</div>
+            <div style={{fontSize:14,color:"rgba(0,0,0,0.35)",marginTop:8}}>Check back after games are played</div>
+          </div>
+        ) : (
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(300px,100%),1fr))",gap:12}}>
+            {(current?.games || []).map((g,i) => <FinalCard key={i} g={g} onTeamClick={goTeam} allTeams={allTeams} scores={scores} />)}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1031,38 +1042,60 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
 function TeamsPage({ setTab, setTeamDetail, div: divData, allTeams }) {
   const [dk, setDk] = useState("A");
   const div = divData[dk];
+  const divKeys = Object.keys(divData);
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
-      <PageHero label="2026 Season" title="Teams">
-        <TabBar items={Object.keys(divData).map(d=>`Div ${d}`)} active={Object.keys(divData).indexOf(dk)} onChange={i => setDk(Object.keys(divData)[i])} />
-      </PageHero>
-      <div style={{maxWidth:1000,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
-          {div.teams.map((t,i) => {
-            const color = TEAM_COLORS[t.name]||div.accent;
-            return (
-              <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{
-                background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderLeft:`3px solid ${color}`,
-                borderRadius:12,padding:"16px 18px",cursor:"pointer",transition:"all .15s",
-                boxShadow:"0 1px 4px rgba(0,0,0,0.05)",
-              }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow=`0 4px 16px ${color}20`}
-              onMouseLeave={e => e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)"}>
-                <div style={{display:"flex",alignItems:"center",gap:12}}>
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:i===0?"#0057FF":"rgba(0,0,0,0.2)",width:22,flexShrink:0}}>{t.seed}</span>
-                  <TLogo name={t.name} size={50} />
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name}</div>
-                    <div style={{fontSize:11,color:"rgba(0,0,0,0.4)",marginTop:3}}>{t.pct} PCT · {t.rs}RF · {t.ra}RA · Diff {t.diff}</div>
-                  </div>
-                  <div style={{textAlign:"right",flexShrink:0}}>
-                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,color,lineHeight:1}}>{t.w}-{t.l}</div>
+      {/* Big division letter selector */}
+      <div style={{background:"#001a6e",borderBottom:"4px solid #0057FF",padding:"32px 20px 28px",textAlign:"center"}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:"rgba(255,255,255,0.4)",marginBottom:16}}>2026 Season · Select Division</div>
+        <div style={{display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}}>
+          {divKeys.map(d => (
+            <button key={d} onClick={() => setDk(d)} style={{
+              fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:48,
+              width:80,height:80,borderRadius:12,border:"none",cursor:"pointer",
+              background:dk===d?"#0057FF":"rgba(255,255,255,0.08)",
+              color:dk===d?"#FFD700":"rgba(255,255,255,0.4)",
+              transition:"all .15s",letterSpacing:".04em",
+              boxShadow:dk===d?"0 4px 20px rgba(0,87,255,0.4)":"none",
+            }}>{d}</button>
+          ))}
+        </div>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,color:"rgba(255,255,255,0.5)",marginTop:14,letterSpacing:".06em",textTransform:"uppercase"}}>{div.name} · {div.teams.length} Teams</div>
+      </div>
+
+      {/* Full team list */}
+      <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
+        {div.teams.map((t,i) => {
+          const color = TEAM_COLORS[t.name]||div.accent;
+          return (
+            <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{
+              background:"#fff",border:"1px solid rgba(0,0,0,0.08)",borderLeft:`4px solid ${color}`,
+              borderRadius:12,padding:"20px 24px",marginBottom:12,cursor:"pointer",
+              transition:"all .15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",
+            }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow=`0 4px 20px ${color}18`}
+            onMouseLeave={e => e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"}>
+              <div style={{display:"flex",alignItems:"center",gap:16}}>
+                <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,color:i===0?"#0057FF":"rgba(0,0,0,0.15)",width:30,flexShrink:0,textAlign:"center"}}>{t.seed}</span>
+                <TLogo name={t.name} size={60} />
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
+                  <div style={{display:"flex",gap:16,marginTop:6,fontSize:13,color:"rgba(0,0,0,0.4)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:600}}>
+                    <span>{t.pct} PCT</span>
+                    <span>{t.gp} GP</span>
+                    <span>{t.rs} RF</span>
+                    <span>{t.ra} RA</span>
+                    <span style={{color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626",fontWeight:700}}>{t.diff}</span>
                   </div>
                 </div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:36,color,lineHeight:1}}>{t.w}-{t.l}</div>
+                </div>
+                <span style={{fontSize:16,color:"rgba(0,0,0,0.2)",flexShrink:0}}>→</span>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1827,7 +1860,7 @@ export default function App() {
       <div style={{position:"relative",zIndex:200,overflow:"hidden",width:"100%"}}><Ticker setTab={handleSetTab} sched={sched} /></div>
       <div style={{position:"sticky",top:0,zIndex:300,width:"100%"}}><Navbar tab={tab} setTab={handleSetTab} /></div>
       {tab==="home"      && <HomePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} allTeams={allTeams} scores={scores} sched={sched} />}
-      {tab==="scores"    && <ScoresPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} scores={scores} allTeams={allTeams} />}
+      {tab==="scores"    && <ScoresPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} scores={scores} allTeams={allTeams} sched={sched} />}
       {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} sched={sched} allTeams={allTeams} />}
       {tab==="standings" && <StandingsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} />}
       {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} />}
