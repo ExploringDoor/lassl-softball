@@ -211,12 +211,7 @@ const TEAM_COLORS = {
   "Beth Am/Sinai/Ikar":"#2563eb","Sinai Swingers":"#b45309","Beth Shir Shalom":"#64748b",
 };
 
-const TEAM_ROSTERS = {
-  "VBS": ["David Cohen","Mike Levine","Aaron Goldberg","Josh Weiss","Sam Friedman","Danny Klein","Ben Marcus","Tom Shapiro","Eric Rosen","Ari Silver","Noah Blum","Jake Stern"],
-  "AAE A's": ["Rob Katz","Phil Segal","Mark Green","Steve Bloom","Jeff Rubin","Adam Levy","Brian Jacobs","Scott Hoffman","Dan Weiner","Craig Newman","Larry Fox"],
-  "Emmanuel": ["Paul Berg","Rick Gold","Gary Lerner","Neil Simon","Hank Abrams","Ira Goodman","Ken Wolff","Mel Diamond","Alan Gross","Sid Fisher","Burt Kaplan"],
-  "Isaiah-Nouveau": ["Evan Cohen","Jordan Levy","Tyler Blum","Mason Green","Caleb Stern","Lucas Klein","Ethan Rubin","Noah Wolf","Alex Marcus","Ryan Gold","Zach Berg"],
-};
+const TEAM_ROSTERS = {};
 
 const SCORES = [
   {week:"Week 9 – March 22",games:[
@@ -614,10 +609,80 @@ function UpcomingCard({ away, home, time, date, field, isNext, onTeamClick, allT
 }
 
 /* ─── TICKER ─────────────────────────────────────────────────────────────── */
-function Ticker({ setTab, sched }) {
+function Ticker({ setTab, sched, allTeams, scores }) {
+  const [previewGame, setPreviewGame] = useState(null);
   const fields = sched[0]?.fields || [];
   const games = fields.flatMap(f => f.games.map(g => ({...g, field:f.name})));
+  const dateStr = sched[0]?.label?.split("–")[1]?.trim() || "";
+
+  const getTeam = (name) => (allTeams||[]).find(t => t.name === name || t.name.toLowerCase().startsWith(name.toLowerCase().substring(0,5))) || {};
+  const getH2H = (a, b) => {
+    let aWins = 0, bWins = 0;
+    (scores||[]).forEach(wk => (wk.games||[]).forEach(g => {
+      if ((g.away===a && g.home===b) || (g.away===b && g.home===a)) {
+        const aScore = g.away===a ? g.aScore : g.hScore;
+        const bScore = g.away===a ? g.hScore : g.aScore;
+        if (aScore > bScore) aWins++; else if (bScore > aScore) bWins++;
+      }
+    }));
+    return { aWins, bWins };
+  };
+  const getStreak = (name) => {
+    const results = [];
+    (scores||[]).forEach(wk => (wk.games||[]).forEach(g => {
+      if (g.away===name || g.home===name) {
+        const myScore = g.away===name ? g.aScore : g.hScore;
+        const oppScore = g.away===name ? g.hScore : g.aScore;
+        results.push(myScore > oppScore ? "W" : "L");
+      }
+    }));
+    if (results.length === 0) return "—";
+    const last = results[results.length-1];
+    let count = 0;
+    for (let i = results.length-1; i >= 0; i--) { if (results[i] === last) count++; else break; }
+    return `${last}${count}`;
+  };
+
   return (
+    <>
+    {previewGame && (
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={() => setPreviewGame(null)}>
+        <div style={{background:"#fff",borderRadius:16,maxWidth:500,width:"100%",overflow:"hidden"}} onClick={e => e.stopPropagation()}>
+          <div style={{background:"#001a6e",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#FFD700",textTransform:"uppercase",letterSpacing:".06em"}}>Game Preview</span>
+            <button onClick={() => setPreviewGame(null)} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#fff",borderRadius:6,width:28,height:28,cursor:"pointer",fontSize:16}}>✕</button>
+          </div>
+          <div style={{padding:"20px",textAlign:"center"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,marginBottom:16}}>
+              <div style={{textAlign:"center"}}>
+                <TLogo name={previewGame.away} size={80} />
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111",marginTop:4}}>{previewGame.away}</div>
+                <div style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{getTeam(previewGame.away).w||0}-{getTeam(previewGame.away).l||0} · {getTeam(previewGame.away).divName||""}</div>
+                <div style={{fontSize:12,color:"rgba(0,0,0,0.35)",marginTop:2}}>Streak: {getStreak(previewGame.away)}</div>
+              </div>
+              <div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:32,color:"#0057FF"}}>{previewGame.time}</div>
+                <div style={{fontSize:13,color:"rgba(0,0,0,0.4)",marginTop:2}}>{dateStr}</div>
+                <div style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.25)",marginTop:4,textTransform:"uppercase"}}>Upcoming</div>
+              </div>
+              <div style={{textAlign:"center"}}>
+                <TLogo name={previewGame.home} size={80} />
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111",marginTop:4}}>{previewGame.home}</div>
+                <div style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{getTeam(previewGame.home).w||0}-{getTeam(previewGame.home).l||0} · {getTeam(previewGame.home).divName||""}</div>
+                <div style={{fontSize:12,color:"rgba(0,0,0,0.35)",marginTop:2}}>Streak: {getStreak(previewGame.home)}</div>
+              </div>
+            </div>
+            {(() => { const h2h = getH2H(previewGame.away, previewGame.home); return h2h.aWins + h2h.bWins > 0 ? (
+              <div style={{background:"#f8f9fb",borderRadius:10,padding:"12px 16px",marginBottom:12}}>
+                <div style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.4)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:6}}>Head-to-Head This Season</div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#111"}}>{previewGame.away} {h2h.aWins} — {h2h.bWins} {previewGame.home}</div>
+              </div>
+            ) : null; })()}
+            <div style={{fontSize:14,color:"rgba(0,0,0,0.4)"}}>📍 {previewGame.field}</div>
+          </div>
+        </div>
+      </div>
+    )}
     <div style={{background:"#001a6e",borderBottom:"2px solid #0057FF",display:"flex",alignItems:"stretch",overflow:"hidden",width:"100%",position:"relative"}}>
       <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 12px",borderRight:"1px solid rgba(255,255,255,0.15)",flexShrink:0}}>
         <img src={L_LEAGUE} alt="LASSL" style={{height:28,width:28,objectFit:"cover",borderRadius:"50%"}} />
@@ -625,7 +690,7 @@ function Ticker({ setTab, sched }) {
       </div>
       <div style={{display:"flex",alignItems:"stretch",overflowX:"auto",overflowY:"hidden",scrollbarWidth:"none",msOverflowStyle:"none",flex:"1 1 0",minWidth:0,WebkitOverflowScrolling:"touch"}}>
         {games.map((g,i) => (
-          <div key={i} style={{display:"flex",flexDirection:"column",justifyContent:"center",padding:"5px 12px",borderRight:"1px solid rgba(255,255,255,0.1)",flexShrink:0,gap:2}}>
+          <div key={i} onClick={() => setPreviewGame(g)} style={{display:"flex",flexDirection:"column",justifyContent:"center",padding:"5px 12px",borderRight:"1px solid rgba(255,255,255,0.1)",flexShrink:0,gap:2,cursor:"pointer"}}>
             <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",color:"#ff6b6b",textTransform:"uppercase",whiteSpace:"nowrap"}}>{g.time}</div>
             {[g.away,g.home].map((t,j) => (
               <div key={j} style={{display:"flex",alignItems:"center",gap:5}}>
@@ -640,6 +705,7 @@ function Ticker({ setTab, sched }) {
         <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,color:"#FFD700",whiteSpace:"nowrap"}}>Schedule »</span>
       </div>
     </div>
+    </>
   );
 }
 
@@ -747,10 +813,9 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched, div }) {
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       {/* HERO */}
-      <div style={{width:"100%",background:"#001a6e",position:"relative",overflow:"hidden",borderBottom:"4px solid #0057FF"}}>
-        <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,87,255,0.3) 0%, transparent 70%)",pointerEvents:"none"}} />
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 20px 28px",position:"relative",textAlign:"center"}}>
-          <img src="/header.png" alt="Synagogue Softball" style={{width:"min(600px,90vw)",objectFit:"contain"}} />
+      <div style={{width:"100%",borderBottom:"4px solid #0057FF"}}>
+        <div style={{display:"flex",justifyContent:"center",padding:"20px 20px 16px"}}>
+          <img src="/header.png" alt="Synagogue Softball" style={{width:"min(500px,70vw)",objectFit:"contain"}} />
         </div>
       </div>
 
@@ -849,21 +914,99 @@ function ScoresPage({ setTab, setTeamDetail, scores, allTeams, sched }) {
 }
 
 /* ─── SCHEDULE PAGE ───────────────────────────────────────────────────────── */
-function SchedulePage({ setTab, setTeamDetail, sched, allTeams }) {
+function SchedulePage({ setTab, setTeamDetail, sched, allTeams, scores }) {
+  const allTabs = [...sched.map(s=>s.label), "Playoffs"];
   const [wk,setWk] = useState(0);
-  const week = sched[wk] || { label: "", fields: [] };
-  const games = (week.fields || []).flatMap(f => f.games.map(g => ({...g,field:f.name})));
-  const dateStr = week.label.split("–")[1]?.trim()||"";
+  const [previewGame, setPreviewGame] = useState(null);
+  const isPlayoffs = wk === sched.length;
+  const week = !isPlayoffs ? (sched[wk] || { label: "", fields: [] }) : null;
+  const games = !isPlayoffs ? (week.fields || []).flatMap(f => f.games.map(g => ({...g,field:f.name}))) : [];
+  const dateStr = !isPlayoffs ? (week.label.split("–")[1]?.trim()||"") : "";
   const goTeam = (name) => { setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); };
+
+  const getTeam = (name) => (allTeams||[]).find(t => t.name === name || t.name.toLowerCase().startsWith(name.toLowerCase().substring(0,5))) || {};
+  const getStreak = (name) => {
+    const results = [];
+    (scores||[]).forEach(wk => (wk.games||[]).forEach(g => {
+      if (g.away===name || g.home===name) {
+        const myScore = g.away===name ? g.aScore : g.hScore;
+        const oppScore = g.away===name ? g.hScore : g.aScore;
+        results.push(myScore > oppScore ? "W" : "L");
+      }
+    }));
+    if (results.length === 0) return "—";
+    const last = results[results.length-1];
+    let count = 0;
+    for (let i = results.length-1; i >= 0; i--) { if (results[i] === last) count++; else break; }
+    return `${last}${count}`;
+  };
+  const getH2H = (a, b) => {
+    let aWins = 0, bWins = 0;
+    (scores||[]).forEach(wk => (wk.games||[]).forEach(g => {
+      if ((g.away===a && g.home===b) || (g.away===b && g.home===a)) {
+        const aScore = g.away===a ? g.aScore : g.hScore;
+        const bScore = g.away===a ? g.hScore : g.aScore;
+        if (aScore > bScore) aWins++; else if (bScore > aScore) bWins++;
+      }
+    }));
+    return { aWins, bWins };
+  };
+
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
+      {previewGame && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={() => setPreviewGame(null)}>
+          <div style={{background:"#fff",borderRadius:16,maxWidth:500,width:"100%",overflow:"hidden"}} onClick={e => e.stopPropagation()}>
+            <div style={{background:"#001a6e",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#FFD700",textTransform:"uppercase"}}>Game Preview</span>
+              <button onClick={() => setPreviewGame(null)} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#fff",borderRadius:6,width:28,height:28,cursor:"pointer",fontSize:16}}>✕</button>
+            </div>
+            <div style={{padding:"20px",textAlign:"center"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,marginBottom:16}}>
+                <div style={{textAlign:"center"}}>
+                  <TLogo name={previewGame.away} size={80} />
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111",marginTop:4}}>{previewGame.away}</div>
+                  <div style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{getTeam(previewGame.away).w||0}-{getTeam(previewGame.away).l||0}</div>
+                  <div style={{fontSize:12,color:"rgba(0,0,0,0.35)",marginTop:2}}>Streak: {getStreak(previewGame.away)}</div>
+                </div>
+                <div>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:32,color:"#0057FF"}}>{previewGame.time}</div>
+                  <div style={{fontSize:13,color:"rgba(0,0,0,0.4)",marginTop:2}}>{dateStr}</div>
+                  <div style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.25)",marginTop:4,textTransform:"uppercase"}}>Upcoming</div>
+                </div>
+                <div style={{textAlign:"center"}}>
+                  <TLogo name={previewGame.home} size={80} />
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111",marginTop:4}}>{previewGame.home}</div>
+                  <div style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{getTeam(previewGame.home).w||0}-{getTeam(previewGame.home).l||0}</div>
+                  <div style={{fontSize:12,color:"rgba(0,0,0,0.35)",marginTop:2}}>Streak: {getStreak(previewGame.home)}</div>
+                </div>
+              </div>
+              {(() => { const h2h = getH2H(previewGame.away, previewGame.home); return h2h.aWins + h2h.bWins > 0 ? (
+                <div style={{background:"#f8f9fb",borderRadius:10,padding:"12px 16px",marginBottom:12}}>
+                  <div style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.4)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:6}}>Head-to-Head This Season</div>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#111"}}>{previewGame.away} {h2h.aWins} — {h2h.bWins} {previewGame.home}</div>
+                </div>
+              ) : null; })()}
+              <div style={{fontSize:14,color:"rgba(0,0,0,0.4)"}}>📍 {previewGame.field}</div>
+            </div>
+          </div>
+        </div>
+      )}
       <PageHero label="2026 Season" title="Schedule" subtitle="Away team first (1B dugout) · Home team second (3B dugout)">
-        <TabBar items={sched.map(s=>s.label)} active={wk} onChange={setWk} />
+        <TabBar items={allTabs} active={wk} onChange={setWk} />
       </PageHero>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {games.map((g,i) => <UpcomingCard key={i} away={g.away} home={g.home} time={g.time} date={dateStr} onTeamClick={goTeam} field={g.field} isNext={i===0} allTeams={allTeams} />)}
-        </div>
+        {isPlayoffs ? (
+          <div style={{textAlign:"center",padding:"60px 20px"}}>
+            <div style={{fontSize:56,marginBottom:12}}>🏆</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:36,textTransform:"uppercase",color:"#111"}}>Playoffs</div>
+            <div style={{fontSize:16,color:"rgba(0,0,0,0.4)",marginTop:8}}>TBD — Times are not available yet</div>
+          </div>
+        ) : (
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
+            {games.map((g,i) => <div key={i} onClick={() => setPreviewGame(g)} style={{cursor:"pointer"}}><UpcomingCard away={g.away} home={g.home} time={g.time} date={dateStr} onTeamClick={goTeam} field={g.field} isNext={i===0} allTeams={allTeams} /></div>)}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -944,27 +1087,24 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
   const goTeam = (name) => { if(setTeamDetail){ setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); } };
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
-      <div style={{background:`linear-gradient(135deg, ${color}15 0%, #fff 60%)`,borderBottom:"3px solid #0057FF",padding:"32px clamp(12px,3vw,40px) 0"}}>
+      <div style={{background:`linear-gradient(135deg, ${color}15 0%, #fff 60%)`,borderBottom:"3px solid #0057FF",padding:"12px clamp(12px,3vw,40px)"}}>
         <div style={{maxWidth:1400,margin:"0 auto"}}>
-          <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(0,0,0,0.4)",fontSize:13,fontWeight:600,marginBottom:16,padding:0,display:"flex",alignItems:"center",gap:6}}>← All Teams</button>
-          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:24,marginBottom:24}}>
-            <div style={{display:"flex",alignItems:"center",gap:20}}>
-              <TLogo name={teamName} size={240} />
+          <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(0,0,0,0.4)",fontSize:13,fontWeight:600,marginBottom:8,padding:0,display:"flex",alignItems:"center",gap:6}}>← All Teams</button>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:14}}>
+              <TLogo name={teamName} size={70} />
               <div>
-                <div style={{fontSize:11,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color,marginBottom:4}}>{team.divName}</div>
-                <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(36px,5vw,60px)",textTransform:"uppercase",color:"#111",lineHeight:1}}>{teamName}</h1>
-                <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginTop:4}}>#{team.seed} seed · {team.divName}</div>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color,marginBottom:2}}>{team.divName}</div>
+                <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(28px,4vw,44px)",textTransform:"uppercase",color:"#111",lineHeight:1}}>{teamName}</h1>
+                <div style={{fontSize:12,color:"rgba(0,0,0,0.45)",marginTop:2}}>#{team.seed} seed</div>
               </div>
             </div>
-            <div style={{display:"flex",gap:12,flexWrap:"wrap",alignItems:"center"}}>
-              <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:`3px solid ${color}`,borderRadius:10,padding:"16px 24px",textAlign:"center"}}>
-                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:44,color,lineHeight:1}}>{team.w}-{team.l}</div>
-                <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:4,fontFamily:"'Barlow Condensed',sans-serif"}}>{team.pct} PCT</div>
-                <div style={{fontSize:11,color:"rgba(0,0,0,0.35)",marginTop:2}}>{team.rs} RF · {team.ra} RA</div>
+            <div style={{display:"flex",gap:12,alignItems:"center"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:36,color,lineHeight:1}}>{team.w}-{team.l}</div>
+              <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",fontFamily:"'Barlow Condensed',sans-serif"}}>
+                <div>{team.pct} PCT</div>
+                <div>{team.rs} RF · {team.ra} RA</div>
               </div>
-              <a href="https://www.synagoguesoftball.com/schedule-2/" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:8,color,border:`1px solid ${color}60`,borderRadius:20,padding:"9px 18px",textDecoration:"none",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:".06em",textTransform:"uppercase",background:`${color}10`}}>
-                📅 Subscribe to Schedule
-              </a>
             </div>
           </div>
         </div>
@@ -973,9 +1113,9 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
       <div className="team-detail-grid" style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px",display:"grid",gridTemplateColumns:"1fr 300px",gap:28,alignItems:"start"}}>
         <div>
           {/* Roster */}
-          {roster.length > 0 && (
-            <div style={{marginBottom:28}}>
-              <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:26,textTransform:"uppercase",color:"#111",marginBottom:14}}>Roster</h2>
+          <div style={{marginBottom:28}}>
+            <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:26,textTransform:"uppercase",color:"#111",marginBottom:14}}>Roster</h2>
+            {roster.length > 0 ? (
               <Card>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))"}}>
                   {roster.map((player,i) => (
@@ -988,8 +1128,10 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
                   ))}
                 </div>
               </Card>
-            </div>
-          )}
+            ) : (
+              <div style={{fontSize:15,color:"rgba(0,0,0,0.35)",fontStyle:"italic"}}>No rosters entered</div>
+            )}
+          </div>
 
           {/* Recent results */}
           {teamGames.length > 0 && (
@@ -1056,23 +1198,21 @@ function TeamsPage({ setTab, setTeamDetail, div: divData, allTeams }) {
       </div>
       <div style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
         {Object.entries(divData).map(([dk, div]) => (
-          <div key={dk} style={{marginBottom:28}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,textTransform:"uppercase",color:"#111",marginBottom:12}}>Division {dk}</div>
-            <div style={{display:"flex",justifyContent:"flex-start",gap:0,flexWrap:"nowrap",overflowX:"auto"}}>
+          <div key={dk} style={{marginBottom:8}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,textTransform:"uppercase",color:div.accent,marginBottom:0}}>Division {dk}</div>
+            <div style={{display:"flex",justifyContent:"flex-start",gap:0,flexWrap:"wrap"}}>
               {div.teams.map(t => (
                 <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{
                   flex:"1 1 0",minWidth:120,display:"flex",flexDirection:"column",alignItems:"center",
-                  padding:"16px 8px",cursor:"pointer",transition:"background .12s",textAlign:"center",
-                  borderRight:"1px solid rgba(0,0,0,0.06)",
+                  padding:"4px 8px",cursor:"pointer",transition:"background .12s",textAlign:"center",
                 }}
                 onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.05)"}
                 onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-                  <TLogo name={t.name} size={80} />
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:15,color:"#111",marginTop:8,textTransform:"uppercase",lineHeight:1.2}}>{t.name}</span>
+                  <TLogo name={t.name} size={200} />
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#111",marginTop:-32,textTransform:"uppercase",lineHeight:1.2}}>{t.name}</span>
                 </div>
               ))}
             </div>
-            <div style={{height:1,background:"rgba(0,0,0,0.08)"}} />
           </div>
         ))}
       </div>
@@ -1281,7 +1421,7 @@ function SubBoardPage() {
                   </select>
                 </div>
                 <div style={{gridColumn:"1 / -1"}}>
-                  <button onClick={() => setPosted(true)} style={{width:"100%",padding:"12px",background:"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>Post my availability</button>
+                  <button onClick={async () => { try { await fetch('/api/sub-board', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'day',data:form}) }); setPosted(true); } catch(e) { alert('Failed to post'); } }} style={{width:"100%",padding:"12px",background:"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>Post my availability</button>
                 </div>
               </div>
             )}
@@ -1947,10 +2087,24 @@ function AdminPage() {
   }
 
   // ── ADMIN DASHBOARD ──
+  // Sub board state
+  const [adminSubs, setAdminSubs] = useState({ daySubs: [], seasonSubs: [] });
+  const [subsLoading, setSubsLoading] = useState(false);
+  const loadSubs = () => {
+    setSubsLoading(true);
+    fetch('/api/sub-board').then(r => r.json()).then(d => { setAdminSubs(d); setSubsLoading(false); }).catch(() => setSubsLoading(false));
+  };
+  const deleteSub = async (type, id) => {
+    if (!confirm('Delete this sub?')) return;
+    await fetch('/api/sub-board', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type, id }) });
+    loadSubs();
+  };
+
   const adminCards = [
     { icon: "⚡", title: "Live Game Tracker", desc: "Score games in real time", color: "#0057FF", borderColor: "#0057FF", action: () => window.open("/live-score.html", "_blank") },
     { icon: "📊", title: "Enter Scores", desc: "Enter this week's results", color: "#0057FF", borderColor: "#0057FF", action: () => setAdminView("scores") },
     { icon: "👥", title: "Player Sign-Ups", desc: "View player registrations", color: "#0057FF", borderColor: "#0057FF", action: () => { setAdminView("signups"); if (signups.length === 0) loadSignups(); } },
+    { icon: "🔄", title: "Sub Board", desc: "Manage game day & season subs", color: "#b45309", borderColor: "#f59e0b", action: () => { setAdminView("subs"); loadSubs(); } },
     { icon: "📋", title: "Standings", desc: "View current standings", color: "#15803d", borderColor: "#22c55e", action: () => window.open("/", "_blank") },
   ];
 
@@ -2037,6 +2191,47 @@ function AdminPage() {
                   </div>
                 );
               })()}
+            </div>
+          </Card>
+        )}
+
+        {/* Subs view */}
+        {adminView === "subs" && (
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Sub Board Management</div>
+            </div>
+            <div style={{padding:"16px 20px"}}>
+              {subsLoading ? <div style={{textAlign:"center",padding:20,color:"rgba(0,0,0,0.4)"}}>Loading...</div> : <>
+                <div style={{marginBottom:24}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",marginBottom:10}}>Game Day Board ({adminSubs.daySubs.length})</div>
+                  {adminSubs.daySubs.length === 0 ? <div style={{fontSize:14,color:"rgba(0,0,0,0.35)"}}>No game day subs posted.</div> :
+                    adminSubs.daySubs.map(s => (
+                      <div key={s.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
+                        <span style={{fontWeight:700,flex:1}}>{s.name || "?"}</span>
+                        <span style={{color:"rgba(0,0,0,0.4)",fontSize:13}}>{s.team || ""}</span>
+                        <span style={{color:"rgba(0,0,0,0.4)",fontSize:13}}>{s.contact || ""}</span>
+                        <span style={{color:"rgba(0,0,0,0.4)",fontSize:13}}>{s.playing || ""} → {s.available || ""}</span>
+                        <button onClick={() => deleteSub('day', s.id)} style={{background:"none",border:"1px solid #dc2626",color:"#dc2626",borderRadius:6,padding:"4px 10px",fontSize:12,cursor:"pointer",fontWeight:700}}>Delete</button>
+                      </div>
+                    ))
+                  }
+                </div>
+                <div>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",marginBottom:10}}>Season Sub List ({adminSubs.seasonSubs.length})</div>
+                  {adminSubs.seasonSubs.length === 0 ? <div style={{fontSize:14,color:"rgba(0,0,0,0.35)"}}>No season subs registered.</div> :
+                    adminSubs.seasonSubs.map(s => (
+                      <div key={s.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
+                        <span style={{fontWeight:700,flex:1}}>{s.name || "?"}</span>
+                        <span style={{color:"rgba(0,0,0,0.4)",fontSize:13}}>{s.team || ""}</span>
+                        <span style={{color:"rgba(0,0,0,0.4)",fontSize:13}}>{s.contact || ""}</span>
+                        <span style={{color:"rgba(0,0,0,0.4)",fontSize:13}}>{s.field || ""} · {s.times || ""}</span>
+                        <button onClick={() => deleteSub('season', s.id)} style={{background:"none",border:"1px solid #dc2626",color:"#dc2626",borderRadius:6,padding:"4px 10px",fontSize:12,cursor:"pointer",fontWeight:700}}>Delete</button>
+                      </div>
+                    ))
+                  }
+                </div>
+              </>}
             </div>
           </Card>
         )}
@@ -2184,11 +2379,11 @@ export default function App() {
           .desktop-standings{display:none!important;}
         }
       `}</style>
-      <div style={{position:"relative",zIndex:200,overflow:"hidden",width:"100%"}}><Ticker setTab={handleSetTab} sched={sched} /></div>
+      <div style={{position:"relative",zIndex:200,overflow:"hidden",width:"100%"}}><Ticker setTab={handleSetTab} sched={sched} allTeams={allTeams} scores={scores} /></div>
       <div style={{position:"sticky",top:0,zIndex:300,width:"100%"}}><Navbar tab={tab} setTab={handleSetTab} /></div>
       {tab==="home"      && <HomePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} allTeams={allTeams} scores={scores} sched={sched} div={div} />}
       {tab==="scores"    && <ScoresPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} scores={scores} allTeams={allTeams} sched={sched} />}
-      {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} sched={sched} allTeams={allTeams} />}
+      {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} sched={sched} allTeams={allTeams} scores={scores} />}
       {tab==="standings" && <StandingsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} />}
       {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} />}
       {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => { setTeamDetail(null); window.scrollTo(0,0); }} setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} scores={scores} sched={sched} rosters={rosters} />}
