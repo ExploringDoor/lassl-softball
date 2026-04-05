@@ -1825,7 +1825,7 @@ export default function App() {
         }
       `}</style>
       <div style={{position:"relative",zIndex:200,overflow:"hidden",width:"100%"}}><Ticker setTab={handleSetTab} sched={sched} /></div>
-      <div style={{position:"sticky",top:0,zIndex:300,overflow:"hidden",width:"100%"}}><Navbar tab={tab} setTab={handleSetTab} /></div>
+      <div style={{position:"sticky",top:0,zIndex:300,width:"100%"}}><Navbar tab={tab} setTab={handleSetTab} /></div>
       {tab==="home"      && <HomePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} allTeams={allTeams} scores={scores} sched={sched} />}
       {tab==="scores"    && <ScoresPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} scores={scores} allTeams={allTeams} />}
       {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} sched={sched} allTeams={allTeams} />}
