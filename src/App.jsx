@@ -419,8 +419,8 @@ const RULES_DATA = [
 function TLogo({ name, size=80 }) {
   const src = TEAM_LOGOS[name];
   if (src) return (
-    <div style={{width:size,height:size,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",borderRadius:4}}>
-      <img src={src} alt={name} style={{width:size*1.4,height:size*1.4,objectFit:"contain",display:"block",flexShrink:0}} />
+    <div style={{width:size,height:size,flexShrink:0}}>
+      <img src={src} alt={name} style={{width:size,height:size,objectFit:"contain",display:"block"}} />
     </div>
   );
   const color = TEAM_COLORS[name] || "#0057FF";
@@ -549,7 +549,7 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
             <div style={{padding:"14px 16px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
               {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
                 <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i===0?8:0}}>
-                  <TLogo name={side.name} size={56} />
+                  <TLogo name={side.name} size={70} />
                   <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:18,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.35)",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{side.name}</span>
                   <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:400,fontSize:36,color:side.won?"#111":"rgba(0,0,0,0.22)",flexShrink:0}}>{side.score}</span>
                 </div>
@@ -573,7 +573,7 @@ function FinalCard({ g, onTeamClick, allTeams=[], scores=[] }) {
         <div style={{padding:"6px 10px 10px"}}>
           {[{name:g.away,score:g.aScore,won:aWin},{name:g.home,score:g.hScore,won:hWin}].map((side,i) => (
             <div key={i} onClick={() => onTeamClick?.(side.name)} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i===0?6:0,cursor:onTeamClick?"pointer":"default",width:"100%"}}>
-              <TLogo name={side.name} size={50} />
+              <TLogo name={side.name} size={70} />
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:side.won?900:600,fontSize:18,textTransform:"uppercase",color:side.won?"#111":"rgba(0,0,0,0.28)",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>
                 {side.name}
               </div>
@@ -598,7 +598,7 @@ function UpcomingCard({ away, home, time, date, field, isNext, onTeamClick, allT
           {isNext && <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#0057FF",marginBottom:-2}}>▶ NEXT GAME</div>}
           {[away,home].map((t,i) => (
             <div key={i} onClick={() => onTeamClick?.(t)} style={{display:"flex",alignItems:"center",gap:10,cursor:onTeamClick?"pointer":"default"}}>
-              <div style={{width:44,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><TLogo name={t} size={44} /></div>
+              <div style={{width:60,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><TLogo name={t} size={60} /></div>
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(14px,2vw,20px)",textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t}</div>
               <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:600,color:"rgba(0,0,0,0.35)",flexShrink:0}}>{getRecord(t)}</span>
             </div>
@@ -631,7 +631,7 @@ function Ticker({ setTab, sched }) {
             <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",color:"#ff6b6b",textTransform:"uppercase",whiteSpace:"nowrap"}}>{g.time}</div>
             {[g.away,g.home].map((t,j) => (
               <div key={j} style={{display:"flex",alignItems:"center",gap:5}}>
-                <TLogo name={t} size={22} />
+                <TLogo name={t} size={28} />
                 <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:12,color:"#fff",letterSpacing:".02em",whiteSpace:"nowrap"}}>{t}</span>
               </div>
             ))}
@@ -739,7 +739,8 @@ function Navbar({ tab, setTab }) {
 }
 
 /* ─── HOME PAGE ──────────────────────────────────────────────────────────── */
-function HomePage({ setTab, setTeamDetail, allTeams, scores, sched }) {
+function HomePage({ setTab, setTeamDetail, allTeams, scores, sched, div }) {
+  const [sidebarDiv, setSidebarDiv] = useState("A");
   const topTeams = [...allTeams].sort((a,b) => parseFloat(b.pct) - parseFloat(a.pct)).slice(0,8);
   const fields = sched[0]?.fields || [];
   const nextGames = fields.flatMap(f => f.games.map(g => ({...g,field:f.name}))).slice(0,5);
@@ -787,21 +788,29 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched }) {
           {/* Standings sidebar - hidden on mobile */}
           <div style={{position:"sticky",top:72}} className="sidebar-standings">
             <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
-              <div style={{padding:"14px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Standings</span>
-                <span onClick={() => setTab("standings")} style={{color:"#0057FF",fontSize:13,fontWeight:700,cursor:"pointer"}}>Full →</span>
+              <div style={{padding:"12px 16px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111"}}>Standings</span>
+                <span onClick={() => setTab("standings")} style={{color:"#0057FF",fontSize:12,fontWeight:700,cursor:"pointer"}}>Full →</span>
               </div>
-              {topTeams.map((t,i) => (
-                <div key={t.name+t.divKey} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 14px",borderBottom:"1px solid rgba(0,0,0,0.04)",transition:"background .15s",cursor:"pointer"}}
+              <div style={{display:"flex",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+                {Object.keys(div).map(d => (
+                  <button key={d} onClick={() => setSidebarDiv(d)} style={{
+                    flex:1,padding:"8px 0",border:"none",background:sidebarDiv===d?"rgba(0,87,255,0.08)":"transparent",
+                    fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:13,color:sidebarDiv===d?"#0057FF":"rgba(0,0,0,0.3)",
+                    cursor:"pointer",borderBottom:sidebarDiv===d?"2px solid #0057FF":"2px solid transparent",textTransform:"uppercase",
+                  }}>{d}</button>
+                ))}
+              </div>
+              {(div[sidebarDiv]?.teams || []).map((t,i) => (
+                <div key={t.name} onClick={() => { setTeamDetail(t.name); setTab("teams"); }} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderBottom:"1px solid rgba(0,0,0,0.04)",cursor:"pointer",transition:"background .15s"}}
                   onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
                   onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,color:"#0057FF",width:18,textAlign:"center",flexShrink:0}}>{i+1}</span>
-                  <TLogo name={t.name} size={44} />
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,color:i===0?"#0057FF":"rgba(0,0,0,0.2)",width:18,flexShrink:0,textAlign:"center"}}>{t.seed}</span>
+                  <TLogo name={t.name} size={36} />
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:14,color:"#111",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{t.name}</div>
-                    <div style={{fontSize:10,color:"rgba(0,0,0,0.38)"}}>{t.divName}</div>
+                    <div style={{fontSize:13,color:"#111",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{t.name}</div>
                   </div>
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,fontWeight:700,color:"#111",flexShrink:0}}>{t.w}-{t.l}</span>
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,fontWeight:700,color:"#111",flexShrink:0}}>{t.w}-{t.l}</span>
                 </div>
               ))}
             </Card>
@@ -2004,7 +2013,7 @@ export default function App() {
       `}</style>
       <div style={{position:"relative",zIndex:200,overflow:"hidden",width:"100%"}}><Ticker setTab={handleSetTab} sched={sched} /></div>
       <div style={{position:"sticky",top:0,zIndex:300,width:"100%"}}><Navbar tab={tab} setTab={handleSetTab} /></div>
-      {tab==="home"      && <HomePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} allTeams={allTeams} scores={scores} sched={sched} />}
+      {tab==="home"      && <HomePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} allTeams={allTeams} scores={scores} sched={sched} div={div} />}
       {tab==="scores"    && <ScoresPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} scores={scores} allTeams={allTeams} sched={sched} />}
       {tab==="schedule"  && <SchedulePage setTab={handleSetTab} setTeamDetail={handleTeamDetail} sched={sched} allTeams={allTeams} />}
       {tab==="standings" && <StandingsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} />}
