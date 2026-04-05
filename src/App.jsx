@@ -648,8 +648,10 @@ function Ticker({ setTab, sched }) {
 /* ─── NAVBAR ─────────────────────────────────────────────────────────────── */
 function Navbar({ tab, setTab }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["gallery","Gallery"],["subs","Sub Board"],["signup","Sign Up"],["rules","Rules"],["admin","⚙ Admin"]];
-  const handleNav = (id) => { setTab(id); setMenuOpen(false); window.scrollTo(0,0); };
+  const [moreOpen, setMoreOpen] = useState(false);
+  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["signup","Sign Up"],["admin","⚙ Admin"]];
+  const moreLinks = [["gallery","Gallery"],["subs","Sub Board"],["rules","Rules"]];
+  const handleNav = (id) => { setTab(id); setMenuOpen(false); setMoreOpen(false); window.scrollTo(0,0); };
   return (
     <>
       <nav style={{background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 1px 6px rgba(0,0,0,0.07)",height:62,display:"flex",alignItems:"center",padding:"0 clamp(12px,3vw,32px)",position:"relative",zIndex:400}}>
@@ -671,6 +673,29 @@ function Navbar({ tab, setTab }) {
                 }}>{label}</button>
               </li>
             ))}
+            <li style={{position:"relative"}}>
+              <button onClick={() => setMoreOpen(!moreOpen)} style={{
+                fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,
+                letterSpacing:".06em",textTransform:"uppercase",
+                color:moreOpen||moreLinks.some(([id])=>tab===id)?"#0057FF":"#555",
+                background:"none",border:"none",cursor:"pointer",padding:"7px 12px",borderRadius:6,
+                borderBottom:moreLinks.some(([id])=>tab===id)?"2px solid #0057FF":"2px solid transparent",
+                transition:"color .15s",whiteSpace:"nowrap",
+              }}>More ▾</button>
+              {moreOpen && (
+                <div style={{position:"absolute",top:"100%",right:0,background:"#fff",border:"1px solid rgba(0,0,0,0.1)",borderRadius:8,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",minWidth:150,zIndex:500,overflow:"hidden",marginTop:4}}>
+                  {moreLinks.map(([id,label]) => (
+                    <button key={id} onClick={() => handleNav(id)} style={{
+                      display:"block",width:"100%",textAlign:"left",padding:"10px 16px",
+                      fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,fontWeight:700,
+                      letterSpacing:".04em",textTransform:"uppercase",
+                      color:tab===id?"#0057FF":"#333",background:tab===id?"rgba(0,87,255,0.05)":"transparent",
+                      border:"none",borderBottom:"1px solid rgba(0,0,0,0.05)",cursor:"pointer",
+                    }}>{label}</button>
+                  ))}
+                </div>
+              )}
+            </li>
           </ul>
           {/* Hamburger button */}
           <button onClick={() => setMenuOpen(!menuOpen)} className="hamburger" style={{
@@ -695,7 +720,7 @@ function Navbar({ tab, setTab }) {
             border:"none",borderBottom:"2px solid #0057FF",
             cursor:"pointer",padding:"18px 20px",
           }}>🏠 Home</button>
-          {links.filter(([id])=>id!=="home").map(([id,label]) => (
+          {[...links.filter(([id])=>id!=="home"), ...moreLinks].map(([id,label]) => (
             <button key={id} onClick={() => handleNav(id)} style={{
               display:"block",width:"100%",textAlign:"left",
               fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:22,
@@ -857,29 +882,29 @@ function StandingsPage({ setTab, setTeamDetail, div: divData }) {
       <div className="desktop-standings" style={{maxWidth:1400,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
         <div className="standings-table">
         <Card style={{boxShadow:"0 2px 8px rgba(0,0,0,0.05)",minWidth:"unset"}}>
-          <div style={{display:"grid",gridTemplateColumns:"36px minmax(200px,1fr) 50px 50px 50px 70px 50px 50px 50px 60px",padding:"8px 16px",background:"#f8f9fb",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+          <div style={{display:"grid",gridTemplateColumns:"40px minmax(250px,1fr) 55px 55px 55px 75px 55px 55px 55px 65px",padding:"10px 20px",background:"#f8f9fb",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
             {["#","Team","W","L","T","PCT","GP","RS","RA","DIFF"].map((h,i) => (
-              <span key={h} style={{fontSize:10,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(0,0,0,0.3)",textAlign:i>1?"center":"left"}}>{h}</span>
+              <span key={h} style={{fontSize:11,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(0,0,0,0.3)",textAlign:i>1?"center":"left"}}>{h}</span>
             ))}
           </div>
           {div.teams.map((t,i) => (
-            <div key={t.name} onClick={() => goTeam(t.name)} style={{display:"grid",gridTemplateColumns:"36px minmax(200px,1fr) 50px 50px 50px 70px 50px 50px 50px 60px",padding:"10px 16px",borderBottom:"1px solid rgba(0,0,0,0.04)",alignItems:"center",transition:"background .15s",cursor:"pointer"}}
+            <div key={t.name} onClick={() => goTeam(t.name)} style={{display:"grid",gridTemplateColumns:"40px minmax(250px,1fr) 55px 55px 55px 75px 55px 55px 55px 65px",padding:"14px 20px",borderBottom:"1px solid rgba(0,0,0,0.04)",alignItems:"center",transition:"background .15s",cursor:"pointer"}}
               onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
               onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:i===0?"#0057FF":"rgba(0,0,0,0.22)"}}>{t.seed}</span>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <TLogo name={t.name} size={40} />
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,color:i===0?"#0057FF":"rgba(0,0,0,0.22)"}}>{t.seed}</span>
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <TLogo name={t.name} size={70} />
                 <div>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
-                  <div style={{height:2,width:80,background:"rgba(0,0,0,0.07)",borderRadius:2,marginTop:4,overflow:"hidden"}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
+                  <div style={{height:3,width:100,background:"rgba(0,0,0,0.07)",borderRadius:2,marginTop:5,overflow:"hidden"}}>
                     <div style={{height:"100%",background:i===0?"#0057FF":"rgba(0,0,0,0.18)",borderRadius:2,width:`${parseFloat(t.pct)*100}%`}} />
                   </div>
                 </div>
               </div>
               {[t.w,t.l,t.t,t.pct,t.gp,t.rs,t.ra].map((v,vi) => (
-                <span key={vi} style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:vi===3?14:18,fontWeight:vi===0?900:vi===3?700:400,color:vi===0?"#111":vi===3?"#0057FF":"rgba(0,0,0,0.55)",textAlign:"center",display:"block"}}>{v}</span>
+                <span key={vi} style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:vi===3?16:22,fontWeight:vi===0?900:vi===3?700:400,color:vi===0?"#111":vi===3?"#0057FF":"rgba(0,0,0,0.55)",textAlign:"center",display:"block"}}>{v}</span>
               ))}
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,fontWeight:700,textAlign:"center",display:"block",color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626"}}>{t.diff}</span>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,fontWeight:700,textAlign:"center",display:"block",color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626"}}>{t.diff}</span>
             </div>
           ))}
         </Card>
@@ -1004,60 +1029,40 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
 
 /* ─── TEAMS PAGE ─────────────────────────────────────────────────────────── */
 function TeamsPage({ setTab, setTeamDetail, div: divData, allTeams }) {
-  const [openDiv, setOpenDiv] = useState(null);
-  const toggleDiv = (dk) => setOpenDiv(openDiv === dk ? null : dk);
+  const [dk, setDk] = useState("A");
+  const div = divData[dk];
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
-      <PageHero label="2026 Season" title="Teams" />
-      <div style={{maxWidth:900,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px",display:"flex",flexDirection:"column",gap:10}}>
-        {Object.entries(divData).map(([dk,div]) => {
-          const isOpen = openDiv === dk;
-          return (
-            <div key={dk}>
-              <button onClick={() => toggleDiv(dk)} style={{
-                width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
-                background:isOpen?"#0057FF":"#fff",border:"1px solid rgba(0,0,0,0.09)",
-                borderRadius:isOpen?"12px 12px 0 0":"12px",padding:"14px 20px",cursor:"pointer",
-                transition:"all .15s",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",
-              }}>
+      <PageHero label="2026 Season" title="Teams">
+        <TabBar items={Object.keys(divData).map(d=>`Div ${d}`)} active={Object.keys(divData).indexOf(dk)} onChange={i => setDk(Object.keys(divData)[i])} />
+      </PageHero>
+      <div style={{maxWidth:1000,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
+          {div.teams.map((t,i) => {
+            const color = TEAM_COLORS[t.name]||div.accent;
+            return (
+              <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{
+                background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderLeft:`3px solid ${color}`,
+                borderRadius:12,padding:"16px 18px",cursor:"pointer",transition:"all .15s",
+                boxShadow:"0 1px 4px rgba(0,0,0,0.05)",
+              }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow=`0 4px 16px ${color}20`}
+              onMouseLeave={e => e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.05)"}>
                 <div style={{display:"flex",alignItems:"center",gap:12}}>
-                  <div style={{width:4,height:24,background:isOpen?"#FFD700":div.accent,borderRadius:2}} />
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:isOpen?"#fff":"#111",letterSpacing:".04em"}}>{div.name}</span>
-                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,fontWeight:600,color:isOpen?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.35)"}}>{div.teams.length} teams</span>
+                  <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:i===0?"#0057FF":"rgba(0,0,0,0.2)",width:22,flexShrink:0}}>{t.seed}</span>
+                  <TLogo name={t.name} size={50} />
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,textTransform:"uppercase",color:"#111",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name}</div>
+                    <div style={{fontSize:11,color:"rgba(0,0,0,0.4)",marginTop:3}}>{t.pct} PCT · {t.rs}RF · {t.ra}RA · Diff {t.diff}</div>
+                  </div>
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,color,lineHeight:1}}>{t.w}-{t.l}</div>
+                  </div>
                 </div>
-                <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,color:isOpen?"#FFD700":"rgba(0,0,0,0.3)",transition:"transform .2s",display:"inline-block",transform:isOpen?"rotate(180deg)":"rotate(0)"}}>{isOpen?"▲":"▼"}</span>
-              </button>
-              {isOpen && (
-                <div style={{background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:"none",borderRadius:"0 0 12px 12px",overflow:"hidden"}}>
-                  {div.teams.map((t,i) => {
-                    const color = TEAM_COLORS[t.name]||div.accent;
-                    return (
-                      <div key={t.name} onClick={() => setTeamDetail(t.name)} style={{
-                        display:"flex",alignItems:"center",gap:12,padding:"12px 20px",
-                        borderBottom:i<div.teams.length-1?"1px solid rgba(0,0,0,0.05)":"none",
-                        cursor:"pointer",transition:"background .15s",
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background="rgba(0,87,255,0.03)"}
-                      onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-                        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:i===0?"#0057FF":"rgba(0,0,0,0.2)",width:24,flexShrink:0,textAlign:"center"}}>{t.seed}</span>
-                        <div style={{width:40,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><TLogo name={t.name} size={40} /></div>
-                        <div style={{flex:1,minWidth:0}}>
-                          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",lineHeight:1}}>{t.name}</div>
-                          <div style={{fontSize:11,color:"rgba(0,0,0,0.4)",marginTop:2}}>{t.pct} PCT · {t.rs}RF · {t.ra}RA</div>
-                        </div>
-                        <div style={{textAlign:"right",flexShrink:0}}>
-                          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color,lineHeight:1}}>{t.w}-{t.l}</div>
-                          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,color:t.diff.startsWith("+")?div.accent:t.diff==="0"?"rgba(0,0,0,0.3)":"#dc2626"}}>{t.diff}</div>
-                        </div>
-                        <span style={{fontSize:12,fontWeight:700,color:"#0057FF",fontFamily:"'Barlow Condensed',sans-serif",flexShrink:0}}>→</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
