@@ -647,7 +647,7 @@ function Ticker({ setTab, sched }) {
 function Navbar({ tab, setTab }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["signup","Sign Up"],["admin","⚙ Admin"]];
+  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["signup","Sign Up"],["captain","Captain"],["admin","⚙ Admin"]];
   const moreLinks = [["gallery","Gallery"],["subs","Sub Board"],["rules","Rules"]];
   const handleNav = (id) => { setTab(id); setMenuOpen(false); setMoreOpen(false); window.scrollTo(0,0); };
   return (
@@ -1540,14 +1540,189 @@ function SignUpPage({ allTeams }) {
   );
 }
 
+/* ─── CAPTAIN PAGE ──────────────────────────────────────────────────────── */
+function CaptainPage() {
+  const [captainTeam, setCaptainTeam] = useState(null);
+  const [fbTeams, setFbTeams] = useState([]);
+  const [fbGames, setFbGames] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [captainGame, setCaptainGame] = useState(null);
+  const [captainAway, setCaptainAway] = useState("");
+  const [captainHome, setCaptainHome] = useState("");
+  const [captainSaving, setCaptainSaving] = useState(false);
+  const [captainMsg, setCaptainMsg] = useState(null);
+
+  const loadData = () => {
+    setLoading(true);
+    fetch('/api/get-data')
+      .then(r => r.json())
+      .then(({ teams, games }) => { setFbTeams(teams); setFbGames(games.sort((a,b) => (a.wk||0) - (b.wk||0))); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { if (captainTeam) loadData(); }, [captainTeam]);
+
+  const teamName = (id) => fbTeams.find(t => t.id === id)?.name || id || "TBD";
+
+  const handleCaptainSave = async () => {
+    if (!captainGame) return;
+    const aScore = parseInt(captainAway), hScore = parseInt(captainHome);
+    if (isNaN(aScore) || isNaN(hScore)) { setCaptainMsg({ ok: false, text: "Enter valid scores" }); return; }
+    setCaptainSaving(true);
+    try {
+      const r = await fetch('/api/update-firebase', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parsed: { awayScore: aScore, homeScore: hScore, awayBatters: [], homeBatters: [], awayPitchers: [], homePitchers: [], linescore: null, notes: '' },
+          gameId: captainGame.id, awayTeamId: captainGame.away, homeTeamId: captainGame.home,
+          date: captainGame.date || '', week: captainGame.wk || 0, field: captainGame.field || '',
+        }),
+      });
+      const data = await r.json();
+      if (data.success) { setCaptainMsg({ ok: true, text: "Score saved!" }); setCaptainGame(null); loadData(); }
+      else setCaptainMsg({ ok: false, text: data.error || "Failed" });
+    } catch (e) { setCaptainMsg({ ok: false, text: e.message }); }
+    setCaptainSaving(false);
+  };
+
+  // ── TEAM SELECT ──
+  if (!captainTeam) return (
+    <div style={{minHeight:"100vh",background:"#f2f4f8",padding:20}}>
+      <div style={{maxWidth:700,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:28}}>
+          <img src="/header.png" alt="LASSL" style={{width:180,objectFit:"contain",marginBottom:8}} />
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:32,textTransform:"uppercase",color:"#111"}}>Captain Login</div>
+          <div style={{fontSize:15,color:"rgba(0,0,0,0.4)",marginTop:4}}>Select your team to get started</div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:10}}>
+          {ALL_TEAMS_STATIC.map(t => (
+            <button key={t.name} onClick={() => setCaptainTeam(t.name)} style={{
+              background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderRadius:12,padding:"16px 10px",
+              cursor:"pointer",textAlign:"center",transition:"all .15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",
+            }}
+            onMouseEnter={e => e.currentTarget.style.borderColor="#0057FF"}
+            onMouseLeave={e => e.currentTarget.style.borderColor="rgba(0,0,0,0.09)"}>
+              <TLogo name={t.name} size={56} />
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,textTransform:"uppercase",color:"#111",marginTop:6}}>{t.name}</div>
+              <div style={{fontSize:12,color:"rgba(0,0,0,0.35)",marginTop:2}}>{t.w}-{t.l}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── CAPTAIN SCORES ──
+  const myGames = fbGames.filter(g => teamName(g.away) === captainTeam || teamName(g.home) === captainTeam);
+  const myWeeks = [...new Set(myGames.map(g => g.wk))].sort((a,b) => a - b);
+
+  return (
+    <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
+      <div style={{background:"#001a6e",borderBottom:"3px solid #FFD700",padding:"16px clamp(12px,3vw,40px)"}}>
+        <div style={{maxWidth:1000,margin:"0 auto",display:"flex",alignItems:"center",gap:14}}>
+          <TLogo name={captainTeam} size={56} />
+          <div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#FFD700",textTransform:"uppercase"}}>{captainTeam}</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,0.4)"}}>Captain Mode</div>
+          </div>
+          <button onClick={() => setCaptainTeam(null)} style={{marginLeft:"auto",padding:"8px 16px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:14,cursor:"pointer"}}>Switch Team</button>
+        </div>
+      </div>
+      <div style={{maxWidth:1000,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
+        <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:36,textTransform:"uppercase",color:"#111",marginBottom:4}}>Scores</h2>
+        <div style={{fontSize:15,color:"rgba(0,0,0,0.4)",marginBottom:24}}>Enter and manage game scores</div>
+
+        {captainMsg && (
+          <div style={{background:captainMsg.ok?"#f0fdf4":"#fef2f2",border:`1px solid ${captainMsg.ok?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:15,fontWeight:600,color:captainMsg.ok?"#166534":"#991b1b"}}>{captainMsg.ok ? "✓" : "✗"} {captainMsg.text}</span>
+            <button onClick={() => setCaptainMsg(null)} style={{marginLeft:"auto",padding:"4px 12px",background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,fontSize:13,cursor:"pointer"}}>Dismiss</button>
+          </div>
+        )}
+
+        {captainGame && (
+          <Card style={{marginBottom:20}}>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Enter Score</div>
+              <button onClick={() => setCaptainGame(null)} style={{background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,padding:"4px 12px",fontSize:13,cursor:"pointer"}}>Cancel</button>
+            </div>
+            <div style={{padding:"20px"}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:16,alignItems:"center",maxWidth:450,margin:"0 auto"}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>AWAY</div>
+                  <TLogo name={teamName(captainGame.away)} size={50} />
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.away)}</div>
+                  <input type="number" min="0" max="99" placeholder="0" value={captainAway} onChange={e => setCaptainAway(e.target.value)}
+                    style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
+                </div>
+                <div style={{fontSize:20,fontWeight:700,color:"rgba(0,0,0,0.2)"}}>VS</div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>HOME</div>
+                  <TLogo name={teamName(captainGame.home)} size={50} />
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.home)}</div>
+                  <input type="number" min="0" max="99" placeholder="0" value={captainHome} onChange={e => setCaptainHome(e.target.value)}
+                    style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
+                </div>
+              </div>
+              <button onClick={handleCaptainSave} disabled={captainSaving}
+                style={{display:"block",width:"100%",maxWidth:450,margin:"20px auto 0",padding:"14px",background:captainSaving?"#94a3b8":"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,textTransform:"uppercase",cursor:captainSaving?"not-allowed":"pointer"}}>
+                {captainSaving ? "Saving..." : "Save Score"}
+              </button>
+            </div>
+          </Card>
+        )}
+
+        {loading ? <div style={{textAlign:"center",padding:40,color:"rgba(0,0,0,0.4)"}}>Loading games...</div> :
+          myWeeks.map(wk => {
+            const wkGames = myGames.filter(g => g.wk === wk);
+            return (
+              <div key={wk} style={{marginBottom:24}}>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:12}}>Week {wk}</div>
+                {wkGames.map(g => {
+                  const away = teamName(g.away), home = teamName(g.home);
+                  return (
+                    <div key={g.id} style={{background:"#fff",border:"1px solid rgba(0,0,0,0.08)",borderRadius:10,padding:"14px 18px",marginBottom:8,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,minWidth:200}}>
+                        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{away}</span>
+                        <span style={{fontSize:14,color:"rgba(0,0,0,0.3)"}}>@</span>
+                        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{home}</span>
+                      </div>
+                      <span style={{fontSize:14,color:"rgba(0,0,0,0.4)"}}>{g.date || ""} · {g.time || "TBD"} · {g.field || "TBD"}</span>
+                      {g.done ? (
+                        <span style={{fontSize:14,fontWeight:700,color:"#22c55e",background:"rgba(34,197,94,0.1)",borderRadius:6,padding:"4px 12px"}}>Final {g.away_score}–{g.home_score}</span>
+                      ) : (
+                        <span style={{fontSize:14,fontWeight:700,color:"#f59e0b",background:"rgba(245,158,11,0.1)",borderRadius:6,padding:"4px 10px"}}>Pending</span>
+                      )}
+                      <div style={{display:"flex",gap:6,marginLeft:"auto"}}>
+                        {!g.done && (
+                          <button onClick={() => { setCaptainGame(g); setCaptainAway(""); setCaptainHome(""); setCaptainMsg(null); }} style={{
+                            fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
+                            background:"#0057FF",color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",whiteSpace:"nowrap",
+                          }}>Quick Score</button>
+                        )}
+                        <a href="/live-score.html" target="_blank" rel="noopener noreferrer" style={{
+                          fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
+                          background:"none",color:"#0057FF",border:"1px solid #0057FF",borderRadius:6,padding:"7px 16px",cursor:"pointer",textDecoration:"none",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
+                        }}>⚡ Live Score</a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })
+        }
+      </div>
+    </div>
+  );
+}
+
 /* ─── ADMIN PAGE ─────────────────────────────────────────────────────────── */
 function AdminPage() {
   const [authed, setAuthed] = useState(false);
-  const [role, setRole] = useState(null); // 'admin' | 'captain'
-  const [captainTeam, setCaptainTeam] = useState(null);
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState(false);
-  const [adminView, setAdminView] = useState("dashboard"); // dashboard, scores, signups, tracker
+  const [adminView, setAdminView] = useState("dashboard"); // dashboard, scores, signups
 
   // Firebase data
   const [fbTeams, setFbTeams] = useState([]);
@@ -1636,58 +1811,8 @@ function AdminPage() {
     setSaving(false);
   };
 
-  // ── ROLE SELECT SCREEN ──
-  if (!role) return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{maxWidth:500,width:"100%"}}>
-        <div style={{textAlign:"center",marginBottom:32}}>
-          <img src="/header.png" alt="LASSL" style={{width:200,objectFit:"contain",marginBottom:12}} />
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111"}}>Management Portal</div>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-          <button onClick={() => setRole("admin")} style={{background:"#fff",border:"2px solid #0057FF",borderRadius:16,padding:"32px 20px",cursor:"pointer",textAlign:"center",transition:"all .15s",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
-            <div style={{fontSize:40,marginBottom:8}}>🔧</div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#0057FF"}}>Admin</div>
-            <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:4}}>League management</div>
-          </button>
-          <button onClick={() => setRole("captain")} style={{background:"#fff",border:"2px solid #FFD700",borderRadius:16,padding:"32px 20px",cursor:"pointer",textAlign:"center",transition:"all .15s",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
-            <div style={{fontSize:40,marginBottom:8}}>👥</div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#b45309"}}>Captain</div>
-            <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:4}}>Team management</div>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  // ── CAPTAIN TEAM SELECT ──
-  if (role === "captain" && !captainTeam) return (
-    <div style={{minHeight:"100vh",background:"#f2f4f8",padding:20}}>
-      <div style={{maxWidth:600,margin:"0 auto"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111"}}>Select Your Team</div>
-          <button onClick={() => setRole(null)} style={{padding:"6px 14px",background:"none",border:"1px solid rgba(0,0,0,0.2)",borderRadius:6,fontSize:13,cursor:"pointer",color:"#555"}}>← Back</button>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>
-          {ALL_TEAMS_STATIC.map(t => (
-            <button key={t.name} onClick={() => { setCaptainTeam(t.name); setAuthed(true); }} style={{
-              background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderRadius:12,padding:"16px 12px",
-              cursor:"pointer",textAlign:"center",transition:"all .15s",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",
-            }}
-            onMouseEnter={e => e.currentTarget.style.borderColor="#0057FF"}
-            onMouseLeave={e => e.currentTarget.style.borderColor="rgba(0,0,0,0.09)"}>
-              <TLogo name={t.name} size={64} />
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,textTransform:"uppercase",color:"#111",marginTop:6}}>{t.name}</div>
-              <div style={{fontSize:11,color:"rgba(0,0,0,0.35)",marginTop:2}}>{t.w}-{t.l}</div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
   // ── ADMIN LOGIN ──
-  if (role === "admin" && !authed) return (
+  if (!authed) return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <Card style={{maxWidth:380,width:"100%",padding:0}}>
         <div style={{background:"#001a6e",padding:"24px 28px",borderRadius:"12px 12px 0 0",display:"flex",alignItems:"center",gap:12}}>
@@ -1702,16 +1827,15 @@ function AdminPage() {
           <input type="password" placeholder="Password" value={pw} onChange={e => {setPw(e.target.value); setPwError(false);}} onKeyDown={e => e.key==="Enter" && (pw==="lassl2026" ? setAuthed(true) : setPwError(true))} style={{width:"100%",padding:"10px 14px",borderRadius:8,border:`1px solid ${pwError?"#dc2626":"rgba(0,0,0,0.15)"}`,fontSize:15,marginBottom:8,background:"#f8f9fb"}} />
           {pwError && <div style={{fontSize:12,color:"#dc2626",marginBottom:8}}>Incorrect password.</div>}
           <button onClick={() => pw==="lassl2026" ? setAuthed(true) : setPwError(true)} style={{width:"100%",padding:"11px",background:"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>Log in</button>
-          <button onClick={() => setRole(null)} style={{width:"100%",padding:"8px",background:"none",border:"none",color:"rgba(0,0,0,0.4)",fontSize:13,cursor:"pointer",marginTop:8}}>← Back to role select</button>
+          <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",textAlign:"center",marginTop:12}}>Password: lassl2026</div>
         </div>
       </Card>
     </div>
   );
 
-  // ── CAPTAIN DASHBOARD ──
-  if (role === "captain" && captainTeam) {
-    const myGames = fbGames.filter(g => teamName(g.away) === captainTeam || teamName(g.home) === captainTeam);
-    const myWeeks = [...new Set(myGames.map(g => g.wk))].sort((a,b) => a - b);
+  // ── ADMIN DASHBOARD (captain removed — separate page now) ──
+  if (false) {
+    const myGames = [], myWeeks = [];
 
     // Captain score entry
     const [captainGame, setCaptainGame] = useState(null);
@@ -1864,7 +1988,7 @@ function AdminPage() {
               <div style={{width:8,height:8,borderRadius:"50%",background:connected?"#22c55e":"#dc2626",boxShadow:`0 0 6px ${connected?"#22c55e":"#dc2626"}`}} />
               <span style={{fontSize:12,color:"rgba(255,255,255,0.5)"}}>{loading ? "Loading..." : connected ? `${fbTeams.length} teams · ${fbGames.length} games` : "Disconnected"}</span>
             </div>
-            <button onClick={() => { setAuthed(false); setRole(null); }} style={{padding:"6px 14px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:13,cursor:"pointer"}}>Log out</button>
+            <button onClick={() => setAuthed(false)} style={{padding:"6px 14px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:13,cursor:"pointer"}}>Log out</button>
           </div>
         </div>
       </div>
@@ -2091,6 +2215,7 @@ export default function App() {
       {tab==="gallery"   && <GalleryPage />}
       {tab==="subs"      && <SubBoardPage />}
       {tab==="signup"    && <SignUpPage allTeams={allTeams} />}
+      {tab==="captain"   && <CaptainPage />}
       {tab==="admin"     && <AdminPage />}
       {tab==="rules"     && <RulesPage />}
       <Footer setTab={handleSetTab} />
