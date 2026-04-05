@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 
 const L_LEAGUE = "/league2.png";
-const L_VBS    = "/2.png";
-const L_AAE    = "/3.png";
-const L_EMAN   = "/4.png";
-const L_ISAIAH = "/5.png";
+const L_AAE    = "/2.png";
+const L_EMAN   = "/3.png";
+const L_ISAIAH = "/4.png";
+const L_VBS    = "/5.png";
 
 const TEAM_LOGOS = {
   "VBS": L_VBS, "AAE A's": L_AAE, "AAE Menchwarmers": L_AAE,
   "AAE Mensch Warmers": L_AAE, "Emmanuel": L_EMAN,
   "Emanuel": L_EMAN, "Isaiah-Nouveau": L_ISAIAH, "Isaiah Nouveau": L_ISAIAH,
+  "Isaiah OG's": L_ISAIAH,
 };
 
 const DIV = {
