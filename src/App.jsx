@@ -1545,7 +1545,7 @@ function CaptainPage() {
   const [captainTeam, setCaptainTeam] = useState(null);
   const [fbTeams, setFbTeams] = useState([]);
   const [fbGames, setFbGames] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [captainGame, setCaptainGame] = useState(null);
   const [captainAway, setCaptainAway] = useState("");
@@ -1561,6 +1561,7 @@ function CaptainPage() {
       .catch(() => setLoading(false));
   };
 
+  useEffect(() => { loadData(); }, []);
   useEffect(() => { if (captainTeam) loadData(); }, [captainTeam]);
 
   const teamName = (id) => fbTeams.find(t => t.id === id)?.name || id || "TBD";
@@ -1614,7 +1615,8 @@ function CaptainPage() {
   );
 
   // ── CAPTAIN SCORES ──
-  const myGames = fbGames.filter(g => teamName(g.away) === captainTeam || teamName(g.home) === captainTeam);
+  const myTeamId = fbTeams.find(t => t.name === captainTeam)?.id;
+  const myGames = fbGames.filter(g => teamName(g.away) === captainTeam || teamName(g.home) === captainTeam || g.away === myTeamId || g.home === myTeamId);
   const myWeeks = [...new Set(myGames.map(g => g.wk))].sort((a,b) => a - b);
 
   return (
@@ -1642,8 +1644,8 @@ function CaptainPage() {
 
         {captainGame && (
           <Card style={{marginBottom:20}}>
-            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Enter Score</div>
+            <div id="captain-score-entry" style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>{captainGame.done ? "Edit Score" : "Enter Score"}</div>
               <button onClick={() => setCaptainGame(null)} style={{background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,padding:"4px 12px",fontSize:13,cursor:"pointer"}}>Cancel</button>
             </div>
             <div style={{padding:"20px"}}>
@@ -1694,16 +1696,14 @@ function CaptainPage() {
                         <span style={{fontSize:14,fontWeight:700,color:"#f59e0b",background:"rgba(245,158,11,0.1)",borderRadius:6,padding:"4px 10px"}}>Pending</span>
                       )}
                       <div style={{display:"flex",gap:6,marginLeft:"auto"}}>
-                        {!g.done && (
-                          <button onClick={() => { setCaptainGame(g); setCaptainAway(""); setCaptainHome(""); setCaptainMsg(null); }} style={{
-                            fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
-                            background:"#0057FF",color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",whiteSpace:"nowrap",
-                          }}>Quick Score</button>
-                        )}
-                        <a href="/live-score.html" target="_blank" rel="noopener noreferrer" style={{
+                        <button onClick={() => { setCaptainGame(g); setCaptainAway(g.done ? String(g.away_score ?? "") : ""); setCaptainHome(g.done ? String(g.home_score ?? "") : ""); setCaptainMsg(null); setTimeout(() => document.getElementById('captain-score-entry')?.scrollIntoView({behavior:'smooth'}), 100); }} style={{
+                          fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
+                          background:g.done?"#f59e0b":"#0057FF",color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",whiteSpace:"nowrap",
+                        }}>{g.done ? "Edit Score" : "Quick Score"}</button>
+                        {!g.done && <a href="/live-score.html" target="_blank" rel="noopener noreferrer" style={{
                           fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
                           background:"none",color:"#0057FF",border:"1px solid #0057FF",borderRadius:6,padding:"7px 16px",cursor:"pointer",textDecoration:"none",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
-                        }}>⚡ Live Score</a>
+                        }}>⚡ Live Score</a>}
                       </div>
                     </div>
                   );
