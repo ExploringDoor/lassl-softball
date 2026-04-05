@@ -1628,7 +1628,7 @@ function CaptainPage() {
             <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#FFD700",textTransform:"uppercase"}}>{captainTeam}</div>
             <div style={{fontSize:13,color:"rgba(255,255,255,0.4)"}}>Captain Mode</div>
           </div>
-          <button onClick={() => setCaptainTeam(null)} style={{marginLeft:"auto",padding:"8px 16px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:14,cursor:"pointer"}}>Switch Team</button>
+          <button onClick={() => { setCaptainTeam(null); setCaptainGame(null); setCaptainAway(""); setCaptainHome(""); setCaptainMsg(null); }} style={{marginLeft:"auto",padding:"8px 16px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:14,cursor:"pointer"}}>Switch Team</button>
         </div>
       </div>
       <div style={{maxWidth:1000,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
@@ -1679,7 +1679,7 @@ function CaptainPage() {
             const wkGames = myGames.filter(g => g.wk === wk);
             return (
               <div key={wk} style={{marginBottom:24}}>
-                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:12}}>Week {wk}</div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:12}}>Week {wk} {wkGames[0]?.date ? `— ${wkGames[0].date}` : ""}</div>
                 {wkGames.map(g => {
                   const away = teamName(g.away), home = teamName(g.home);
                   return (
@@ -1926,7 +1926,7 @@ function AdminPage() {
             const wkGames = myGames.filter(g => g.wk === wk);
             return (
               <div key={wk} style={{marginBottom:24}}>
-                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:12}}>Week {wk}</div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:12}}>Week {wk} {wkGames[0]?.date ? `— ${wkGames[0].date}` : ""}</div>
                 {wkGames.map(g => {
                   const away = teamName(g.away);
                   const home = teamName(g.home);
