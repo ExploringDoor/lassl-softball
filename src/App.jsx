@@ -1582,8 +1582,11 @@ function CaptainPage() {
   );
 
   // ── CAPTAIN SCORES ──
-  const myTeamId = fbTeams.find(t => t.name === captainTeam)?.id;
-  const myGames = fbGames.filter(g => teamName(g.away) === captainTeam || teamName(g.home) === captainTeam || g.away === myTeamId || g.home === myTeamId);
+  const myTeamIds = fbTeams.filter(t => t.name === captainTeam || t.id === captainTeam.toLowerCase().replace(/[^a-z0-9]/g,'-') || t.name?.toLowerCase() === captainTeam.toLowerCase()).map(t => t.id);
+  const myGames = fbGames.filter(g => {
+    const an = teamName(g.away), hn = teamName(g.home);
+    return an === captainTeam || hn === captainTeam || myTeamIds.includes(g.away) || myTeamIds.includes(g.home);
+  });
   const myWeeks = [...new Set(myGames.map(g => g.wk))].sort((a,b) => a - b);
 
   return (
@@ -1642,6 +1645,7 @@ function CaptainPage() {
         )}
 
         {loading ? <div style={{textAlign:"center",padding:40,color:"rgba(0,0,0,0.4)"}}>Loading games...</div> :
+          myGames.length === 0 ? <div style={{textAlign:"center",padding:40,color:"rgba(0,0,0,0.4)"}}>No games found for {captainTeam}. ({fbGames.length} total games, {fbTeams.length} teams loaded)</div> :
           myWeeks.map(wk => {
             const wkGames = myGames.filter(g => g.wk === wk);
             return (
