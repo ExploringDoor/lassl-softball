@@ -1079,7 +1079,7 @@ function PlayoffBracket({ allTeams, divData }) {
   /* ── Division Card ── */
   const DivisionCard = ({ divKey, data }) => {
     const teamCount = data?.teams?.length || 0;
-    const accent = data?.accent || "#FFD700";
+    const accent = "#FFD700";
     const isSix = divKey === "D" && teamCount >= 6;
     return (
       <div style={{
