@@ -1028,10 +1028,10 @@ function PlayoffBracket({ allTeams, divData }) {
   );
 
   /* ── Champion badge ── */
-  const ChampBadge = ({ small }) => (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
-      <div style={{fontSize:small?18:28,lineHeight:1,filter:"drop-shadow(0 0 8px rgba(255,215,0,0.5))"}}>🏆</div>
-      <div style={{fontFamily:font,fontWeight:900,fontSize:small?9:12,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>Champion</div>
+  const WinnerBadge = () => (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
+      <div style={{fontSize:18,lineHeight:1}}>🥇</div>
+      <div style={{fontFamily:font,fontWeight:900,fontSize:10,color:"#FFD700",textTransform:"uppercase",letterSpacing:".06em"}}>Winner</div>
     </div>
   );
 
@@ -1047,7 +1047,7 @@ function PlayoffBracket({ allTeams, divData }) {
         <HLine />
         <Matchup label="Final" team1={null} seed1={null} team2={null} seed2={null} />
         <HLine />
-        <ChampBadge />
+        <WinnerBadge />
       </div>
     );
   };
@@ -1071,7 +1071,7 @@ function PlayoffBracket({ allTeams, divData }) {
         <HLine />
         <Matchup label="Final" team1={null} seed1={null} team2={null} seed2={null} />
         <HLine />
-        <ChampBadge />
+        <WinnerBadge />
       </div>
     );
   };
@@ -1143,9 +1143,44 @@ function PlayoffBracket({ allTeams, divData }) {
         </div>
       </div>
 
+      {/* League Championship Bracket */}
+      <div style={{marginTop:24,background:"linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,215,0,0.02))",border:"2px solid rgba(255,215,0,0.2)",borderRadius:16,padding:"20px clamp(12px,2vw,24px)"}}>
+        <div style={{textAlign:"center",marginBottom:16}}>
+          <div style={{fontSize:32,marginBottom:4}}>🏆</div>
+          <div style={{fontFamily:font,fontWeight:900,fontSize:24,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>League Championship</div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,0.3)",marginTop:4}}>5 Division Winners compete for the title</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:0,flexWrap:"wrap"}}>
+          {/* Round 1: 4 teams play, 1 gets bye */}
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <Matchup label="Round 1" team1={null} seed1={"A"} team2={null} seed2={"D"} />
+            <Matchup label="Round 1" team1={null} seed1={"B"} team2={null} seed2={"E"} />
+            <div style={{textAlign:"center",padding:"6px 10px",background:"rgba(255,215,0,0.1)",borderRadius:6,border:"1px solid rgba(255,215,0,0.15)"}}>
+              <div style={{fontSize:9,fontWeight:700,color:"rgba(255,215,0,0.5)",textTransform:"uppercase",letterSpacing:".08em"}}>Bye</div>
+              <div style={{fontFamily:font,fontWeight:800,fontSize:13,color:"rgba(255,255,255,0.6)",marginTop:2}}>Div C Winner</div>
+            </div>
+          </div>
+          <HLine />
+          {/* Semis */}
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <Matchup label="Semi 1" team1={null} seed1={null} team2={null} seed2={null} />
+            <Matchup label="Semi 2" team1={null} seed1={null} team2={null} seed2={null} />
+          </div>
+          <HLine />
+          {/* Final */}
+          <Matchup label="Championship" team1={null} seed1={null} team2={null} seed2={null} />
+          <HLine />
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+            <div style={{fontSize:36,filter:"drop-shadow(0 0 12px rgba(255,215,0,0.6))"}}>🏆</div>
+            <div style={{fontFamily:font,fontWeight:900,fontSize:14,color:"#FFD700",textTransform:"uppercase",letterSpacing:".1em"}}>Champion</div>
+          </div>
+        </div>
+        <div style={{textAlign:"center",marginTop:12,fontSize:11,color:"rgba(255,255,255,0.2)"}}>Seeding and bye determined by regular season record · Format may be adjusted by the Board</div>
+      </div>
+
       {/* Footer */}
       <div style={{textAlign:"center",marginTop:20,fontSize:11,color:"rgba(255,255,255,0.15)",position:"relative"}}>
-        All teams qualify &middot; Single elimination &middot; 7 innings minimum
+        All teams qualify &middot; Single elimination &middot; 7 innings minimum &middot; Division winners advance to League Championship
       </div>
     </div>
   );
