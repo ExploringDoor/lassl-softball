@@ -728,9 +728,9 @@ function Ticker({ setTab, sched, allTeams, scores }) {
 function Navbar({ tab, setTab }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"],["signup","Sign Up"]];
+  const links = [["home","Home"],["scores","Scores"],["schedule","Schedule"],["standings","Standings"],["teams","Teams"]];
   const redLinks = [["captain","Captain"],["admin","Admin"]];
-  const moreLinks = [["gallery","Gallery"],["subs","Sub Board"],["umpires","Umpires"],["registration","Registration"],["rules","Rules"],["waiver","Waiver Form"],["board","Board"]];
+  const moreLinks = [["signup","Sign Up"],["gallery","Gallery"],["subs","Sub Board"],["umpires","Umpires"],["registration","Registration"],["rules","Rules"],["waiver","Waiver Form"],["board","Board"]];
   const handleNav = (id) => { setTab(id); setMenuOpen(false); setMoreOpen(false); window.scrollTo(0,0); };
   return (
     <>
@@ -1284,7 +1284,7 @@ function SchedulePage({ setTab, setTeamDetail, sched, allTeams, scores, divData 
 function StandingsPage({ setTab, setTeamDetail, div: divData }) {
   const [dk,setDk] = useState("A");
   const div = divData[dk];
-  const goTeam = (name) => { if(setTeamDetail){ setTeamDetail(name); setTab("teams"); } };
+  const goTeam = (name) => { setTeamDetail(name); };
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <PageHero label="2026 Season" title="Standings">
