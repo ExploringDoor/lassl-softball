@@ -681,7 +681,7 @@ body{display:flex;flex-direction:column}
       <div class="final-teams-display" id="final-teams-display"></div>
       <button class="modal-confirm" id="btn-mark-final" onclick="markGameFinal()">✓ Mark Game Final</button>
       <button class="btn-continue" onclick="closeEndGameModal()">Continue Editing</button>
-      <button class="btn-danger-modal" style="background:var(--amber);margin-top:16px;border-top:1px solid var(--border)" onclick="showResetConfirm()">↺ Reset Game to 0–0</button>
+      <button class="btn-danger-modal" style="background:var(--amber);margin-top:12px" onclick="showResetConfirm()">↺ Reset Game to 0–0</button>
       <div id="reset-confirm-section" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;margin-top:8px;text-align:center">
         <div style="font-size:13px;color:#92400e;font-weight:600;margin-bottom:10px">⚠️ Reset ALL scores and stats?<br><span style="font-weight:400;font-size:12px">Lineup stays, everything else clears.</span></div>
         <div style="display:flex;gap:8px">
@@ -689,6 +689,7 @@ body{display:flex;flex-direction:column}
           <button class="btn-continue" style="flex:1;padding:10px;margin:0;font-size:13px" onclick="hideResetConfirm()">Cancel</button>
         </div>
       </div>
+      <button onclick="closeEndGameModal();resetAndGoBack()" class="btn-continue" style="margin-top:12px;border-color:var(--muted)">🚪 Exit & Go Back to Games</button>
     </div>
   </div>
 </div>
@@ -1094,7 +1095,7 @@ async function loadData() {
 function renderPickScreen() {
   const body = document.getElementById('pick-body');
   if (!GAMES.length) {
-    body.innerHTML = '<div class="empty-pick"><div class="ep-icon">📅</div><div class="ep-text">No games found</div><div class="ep-sub">Add games in the admin panel</div></div>';
+    body.innerHTML = '<div class="empty-pick"><div class="ep-icon">📅</div><div class="ep-text">No games found</div><div class="ep-sub">Add games in the admin panel</div><br><a href="/" style="color:var(--blue);font-weight:700;font-size:14px;text-decoration:none">← Back to Site</a></div>';
     return;
   }
 
