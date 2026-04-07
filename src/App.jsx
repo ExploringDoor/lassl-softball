@@ -2132,114 +2132,311 @@ function CaptainPage() {
     </div>
   );
 
-  // ── CAPTAIN SCORES ──
+  // ── DERIVED DATA ──
   const myTeamIds = fbTeams.filter(t => t.name === captainTeam || t.id === captainTeam.toLowerCase().replace(/[^a-z0-9]/g,'-') || t.name?.toLowerCase() === captainTeam.toLowerCase()).map(t => t.id);
   const myGames = fbGames.filter(g => {
     const an = teamName(g.away), hn = teamName(g.home);
     return an === captainTeam || hn === captainTeam || myTeamIds.includes(g.away) || myTeamIds.includes(g.home);
   });
-  const pendingWeeks = [...new Set(myGames.filter(g => !g.done).map(g => g.wk))].sort((a,b) => a - b);
-  const doneWeeks = [...new Set(myGames.filter(g => g.done).map(g => g.wk))].sort((a,b) => b - a);
+  const pendingGames = myGames.filter(g => !g.done);
+  const doneGames = myGames.filter(g => g.done);
+  const pendingWeeks = [...new Set(pendingGames.map(g => g.wk))].sort((a,b) => a - b);
+  const doneWeeks = [...new Set(doneGames.map(g => g.wk))].sort((a,b) => b - a);
   const myWeeks = [...pendingWeeks, ...doneWeeks.filter(w => !pendingWeeks.includes(w))];
+
+  // Find team stats from DIV or live data
+  const myStatic = ALL_TEAMS_STATIC.find(t => t.name === captainTeam);
+  const myFbTeam = fbTeams.find(t => t.name === captainTeam);
+  const w = myFbTeam?.w ?? myStatic?.w ?? 0;
+  const l = myFbTeam?.l ?? myStatic?.l ?? 0;
+  const t_ = myFbTeam?.t ?? myStatic?.t ?? 0;
+  const pct = (w + l) > 0 ? (w / (w + l)).toFixed(3).replace(/^0/, '') : ".000";
+  const rs = myFbTeam?.rs ?? myStatic?.rs ?? 0;
+  const ra = myFbTeam?.ra ?? myStatic?.ra ?? 0;
+  const diff = rs - ra;
+  const seed = myStatic?.seed ?? "\u2014";
+  const divKey = myStatic?.divKey ?? "\u2014";
+
+  // Compute games back
+  const myDiv = divKey !== "\u2014" ? DIV[divKey] : null;
+  let gamesBack = "\u2014";
+  let streak = "\u2014";
+  if (myDiv) {
+    const leader = myDiv.teams[0];
+    if (leader && leader.name !== captainTeam) {
+      const lw = leader.w, ll = leader.l;
+      gamesBack = (((lw - w) + (l - ll)) / 2).toFixed(1).replace(/\.0$/, '');
+    } else {
+      gamesBack = "\u2014";
+    }
+  }
+  // Compute streak from done games
+  if (doneGames.length > 0) {
+    const sorted = [...doneGames].sort((a,b) => (b.wk||0) - (a.wk||0));
+    let streakType = null;
+    let streakCount = 0;
+    for (const g of sorted) {
+      const an = teamName(g.away), hn = teamName(g.home);
+      const isAway = an === captainTeam || myTeamIds.includes(g.away);
+      const myScore = isAway ? (g.away_score ?? 0) : (g.home_score ?? 0);
+      const oppScore = isAway ? (g.home_score ?? 0) : (g.away_score ?? 0);
+      const result = myScore > oppScore ? "W" : myScore < oppScore ? "L" : "T";
+      if (streakType === null) { streakType = result; streakCount = 1; }
+      else if (result === streakType) { streakCount++; }
+      else break;
+    }
+    streak = streakType ? `${streakType}${streakCount}` : "\u2014";
+  }
+
+  // Roster from fbTeams
+  const myRoster = myFbTeam?.roster || [];
+
+  const BC = "'Barlow Condensed',sans-serif";
+
+  // ── SCORE ENTRY CARD (reused in SCHEDULE and SUBMIT SCORE tabs) ──
+  const renderScoreEntry = () => captainGame && (
+    <Card style={{marginBottom:20}}>
+      <div id="captain-score-entry" style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{fontFamily:BC,fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>{captainGame.done ? "Edit Score" : "Enter Score"}</div>
+        <button onClick={() => setCaptainGame(null)} style={{background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,padding:"4px 12px",fontSize:13,cursor:"pointer"}}>Cancel</button>
+      </div>
+      <div style={{padding:"20px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:16,alignItems:"center",maxWidth:450,margin:"0 auto"}}>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>AWAY</div>
+            <TLogo name={teamName(captainGame.away)} size={100} />
+            <div style={{fontFamily:BC,fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.away)}</div>
+            <input type="number" min="0" max="99" placeholder="0" value={captainAway} onChange={e => setCaptainAway(e.target.value)}
+              style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
+          </div>
+          <div style={{fontSize:20,fontWeight:700,color:"rgba(0,0,0,0.2)"}}>VS</div>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>HOME</div>
+            <TLogo name={teamName(captainGame.home)} size={100} />
+            <div style={{fontFamily:BC,fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.home)}</div>
+            <input type="number" min="0" max="99" placeholder="0" value={captainHome} onChange={e => setCaptainHome(e.target.value)}
+              style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
+          </div>
+        </div>
+        <button onClick={handleCaptainSave} disabled={captainSaving}
+          style={{display:"block",width:"100%",maxWidth:450,margin:"20px auto 0",padding:"14px",background:captainSaving?"#94a3b8":"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:BC,fontWeight:700,fontSize:18,textTransform:"uppercase",cursor:captainSaving?"not-allowed":"pointer"}}>
+          {captainSaving ? "Saving..." : "Save Score"}
+        </button>
+      </div>
+    </Card>
+  );
+
+  // ── MSG BANNER (reused) ──
+  const renderMsg = () => captainMsg && (
+    <div style={{background:captainMsg.ok?"#f0fdf4":"#fef2f2",border:`1px solid ${captainMsg.ok?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
+      <span style={{fontSize:15,fontWeight:600,color:captainMsg.ok?"#166534":"#991b1b"}}>{captainMsg.ok ? "\u2713" : "\u2717"} {captainMsg.text}</span>
+      <button onClick={() => setCaptainMsg(null)} style={{marginLeft:"auto",padding:"4px 12px",background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,fontSize:13,cursor:"pointer"}}>Dismiss</button>
+    </div>
+  );
+
+  // ── GAME ROW (reused in SCHEDULE and SUBMIT SCORE) ──
+  const renderGameRow = (g, showDone) => {
+    const away = teamName(g.away), home = teamName(g.home);
+    return (
+      <div key={g.id} style={{background:"#fff",border:"1px solid rgba(0,0,0,0.08)",borderRadius:10,padding:"14px 18px",marginBottom:8,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,minWidth:200}}>
+          <span style={{fontFamily:BC,fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{away}</span>
+          <span style={{fontSize:14,color:"rgba(0,0,0,0.3)"}}>@</span>
+          <span style={{fontFamily:BC,fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{home}</span>
+        </div>
+        <span style={{fontSize:14,color:"rgba(0,0,0,0.4)"}}>{g.date || ""} \u00b7 {g.time || "TBD"} \u00b7 {g.field || "TBD"}</span>
+        {g.done ? (
+          <span style={{fontSize:14,fontWeight:700,color:"#22c55e",background:"rgba(34,197,94,0.1)",borderRadius:6,padding:"4px 12px"}}>Final {g.away_score}\u2013{g.home_score}</span>
+        ) : (
+          <span style={{fontSize:14,fontWeight:700,color:"#f59e0b",background:"rgba(245,158,11,0.1)",borderRadius:6,padding:"4px 10px"}}>Pending</span>
+        )}
+        <div style={{display:"flex",gap:6,marginLeft:"auto",flexWrap:"wrap",justifyContent:"flex-end"}}>
+          {(!g.done || showDone) && <button onClick={() => { setCaptainGame(g); setCaptainAway(g.done ? String(g.away_score ?? "") : ""); setCaptainHome(g.done ? String(g.home_score ?? "") : ""); setCaptainMsg(null); setTimeout(() => document.getElementById('captain-score-entry')?.scrollIntoView({behavior:'smooth'}), 100); }} style={{
+            fontFamily:BC,fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
+            background:g.done?"#f59e0b":"#0057FF",color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",whiteSpace:"nowrap",
+          }}>{g.done ? "Edit Score" : "Quick Score"}</button>}
+          {g.done && showDone && <button onClick={async () => { if (!confirm('Clear this score and reset game to pending? Standings will be reversed.')) return; setCaptainMsg(null); try { const r = await fetch('/api/clear-score', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({gameId:g.id}) }); const d = await r.json(); if (d.success) { setCaptainMsg({ok:true,text:'Score cleared!'}); loadData(); } else { setCaptainMsg({ok:false,text:d.error||'Failed'}); } } catch(e) { setCaptainMsg({ok:false,text:e.message}); } }} style={{
+            fontFamily:BC,fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
+            background:"none",color:"#dc2626",border:"1px solid #dc2626",borderRadius:6,padding:"7px 16px",cursor:"pointer",whiteSpace:"nowrap",
+          }}>Clear Score</button>}
+          {!g.done && <a href={`/live-score.html?game=${g.id}`} target="_blank" rel="noopener noreferrer" style={{
+            fontFamily:BC,fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
+            background:"none",color:"#0057FF",border:"1px solid #0057FF",borderRadius:6,padding:"7px 16px",cursor:"pointer",textDecoration:"none",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
+          }}>{"\u26a1"} Live Score</a>}
+        </div>
+      </div>
+    );
+  };
+
+  // ── TAB CONTENT ──
+  const renderTabContent = () => {
+    if (loading) return <div style={{textAlign:"center",padding:40,color:"rgba(0,0,0,0.4)"}}>Loading...</div>;
+
+    switch (activeTab) {
+      case "MY TEAM": return (
+        <>
+          {/* Welcome Banner */}
+          <div style={{background:"linear-gradient(135deg, #001a6e 0%, #0057FF 100%)",borderRadius:14,padding:"32px 28px",marginBottom:24,position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",top:0,right:0,width:200,height:"100%",background:"radial-gradient(circle at 80% 50%, rgba(255,215,0,0.15) 0%, transparent 70%)"}}/>
+            <div style={{fontFamily:BC,fontWeight:900,fontSize:"clamp(28px,5vw,40px)",textTransform:"uppercase",color:"#FFD700",lineHeight:1.1}}>Welcome, {captainTeam}</div>
+            <div style={{fontSize:15,color:"rgba(255,255,255,0.6)",marginTop:8}}>Manage your team, view your schedule, and submit game scores.</div>
+          </div>
+
+          {/* Stat Cards Row */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:12,marginBottom:28}}>
+            {[
+              {label:"Record",value:`${w}-${l}${t_>0?`-${t_}`:""}`},
+              {label:"Win PCT",value:pct},
+              {label:"Standings",value:seed !== "\u2014" ? `#${seed}` : "\u2014"},
+              {label:"Runs Scored",value:String(rs)},
+              {label:"Runs Against",value:String(ra)},
+              {label:"Diff",value:diff > 0 ? `+${diff}` : String(diff)},
+            ].map(s => (
+              <div key={s.label} style={{background:"#fff",border:"1px solid rgba(0,0,0,0.08)",borderRadius:10,padding:"16px 14px",textAlign:"center"}}>
+                <div style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.4)",textTransform:"uppercase",letterSpacing:".05em",marginBottom:6}}>{s.label}</div>
+                <div style={{fontFamily:BC,fontWeight:900,fontSize:28,color:"#111"}}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Team Overview */}
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:BC,fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Team Overview</div>
+            </div>
+            <div style={{padding:20,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:16}}>
+              {[
+                {label:"Games Back",value:gamesBack},
+                {label:"Streak",value:streak},
+                {label:"Runs Scored",value:String(rs)},
+                {label:"Runs Against",value:String(ra)},
+              ].map(item => (
+                <div key={item.label} style={{textAlign:"center",padding:12}}>
+                  <div style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.4)",textTransform:"uppercase",letterSpacing:".05em",marginBottom:4}}>{item.label}</div>
+                  <div style={{fontFamily:BC,fontWeight:900,fontSize:32,color:"#001a6e"}}>{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </>
+      );
+
+      case "ROSTER": return (
+        <Card>
+          <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+            <div style={{fontFamily:BC,fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Roster</div>
+          </div>
+          <div style={{padding:20}}>
+            {myRoster.length === 0 ? (
+              <div style={{textAlign:"center",padding:40,color:"rgba(0,0,0,0.4)"}}>No rosters entered for {captainTeam}.</div>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {myRoster.map((player, i) => (
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 16px",background:i%2===0?"#f8f9fb":"#fff",borderRadius:8}}>
+                    <div style={{width:30,height:30,borderRadius:"50%",background:"#001a6e",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFD700",fontFamily:BC,fontWeight:900,fontSize:14}}>{i+1}</div>
+                    <span style={{fontFamily:BC,fontWeight:700,fontSize:17,color:"#111",textTransform:"uppercase"}}>{typeof player === 'string' ? player : player.name || player}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Card>
+      );
+
+      case "SCHEDULE": return (
+        <>
+          {renderMsg()}
+          {renderScoreEntry()}
+          {myGames.length === 0 ? <div style={{textAlign:"center",padding:40,color:"rgba(0,0,0,0.4)"}}>No games found for {captainTeam}.</div> :
+            myWeeks.map(wk => {
+              const wkGames = myGames.filter(g => g.wk === wk);
+              return (
+                <div key={wk} style={{marginBottom:24}}>
+                  <div style={{fontFamily:BC,fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:12}}>Week {wk} {wkGames[0]?.date ? `\u2014 ${wkGames[0].date}` : ""}</div>
+                  {wkGames.map(g => renderGameRow(g, true))}
+                </div>
+              );
+            })
+          }
+        </>
+      );
+
+      case "SUBMIT SCORE": return (
+        <>
+          <h2 style={{fontFamily:BC,fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111",marginBottom:4}}>Submit Score</h2>
+          <div style={{fontSize:15,color:"rgba(0,0,0,0.4)",marginBottom:24}}>Enter scores for pending games</div>
+          {renderMsg()}
+          {renderScoreEntry()}
+          {pendingGames.length === 0 ? (
+            <div style={{textAlign:"center",padding:40,color:"rgba(0,0,0,0.4)"}}>No pending games to score.</div>
+          ) : (
+            pendingGames.map(g => renderGameRow(g, false))
+          )}
+        </>
+      );
+
+      case "PAYMENTS": return (
+        <div style={{textAlign:"center",padding:"60px 20px"}}>
+          <div style={{fontSize:48,marginBottom:12,opacity:0.3}}>$</div>
+          <div style={{fontFamily:BC,fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111",marginBottom:8}}>Payments</div>
+          <div style={{fontSize:16,color:"rgba(0,0,0,0.4)"}}>Coming Soon</div>
+        </div>
+      );
+
+      case "ATTENDANCE": return (
+        <div style={{textAlign:"center",padding:"60px 20px"}}>
+          <div style={{fontSize:48,marginBottom:12,opacity:0.3}}>{"\u2611"}</div>
+          <div style={{fontFamily:BC,fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111",marginBottom:8}}>Attendance</div>
+          <div style={{fontSize:16,color:"rgba(0,0,0,0.4)"}}>Coming Soon</div>
+        </div>
+      );
+
+      case "ANNOUNCEMENTS": return (
+        <div style={{textAlign:"center",padding:"60px 20px"}}>
+          <div style={{fontSize:48,marginBottom:12,opacity:0.3}}>{"\ud83d\udce2"}</div>
+          <div style={{fontFamily:BC,fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111",marginBottom:8}}>Announcements</div>
+          <div style={{fontSize:16,color:"rgba(0,0,0,0.4)"}}>Coming Soon</div>
+        </div>
+      );
+
+      default: return null;
+    }
+  };
 
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
-      <div style={{background:"#001a6e",borderBottom:"3px solid #FFD700",padding:"16px clamp(12px,3vw,40px)"}}>
+      {/* ── HEADER BAR ── */}
+      <div style={{background:"#001a6e",borderBottom:"3px solid #FFD700",padding:"12px clamp(12px,3vw,40px)"}}>
         <div style={{maxWidth:1000,margin:"0 auto",display:"flex",alignItems:"center",gap:14}}>
-          <TLogo name={captainTeam} size={112} />
+          <TLogo name={captainTeam} size={56} />
           <div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,color:"#FFD700",textTransform:"uppercase"}}>{captainTeam}</div>
+            <div style={{fontFamily:BC,fontWeight:900,fontSize:22,color:"#FFD700",textTransform:"uppercase",lineHeight:1.1}}>{captainTeam}</div>
             <div style={{fontSize:13,color:"rgba(255,255,255,0.4)"}}>Captain Mode</div>
           </div>
-          <button onClick={() => { setCaptainTeam(null); setCaptainGame(null); setCaptainAway(""); setCaptainHome(""); setCaptainMsg(null); }} style={{marginLeft:"auto",padding:"8px 16px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:14,cursor:"pointer"}}>Switch Team</button>
+          <button onClick={() => { setCaptainTeam(null); setCaptainGame(null); setCaptainAway(""); setCaptainHome(""); setCaptainMsg(null); setActiveTab("MY TEAM"); }} style={{marginLeft:"auto",padding:"8px 16px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"rgba(255,255,255,0.6)",fontSize:14,cursor:"pointer",fontFamily:BC,fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Switch Team</button>
         </div>
       </div>
-      <div style={{maxWidth:1000,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
-        <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:36,textTransform:"uppercase",color:"#111",marginBottom:4}}>Scores</h2>
-        <div style={{fontSize:15,color:"rgba(0,0,0,0.4)",marginBottom:24}}>Enter and manage game scores</div>
 
-        {captainMsg && (
-          <div style={{background:captainMsg.ok?"#f0fdf4":"#fef2f2",border:`1px solid ${captainMsg.ok?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
-            <span style={{fontSize:15,fontWeight:600,color:captainMsg.ok?"#166534":"#991b1b"}}>{captainMsg.ok ? "✓" : "✗"} {captainMsg.text}</span>
-            <button onClick={() => setCaptainMsg(null)} style={{marginLeft:"auto",padding:"4px 12px",background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,fontSize:13,cursor:"pointer"}}>Dismiss</button>
-          </div>
-        )}
-
-        {captainGame && (
-          <Card style={{marginBottom:20}}>
-            <div id="captain-score-entry" style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>{captainGame.done ? "Edit Score" : "Enter Score"}</div>
-              <button onClick={() => setCaptainGame(null)} style={{background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,padding:"4px 12px",fontSize:13,cursor:"pointer"}}>Cancel</button>
-            </div>
-            <div style={{padding:"20px"}}>
-              <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:16,alignItems:"center",maxWidth:450,margin:"0 auto"}}>
-                <div style={{textAlign:"center"}}>
-                  <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>AWAY</div>
-                  <TLogo name={teamName(captainGame.away)} size={100} />
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.away)}</div>
-                  <input type="number" min="0" max="99" placeholder="0" value={captainAway} onChange={e => setCaptainAway(e.target.value)}
-                    style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
-                </div>
-                <div style={{fontSize:20,fontWeight:700,color:"rgba(0,0,0,0.2)"}}>VS</div>
-                <div style={{textAlign:"center"}}>
-                  <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",marginBottom:6}}>HOME</div>
-                  <TLogo name={teamName(captainGame.home)} size={100} />
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111",marginTop:6}}>{teamName(captainGame.home)}</div>
-                  <input type="number" min="0" max="99" placeholder="0" value={captainHome} onChange={e => setCaptainHome(e.target.value)}
-                    style={{width:80,fontSize:40,fontWeight:900,textAlign:"center",background:"#f8f9fb",border:"2px solid rgba(0,0,0,0.15)",borderRadius:10,color:"#111",padding:"6px",marginTop:8}} />
-                </div>
-              </div>
-              <button onClick={handleCaptainSave} disabled={captainSaving}
-                style={{display:"block",width:"100%",maxWidth:450,margin:"20px auto 0",padding:"14px",background:captainSaving?"#94a3b8":"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,textTransform:"uppercase",cursor:captainSaving?"not-allowed":"pointer"}}>
-                {captainSaving ? "Saving..." : "Save Score"}
-              </button>
-            </div>
-          </Card>
-        )}
-
-        {loading ? <div style={{textAlign:"center",padding:40,color:"rgba(0,0,0,0.4)"}}>Loading games...</div> :
-          myGames.length === 0 ? <div style={{textAlign:"center",padding:40,color:"rgba(0,0,0,0.4)"}}>No games found for {captainTeam}. ({fbGames.length} total games, {fbTeams.length} teams loaded)</div> :
-          myWeeks.map(wk => {
-            const wkGames = myGames.filter(g => g.wk === wk);
+      {/* ── TAB BAR ── */}
+      <div style={{background:"#fff",borderBottom:"1px solid rgba(0,0,0,0.1)",overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+        <div style={{maxWidth:1000,margin:"0 auto",display:"flex",gap:0,padding:"0 clamp(12px,3vw,40px)",minWidth:"max-content"}}>
+          {TABS.map(tab => {
+            const isActive = activeTab === tab;
             return (
-              <div key={wk} style={{marginBottom:24}}>
-                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111",borderBottom:"2px solid rgba(0,0,0,0.1)",paddingBottom:8,marginBottom:12}}>Week {wk} {wkGames[0]?.date ? `— ${wkGames[0].date}` : ""}</div>
-                {wkGames.map(g => {
-                  const away = teamName(g.away), home = teamName(g.home);
-                  return (
-                    <div key={g.id} style={{background:"#fff",border:"1px solid rgba(0,0,0,0.08)",borderRadius:10,padding:"14px 18px",marginBottom:8,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:6,minWidth:200}}>
-                        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{away}</span>
-                        <span style={{fontSize:14,color:"rgba(0,0,0,0.3)"}}>@</span>
-                        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{home}</span>
-                      </div>
-                      <span style={{fontSize:14,color:"rgba(0,0,0,0.4)"}}>{g.date || ""} · {g.time || "TBD"} · {g.field || "TBD"}</span>
-                      {g.done ? (
-                        <span style={{fontSize:14,fontWeight:700,color:"#22c55e",background:"rgba(34,197,94,0.1)",borderRadius:6,padding:"4px 12px"}}>Final {g.away_score}–{g.home_score}</span>
-                      ) : (
-                        <span style={{fontSize:14,fontWeight:700,color:"#f59e0b",background:"rgba(245,158,11,0.1)",borderRadius:6,padding:"4px 10px"}}>Pending</span>
-                      )}
-                      <div style={{display:"flex",gap:6,marginLeft:"auto",flexWrap:"wrap",justifyContent:"flex-end"}}>
-                        <button onClick={() => { setCaptainGame(g); setCaptainAway(g.done ? String(g.away_score ?? "") : ""); setCaptainHome(g.done ? String(g.home_score ?? "") : ""); setCaptainMsg(null); setTimeout(() => document.getElementById('captain-score-entry')?.scrollIntoView({behavior:'smooth'}), 100); }} style={{
-                          fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
-                          background:g.done?"#f59e0b":"#0057FF",color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",whiteSpace:"nowrap",
-                        }}>{g.done ? "Edit Score" : "Quick Score"}</button>
-                        {g.done && <button onClick={async () => { if (!confirm('Clear this score and reset game to pending? Standings will be reversed.')) return; setCaptainMsg(null); try { const r = await fetch('/api/clear-score', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({gameId:g.id}) }); const d = await r.json(); if (d.success) { setCaptainMsg({ok:true,text:'Score cleared!'}); loadData(); } else { setCaptainMsg({ok:false,text:d.error||'Failed'}); } } catch(e) { setCaptainMsg({ok:false,text:e.message}); } }} style={{
-                          fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
-                          background:"none",color:"#dc2626",border:"1px solid #dc2626",borderRadius:6,padding:"7px 16px",cursor:"pointer",whiteSpace:"nowrap",
-                        }}>Clear Score</button>}
-                        {!g.done && <a href={`/live-score.html?game=${g.id}`} target="_blank" rel="noopener noreferrer" style={{
-                          fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
-                          background:"none",color:"#0057FF",border:"1px solid #0057FF",borderRadius:6,padding:"7px 16px",cursor:"pointer",textDecoration:"none",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
-                        }}>⚡ Live Score</a>}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <button key={tab} onClick={() => { setActiveTab(tab); setCaptainGame(null); setCaptainMsg(null); }} style={{
+                fontFamily:BC,fontWeight:isActive?900:700,fontSize:14,letterSpacing:".04em",textTransform:"uppercase",
+                color:isActive?"#0057FF":"rgba(0,0,0,0.45)",
+                background:"none",border:"none",borderBottom:isActive?"3px solid #0057FF":"3px solid transparent",
+                padding:"14px 16px 11px",cursor:"pointer",whiteSpace:"nowrap",transition:"color .15s, border-color .15s",
+              }}>{tab}</button>
             );
-          })
-        }
+          })}
+        </div>
+      </div>
+
+      {/* ── CONTENT ── */}
+      <div style={{maxWidth:1000,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
+        {renderTabContent()}
       </div>
     </div>
   );
