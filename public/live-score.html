@@ -268,12 +268,58 @@ body{display:flex;flex-direction:column}
 .ls-cell.total{font-size:14px;font-weight:900;color:#fff;min-width:28px;border-left:1px solid rgba(255,255,255,.2);margin-left:4px;padding-left:4px}
 .ls-cell.current{color:#fff;font-weight:900}
 
+/* ═══ COUNT DISPLAY ═══ */
+.count-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px}
+.count-group{display:flex;align-items:center;gap:5px}
+.count-label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;color:rgba(255,255,255,.5);letter-spacing:.06em}
+.count-dots{display:flex;gap:4px}
+.count-dot{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:transparent;transition:all .2s}
+.count-dot.ball-filled{background:var(--green);border-color:var(--green)}
+.count-dot.strike-filled{background:var(--gold);border-color:var(--gold2)}
+.pitch-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,.15);font-size:18px;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.pitch-btn:active{transform:translate(-50%,-50%) scale(.9);background:rgba(255,255,255,.25)}
+.field-svg-wrap{position:relative;width:100%;max-width:210px;margin:0 auto;flex-shrink:0}
+
+/* ═══ PITCH MODAL ═══ */
+.pitch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pitch-grid-btn{padding:16px 8px;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .1s;-webkit-tap-highlight-color:transparent}
+.pitch-grid-btn:active{transform:scale(.93)}
+.pitch-grid-btn.pitch-ball{background:#dcfce7;color:#15803d}
+.pitch-grid-btn.pitch-strike{background:#fef9c3;color:#a16207}
+.pitch-grid-btn.pitch-foul{background:#fee2e2;color:#b91c1c}
+
+/* ═══ OUT TYPE MODAL ═══ */
+.out-type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.out-type-btn{padding:14px 8px;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .1s;background:#fce7f3;color:#be185d;-webkit-tap-highlight-color:transparent}
+.out-type-btn:active{transform:scale(.93)}
+.out-type-btn.dp-btn{grid-column:span 2;background:#fee2e2;color:#b91c1c}
+
+/* ═══ HIT LOCATION MODAL ═══ */
+.location-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.location-row{display:flex;justify-content:center;gap:6px}
+.loc-btn{min-width:48px;padding:10px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .12s;background:#fff;color:var(--text);text-align:center;-webkit-tap-highlight-color:transparent}
+.loc-btn:active{transform:scale(.93)}
+.loc-btn:hover{border-color:var(--navy);background:var(--navy-light)}
+.loc-btn.selected{background:var(--navy);border-color:var(--navy);color:#fff}
+
+/* ═══ EDIT PLAY MODAL ═══ */
+.edit-outcome-select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:'Inter',sans-serif;margin-bottom:12px;outline:none;transition:border-color .15s;background:#fff}
+.edit-outcome-select:focus{border-color:var(--navy)}
+
+/* ═══ LOG BADGES ═══ */
+.log-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:4px;vertical-align:middle}
+.log-badge.loc-badge{background:var(--navy-light);color:var(--navy)}
+.log-badge.out-badge{background:#fce7f3;color:#be185d}
+.log-entry-edit{font-size:11px;color:var(--muted);cursor:pointer;flex-shrink:0;padding:4px 6px;border-radius:4px;transition:all .12s}
+.log-entry-edit:hover{background:var(--navy-light);color:var(--navy)}
+
 /* ═══ RESPONSIVE ═══ */
 @media(min-width:600px){
   .lineup-teams{flex-direction:row}
   .game-top{padding:10px 16px 14px}
   .sb-score{font-size:64px}
   .field-svg{max-width:240px}
+  .field-svg-wrap{max-width:240px}
   .act-btn{font-size:20px;min-height:62px}
 }
 @media(max-width:380px){
@@ -281,6 +327,7 @@ body{display:flex;flex-direction:column}
   .sb-abbr{font-size:11px}
   .act-btn{font-size:15px;min-height:50px}
   .field-svg{max-width:180px}
+  .field-svg-wrap{max-width:180px}
 }
 
 /* ═══ SECTION VISIBILITY ═══ */
@@ -388,7 +435,15 @@ body{display:flex;flex-direction:column}
       <div class="out-dot" id="out-2"></div>
     </div>
 
+    <!-- Count Display -->
+    <div class="count-row" id="count-display">
+      <div class="count-group"><span class="count-label">B</span><div class="count-dots" id="ball-dots"></div></div>
+      <div class="count-group"><span class="count-label">S</span><div class="count-dots" id="strike-dots"></div></div>
+    </div>
+
     <!-- Field SVG — improved realistic design -->
+    <div class="field-svg-wrap">
+    <button class="pitch-btn" onclick="showPitchModal()">&#9918;</button>
     <svg class="field-svg" viewBox="0 0 220 178" xmlns="http://www.w3.org/2000/svg" overflow="visible">
       <defs>
         <filter id="base-glow-f" x="-80%" y="-80%" width="260%" height="260%">
@@ -483,6 +538,7 @@ body{display:flex;flex-direction:column}
       <text id="runner-label-3b" x="32" y="102" fill="#FFD700" font-size="9" font-weight="700"
             font-family="Inter,sans-serif" text-anchor="end" letter-spacing="0.3"></text>
     </svg>
+    </div>
 
     <!-- Batter info -->
     <div class="batter-info">
@@ -518,7 +574,7 @@ body{display:flex;flex-direction:column}
       <button class="act-btn act-bb" onclick="handlePlay('BB')">BB</button>
       <button class="act-btn act-hbp" onclick="handlePlay('HBP')">HBP</button>
       <button class="act-btn act-k" onclick="handlePlay('K')">K<span class="btn-sub">strikeout</span></button>
-      <button class="act-btn act-out" onclick="handlePlay('OUT')">OUT<span class="btn-sub">go/fo</span></button>
+      <button class="act-btn act-out" onclick="showOutTypeModal()">OUT<span class="btn-sub">go/fo</span></button>
       <button class="act-btn act-e" onclick="handlePlay('E')">E<span class="btn-sub">error</span></button>
       <button class="act-btn act-fc" onclick="handlePlay('FC')">FC<span class="btn-sub">f.choice</span></button>
       <button class="act-btn act-sac" onclick="handlePlay('SAC')">SAC<span class="btn-sub">fly/bunt</span></button>
@@ -682,6 +738,134 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
+<!-- ═══ PITCH MODAL ═══ -->
+<div class="modal-overlay" id="modal-pitch">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-body">
+      <div class="modal-title">Pitch</div>
+      <div class="modal-subtitle" id="pitch-count-label">Count: 0-0</div>
+      <div class="pitch-grid">
+        <button class="pitch-grid-btn pitch-ball" onclick="recordPitch('ball')">Ball</button>
+        <button class="pitch-grid-btn pitch-strike" onclick="recordPitch('strike')">Strike</button>
+        <button class="pitch-grid-btn pitch-foul" onclick="recordPitch('foul')">Foul</button>
+      </div>
+      <button class="btn-continue" onclick="closeModal('modal-pitch')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OUT TYPE MODAL ═══ -->
+<div class="modal-overlay" id="modal-outtype">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-body">
+      <div class="modal-title">Out Type</div>
+      <div class="modal-subtitle">How was the out recorded?</div>
+      <div class="out-type-grid">
+        <button class="out-type-btn" onclick="selectOutType('GO')">GO<br><span style="font-size:11px;font-weight:600;opacity:.7">Ground Out</span></button>
+        <button class="out-type-btn" onclick="selectOutType('FO')">FO<br><span style="font-size:11px;font-weight:600;opacity:.7">Fly Out</span></button>
+        <button class="out-type-btn" onclick="selectOutType('LO')">LO<br><span style="font-size:11px;font-weight:600;opacity:.7">Line Out</span></button>
+        <button class="out-type-btn" onclick="selectOutType('PO')">PO<br><span style="font-size:11px;font-weight:600;opacity:.7">Pop Out</span></button>
+        <button class="out-type-btn dp-btn" onclick="selectOutType('DP')">DP<br><span style="font-size:11px;font-weight:600;opacity:.7">Double Play</span></button>
+      </div>
+      <button class="btn-continue" onclick="closeModal('modal-outtype')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HIT LOCATION MODAL ═══ -->
+<div class="modal-overlay" id="modal-location">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-body">
+      <div class="modal-title">Hit Location</div>
+      <div class="modal-subtitle" id="location-modal-sub">Where was the ball hit?</div>
+      <div class="location-grid">
+        <div class="location-row">
+          <button class="loc-btn" onclick="selectHitLocation('LF')">LF</button>
+          <button class="loc-btn" onclick="selectHitLocation('CF')">CF</button>
+          <button class="loc-btn" onclick="selectHitLocation('RF')">RF</button>
+        </div>
+        <div class="location-row">
+          <button class="loc-btn" onclick="selectHitLocation('3B')">3B</button>
+          <button class="loc-btn" onclick="selectHitLocation('SS')">SS</button>
+          <button class="loc-btn" onclick="selectHitLocation('P')">P</button>
+          <button class="loc-btn" onclick="selectHitLocation('2B')">2B</button>
+          <button class="loc-btn" onclick="selectHitLocation('1B')">1B</button>
+        </div>
+        <div class="location-row">
+          <button class="loc-btn" onclick="selectHitLocation('C')">C</button>
+        </div>
+      </div>
+      <button class="btn-continue" onclick="selectHitLocation(null)">Skip</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ EDIT PLAY MODAL ═══ -->
+<div class="modal-overlay" id="modal-editplay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-body">
+      <div class="modal-title">Edit Play</div>
+      <div class="modal-subtitle" id="editplay-sub">Modify this play entry</div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;display:block">Outcome</label>
+        <select class="edit-outcome-select" id="editplay-outcome">
+          <option value="1B">Single (1B)</option>
+          <option value="2B">Double (2B)</option>
+          <option value="3B">Triple (3B)</option>
+          <option value="HR">Home Run (HR)</option>
+          <option value="BB">Walk (BB)</option>
+          <option value="HBP">HBP</option>
+          <option value="K">Strikeout (K)</option>
+          <option value="OUT">Out</option>
+          <option value="E">Error (E)</option>
+          <option value="FC">Fielder's Choice (FC)</option>
+          <option value="SAC">Sac Fly/Bunt (SAC)</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;display:block">Out Type (if applicable)</label>
+        <select class="edit-outcome-select" id="editplay-outtype">
+          <option value="">None</option>
+          <option value="GO">Ground Out (GO)</option>
+          <option value="FO">Fly Out (FO)</option>
+          <option value="LO">Line Out (LO)</option>
+          <option value="PO">Pop Out (PO)</option>
+          <option value="DP">Double Play (DP)</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:block">Hit Location</label>
+        <div class="location-grid" id="editplay-location-grid">
+          <div class="location-row">
+            <button class="loc-btn" onclick="setEditLocation('LF',this)">LF</button>
+            <button class="loc-btn" onclick="setEditLocation('CF',this)">CF</button>
+            <button class="loc-btn" onclick="setEditLocation('RF',this)">RF</button>
+          </div>
+          <div class="location-row">
+            <button class="loc-btn" onclick="setEditLocation('3B',this)">3B</button>
+            <button class="loc-btn" onclick="setEditLocation('SS',this)">SS</button>
+            <button class="loc-btn" onclick="setEditLocation('P',this)">P</button>
+            <button class="loc-btn" onclick="setEditLocation('2B',this)">2B</button>
+            <button class="loc-btn" onclick="setEditLocation('1B',this)">1B</button>
+          </div>
+          <div class="location-row">
+            <button class="loc-btn" onclick="setEditLocation('C',this)">C</button>
+          </div>
+          <div class="location-row">
+            <button class="loc-btn" onclick="setEditLocation(null,this)" style="color:var(--muted)">Clear</button>
+          </div>
+        </div>
+      </div>
+      <button class="modal-confirm" onclick="confirmEditPlay()">Save Changes</button>
+      <button class="btn-continue" onclick="closeModal('modal-editplay')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ TOAST CONTAINER ═══ -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
@@ -729,7 +913,9 @@ const STATE = {
   history: [],
   awayPitcher: '',
   homePitcher: '',
-  playLog: []
+  playLog: [],
+  balls: 0,
+  strikes: 0
 };
 
 // Pending play (waiting for runner resolution)
@@ -789,7 +975,9 @@ function cloneState() {
     lastPlay: STATE.lastPlay,
     awayPitcher: STATE.awayPitcher,
     homePitcher: STATE.homePitcher,
-    playLog: STATE.playLog
+    playLog: STATE.playLog,
+    balls: STATE.balls,
+    strikes: STATE.strikes
   }));
 }
 
@@ -798,6 +986,8 @@ function restoreState(snap) {
   if (!STATE.awayPitcher) STATE.awayPitcher = '';
   if (!STATE.homePitcher) STATE.homePitcher = '';
   if (!STATE.playLog) STATE.playLog = [];
+  if (STATE.balls === undefined) STATE.balls = 0;
+  if (STATE.strikes === undefined) STATE.strikes = 0;
 }
 
 function saveToLocalStorage() {
@@ -927,7 +1117,11 @@ function renderPickScreen() {
   };
 
   let html = '';
-  for (const w of Object.keys(byWeek).sort((a,b) => Number(a) - Number(b))) {
+  // Sort weeks: pending games first (by week asc), then completed (by week desc)
+  const pendingWeeks = Object.keys(byWeek).filter(w => byWeek[w].some(g => !g.done)).sort((a,b) => Number(a) - Number(b));
+  const doneWeeks = Object.keys(byWeek).filter(w => byWeek[w].every(g => g.done)).sort((a,b) => Number(b) - Number(a));
+  const sortedWeeks = [...pendingWeeks, ...doneWeeks];
+  for (const w of sortedWeeks) {
     html += `<div class="week-label">Week ${w}</div>`;
     for (const g of byWeek[w]) {
       const awayName = getTeamName(g.away);
@@ -1098,6 +1292,8 @@ window.startGame = function() {
   STATE.awayPitcher = '';
   STATE.homePitcher = '';
   STATE.playLog = [];
+  STATE.balls = 0;
+  STATE.strikes = 0;
 
   showScreen('screen-game');
   renderGameScreen();
@@ -1309,6 +1505,9 @@ function renderGameScreen() {
   const pitcherName = STATE.half === 'top' ? STATE.homePitcher : STATE.awayPitcher;
   document.getElementById('pitcher-name').textContent = pitcherName || '—';
 
+  // Count
+  renderCount();
+
   // Last play
   document.getElementById('last-play-text').textContent = STATE.lastPlay || '';
 
@@ -1412,6 +1611,8 @@ function calculateDefaultOutcomes(bases, outcome, batter) {
 // ═══════════════════════════════════════════════════════════════════
 // HANDLE PLAY
 // ═══════════════════════════════════════════════════════════════════
+const LOCATION_OUTCOMES = ['1B','2B','3B','HR','OUT','E','FC','SAC'];
+
 window.handlePlay = function(outcome) {
   if (STATE.status === 'final') { showToast('Game is final', 'error'); return; }
   const lineup = STATE.half === 'top' ? STATE.awayLineup : STATE.homeLineup;
@@ -1430,44 +1631,68 @@ window.handlePlay = function(outcome) {
     batter,
     batterIdx: batterIdx % lineup.length,
     runnerOutcomes,
-    batterOutcome
+    batterOutcome,
+    outType: window._pendingOutType || null,
+    hitLocation: null
   };
+  window._pendingOutType = null;
 
-  // Determine if we show the runner modal
-  const hasRunners = !!(STATE.bases.first || STATE.bases.second || STATE.bases.third);
-  const batterReaches = batterOutcome !== 'out';
+  // For DP out type, record 2 outs
+  if (PENDING_PLAY.outType === 'DP') {
+    // DP: batter out + lead runner out
+    PENDING_PLAY.batterOutcome = 'out';
+    // Try to get lead runner out too
+    if (STATE.bases.first) PENDING_PLAY.runnerOutcomes.first = 'out';
+    else if (STATE.bases.second) PENDING_PLAY.runnerOutcomes.second = 'out';
+    else if (STATE.bases.third) PENDING_PLAY.runnerOutcomes.third = 'out';
+  }
 
-  // K: no modal at all
-  if (outcome === 'K') {
-    finishPlay(runnerOutcomes, batterOutcome);
-    return;
+  // Decide the flow: location picker -> runner modal -> finishPlay
+  // BB, HBP, K skip location picker
+  const needsLocation = LOCATION_OUTCOMES.includes(outcome);
+
+  function proceedAfterLocation() {
+    const hasRunners = !!(STATE.bases.first || STATE.bases.second || STATE.bases.third);
+    const batterReaches = PENDING_PLAY.batterOutcome !== 'out';
+
+    // K: no modal at all
+    if (outcome === 'K') {
+      finishPlay(PENDING_PLAY.runnerOutcomes, PENDING_PLAY.batterOutcome);
+      return;
+    }
+    // Pure out with no runners: no modal
+    if (['OUT','FO','GO'].includes(outcome) && !hasRunners) {
+      finishPlay(PENDING_PLAY.runnerOutcomes, PENDING_PLAY.batterOutcome);
+      return;
+    }
+    // FC: no modal — apply immediately
+    if (outcome === 'FC') {
+      finishPlay(PENDING_PLAY.runnerOutcomes, PENDING_PLAY.batterOutcome);
+      return;
+    }
+    // OUT/GO/FO with runners only show modal if a runner might score
+    if (['OUT','FO','GO'].includes(outcome) && !Object.values(PENDING_PLAY.runnerOutcomes).some(d => d === 'scored')) {
+      finishPlay(PENDING_PLAY.runnerOutcomes, PENDING_PLAY.batterOutcome);
+      return;
+    }
+    // BB/HBP: only show modal if scored (bases loaded scenario)
+    if (['BB','HBP'].includes(outcome) && !Object.values(PENDING_PLAY.runnerOutcomes).some(d => d === 'scored')) {
+      finishPlay(PENDING_PLAY.runnerOutcomes, PENDING_PLAY.batterOutcome);
+      return;
+    }
+    // SAC: show modal if there are runners (need to adjust advancement)
+    // All other cases: show modal if runners on base or batter on base
+    if (hasRunners || batterReaches) {
+      showRunnerModal();
+    } else {
+      finishPlay(PENDING_PLAY.runnerOutcomes, PENDING_PLAY.batterOutcome);
+    }
   }
-  // Pure out with no runners: no modal
-  if (['OUT','FO','GO'].includes(outcome) && !hasRunners) {
-    finishPlay(runnerOutcomes, batterOutcome);
-    return;
-  }
-  // FC: no modal — apply immediately
-  if (outcome === 'FC') {
-    finishPlay(runnerOutcomes, batterOutcome);
-    return;
-  }
-  // OUT/GO/FO with runners only show modal if a runner might score
-  if (['OUT','FO','GO'].includes(outcome) && !Object.values(runnerOutcomes).some(d => d === 'scored')) {
-    finishPlay(runnerOutcomes, batterOutcome);
-    return;
-  }
-  // BB/HBP: only show modal if scored (bases loaded scenario)
-  if (['BB','HBP'].includes(outcome) && !Object.values(runnerOutcomes).some(d => d === 'scored')) {
-    finishPlay(runnerOutcomes, batterOutcome);
-    return;
-  }
-  // SAC: show modal if there are runners (need to adjust advancement)
-  // All other cases: show modal if runners on base or batter on base
-  if (hasRunners || batterReaches) {
-    showRunnerModal();
+
+  if (needsLocation) {
+    showLocationPicker(proceedAfterLocation);
   } else {
-    finishPlay(runnerOutcomes, batterOutcome);
+    proceedAfterLocation();
   }
 };
 
@@ -1774,7 +1999,9 @@ function finishPlay(runnerOutcomes, batterOutcome) {
 
   // Play log entry
   const halfArrow = STATE.half === 'top' ? '▲' : '▼';
+  const outTypeStr = (p.outType && outcome === 'OUT') ? p.outType : null;
   let desc = `${halfArrow}${STATE.inning} ${batter.name.toUpperCase()} — ${outcomeName}`;
+  if (outTypeStr) desc += ` (${outTypeStr})`;
   const extras = [];
   if (runs > 0) extras.push(`${runs} run${runs > 1 ? 's' : ''}`);
   if (rbiCount > 0) extras.push(`${rbiCount} RBI`);
@@ -1787,8 +2014,14 @@ function finishPlay(runnerOutcomes, batterOutcome) {
     runs,
     rbi: rbiCount,
     outsOnPlay,
-    description: desc
+    description: desc,
+    outType: outTypeStr,
+    hitLocation: p.hitLocation || null
   });
+
+  // Reset count after each plate appearance
+  STATE.balls = 0;
+  STATE.strikes = 0;
 
   PENDING_PLAY = null;
 
@@ -1815,7 +2048,8 @@ window.showLogModal = function() {
   } else {
     // Show last 50 in reverse order
     const recent = [...log].reverse().slice(0, 50);
-    entries.innerHTML = recent.map(entry => {
+    entries.innerHTML = recent.map((entry, revIdx) => {
+      const realIdx = log.length - 1 - revIdx;
       const halfArrow = entry.half === 'top' ? '▲' : '▼';
       const outcomeLabels = {
         '1B':'Single','2B':'Double','3B':'Triple','HR':'Home Run',
@@ -1823,11 +2057,14 @@ window.showLogModal = function() {
         'E':'Error','FC':'FC','SAC':'SAC'
       };
       const outLabel = outcomeLabels[entry.outcome] || entry.outcome;
+      const locBadge = entry.hitLocation ? `<span class="log-badge loc-badge">${entry.hitLocation}</span>` : '';
+      const outTypeBadge = entry.outType ? `<span class="log-badge out-badge">${entry.outType}</span>` : '';
       return `<div class="log-entry">
         <div class="log-inning-badge">${halfArrow}${entry.inning}</div>
-        <div class="log-play-text">${entry.batterName.toUpperCase()} — ${outLabel}</div>
+        <div class="log-play-text">${entry.batterName.toUpperCase()} — ${outLabel}${outTypeBadge}${locBadge}</div>
         ${entry.runs > 0 ? `<div class="log-run-badge">+${entry.runs}R</div>` : ''}
         ${entry.rbi > 0 ? `<div class="log-rbi-badge">+${entry.rbi} RBI</div>` : ''}
+        <div class="log-entry-edit" onclick="showEditPlayModal(${realIdx})">&#9998;</div>
       </div>`;
     }).join('');
   }
@@ -1893,6 +2130,8 @@ function endHalfInning() {
   STATE.outs = 0;
   STATE.bases = { first: null, second: null, third: null };
   STATE.lastPlay = '';
+  STATE.balls = 0;
+  STATE.strikes = 0;
 
   renderGameScreen();
   saveToLocalStorage();
@@ -2009,6 +2248,8 @@ window.resetCurrentInning = function() {
   STATE.outs = 0;
   STATE.bases = { first: null, second: null, third: null };
   STATE.lastPlay = '';
+  STATE.balls = 0;
+  STATE.strikes = 0;
   STATE.history = [];
   // Remove plays logged in this half from playLog
   STATE.playLog = (STATE.playLog || []).filter(
@@ -2043,6 +2284,8 @@ window.confirmResetGame = function() {
   STATE.lastPlay = '';
   STATE.history = [];
   STATE.playLog = [];
+  STATE.balls = 0;
+  STATE.strikes = 0;
   [...STATE.awayLineup, ...STATE.homeLineup].forEach(p => {
     p.ab=0; p.r=0; p.s=0; p.d=0; p.t=0; p.hr=0; p.rbi=0; p.bb=0; p.so=0; p.hbp=0; p.e=0;
   });
@@ -2159,6 +2402,181 @@ async function syncToFirebase() {
     }
   }, 800);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// COUNT DISPLAY (Ball/Strike)
+// ═══════════════════════════════════════════════════════════════════
+function renderCount() {
+  const ballDots = document.getElementById('ball-dots');
+  const strikeDots = document.getElementById('strike-dots');
+  if (!ballDots || !strikeDots) return;
+  let bHtml = '';
+  for (let i = 0; i < 4; i++) {
+    bHtml += `<div class="count-dot${i < STATE.balls ? ' ball-filled' : ''}"></div>`;
+  }
+  ballDots.innerHTML = bHtml;
+  let sHtml = '';
+  for (let i = 0; i < 3; i++) {
+    sHtml += `<div class="count-dot${i < STATE.strikes ? ' strike-filled' : ''}"></div>`;
+  }
+  strikeDots.innerHTML = sHtml;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PITCH MODAL
+// ═══════════════════════════════════════════════════════════════════
+window.showPitchModal = function() {
+  document.getElementById('pitch-count-label').textContent = `Count: ${STATE.balls}-${STATE.strikes}`;
+  openModal('modal-pitch');
+};
+
+window.recordPitch = function(type) {
+  if (type === 'ball') {
+    STATE.balls++;
+    if (STATE.balls >= 4) {
+      // Walk
+      closeModal('modal-pitch');
+      STATE.balls = 0;
+      STATE.strikes = 0;
+      renderCount();
+      handlePlay('BB');
+      return;
+    }
+  } else if (type === 'strike') {
+    STATE.strikes++;
+    if (STATE.strikes >= 3) {
+      // Strikeout
+      closeModal('modal-pitch');
+      STATE.balls = 0;
+      STATE.strikes = 0;
+      renderCount();
+      handlePlay('K');
+      return;
+    }
+  } else if (type === 'foul') {
+    if (STATE.strikes < 2) {
+      STATE.strikes++;
+    }
+    // Foul with 2 strikes: no change
+  }
+  document.getElementById('pitch-count-label').textContent = `Count: ${STATE.balls}-${STATE.strikes}`;
+  renderCount();
+  saveToLocalStorage();
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// OUT TYPE MODAL
+// ═══════════════════════════════════════════════════════════════════
+window.showOutTypeModal = function() {
+  openModal('modal-outtype');
+};
+
+window.selectOutType = function(outType) {
+  closeModal('modal-outtype');
+  // Store outType for PENDING_PLAY to pick up
+  window._pendingOutType = outType;
+  handlePlay('OUT');
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// HIT LOCATION MODAL
+// ═══════════════════════════════════════════════════════════════════
+// These outcomes need a location picker
+// LOCATION_OUTCOMES defined at top of handlePlay section
+
+window.selectHitLocation = function(loc) {
+  closeModal('modal-location');
+  if (PENDING_PLAY) {
+    PENDING_PLAY.hitLocation = loc;
+  }
+  // Continue to runner modal or finishPlay
+  if (window._locationCallback) {
+    window._locationCallback();
+    window._locationCallback = null;
+  }
+};
+
+function showLocationPicker(callback) {
+  window._locationCallback = callback;
+  const p = PENDING_PLAY;
+  if (p) {
+    const outcomeLabels = {
+      '1B':'Single','2B':'Double','3B':'Triple','HR':'Home Run',
+      'E':'Error','SAC':'Sac Fly/Bunt','FC':"Fielder's Choice",'OUT':'Out'
+    };
+    document.getElementById('location-modal-sub').textContent =
+      `${lastName(p.batter.name)} — ${outcomeLabels[p.outcome] || p.outcome}`;
+  }
+  openModal('modal-location');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// EDIT PLAY MODAL
+// ═══════════════════════════════════════════════════════════════════
+let EDIT_PLAY_INDEX = -1;
+let EDIT_PLAY_LOCATION = null;
+
+window.showEditPlayModal = function(idx) {
+  // idx is the index into STATE.playLog
+  const entry = STATE.playLog[idx];
+  if (!entry) return;
+  EDIT_PLAY_INDEX = idx;
+  EDIT_PLAY_LOCATION = entry.hitLocation || null;
+
+  document.getElementById('editplay-sub').textContent = `${entry.batterName} — Inning ${entry.inning}`;
+  document.getElementById('editplay-outcome').value = entry.outcome;
+  document.getElementById('editplay-outtype').value = entry.outType || '';
+
+  // Highlight current location
+  const grid = document.getElementById('editplay-location-grid');
+  grid.querySelectorAll('.loc-btn').forEach(b => {
+    b.classList.remove('selected');
+    if (EDIT_PLAY_LOCATION && b.textContent.trim() === EDIT_PLAY_LOCATION) {
+      b.classList.add('selected');
+    }
+  });
+
+  closeModal('modal-log');
+  openModal('modal-editplay');
+};
+
+window.setEditLocation = function(loc, btn) {
+  EDIT_PLAY_LOCATION = loc;
+  const grid = document.getElementById('editplay-location-grid');
+  grid.querySelectorAll('.loc-btn').forEach(b => b.classList.remove('selected'));
+  if (btn && loc) btn.classList.add('selected');
+};
+
+window.confirmEditPlay = function() {
+  if (EDIT_PLAY_INDEX < 0 || EDIT_PLAY_INDEX >= STATE.playLog.length) return;
+  const entry = STATE.playLog[EDIT_PLAY_INDEX];
+  const newOutcome = document.getElementById('editplay-outcome').value;
+  const newOutType = document.getElementById('editplay-outtype').value;
+
+  entry.outcome = newOutcome;
+  entry.outType = newOutType || null;
+  entry.hitLocation = EDIT_PLAY_LOCATION;
+
+  // Rebuild description
+  const outcomeLabels = {
+    '1B':'Single','2B':'Double','3B':'Triple','HR':'Home Run',
+    'BB':'Walk','HBP':'HBP','K':'Strikeout','OUT':'Out',
+    'E':'Error','FC':'FC','SAC':'SAC'
+  };
+  const halfArrow = entry.half === 'top' ? '▲' : '▼';
+  let desc = `${halfArrow}${entry.inning} ${entry.batterName.toUpperCase()} — ${outcomeLabels[newOutcome] || newOutcome}`;
+  if (newOutType) desc += ` (${newOutType})`;
+  const extras = [];
+  if (entry.runs > 0) extras.push(`${entry.runs} run${entry.runs > 1 ? 's' : ''}`);
+  if (entry.rbi > 0) extras.push(`${entry.rbi} RBI`);
+  if (extras.length) desc += ` (${extras.join(', ')})`;
+  entry.description = desc;
+
+  closeModal('modal-editplay');
+  saveToLocalStorage();
+  showToast('Play updated', 'success');
+  showLogModal();
+};
 
 // ═══════════════════════════════════════════════════════════════════
 // LINESCORE RENDERING

@@ -2526,7 +2526,7 @@ function AdminPage() {
     { icon: "⚖️", title: "Umpire Schedule", desc: "View umpire availability", color: "#6d28d9", borderColor: "#8b5cf6", action: () => setAdminView("umpires") },
     { icon: "💰", title: "Finances & Payments", desc: "Track fees, payments & balances", color: "#15803d", borderColor: "#22c55e", action: () => setAdminView("finances") },
     { icon: "📧", title: "Contact Manager", desc: "Email players, managers & teams", color: "#6d28d9", borderColor: "#8b5cf6", action: () => setAdminView("contacts") },
-    { icon: "📋", title: "Standings", desc: "View current standings", color: "#15803d", borderColor: "#22c55e", action: () => window.open("/", "_blank") },
+    { icon: "📋", title: "Standings", desc: "View current standings", color: "#15803d", borderColor: "#22c55e", action: () => setAdminView("standings") },
   ];
 
   return (
@@ -2570,8 +2570,17 @@ function AdminPage() {
         {/* Sign-ups view */}
         {adminView === "signups" && (
           <Card>
-            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Player Sign-Ups</div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={loadSignups} style={{padding:"6px 14px",background:"none",border:"1px solid #0057FF",borderRadius:6,color:"#0057FF",fontSize:13,fontWeight:700,cursor:"pointer"}}>↻ Refresh</button>
+                {signups.length > 0 && <button onClick={() => {
+                  const csv = "Name,Team,Email,Phone,Preferences\n" + signups.map(s => `"${s.name}","${s.team}","${s.email}","${s.phone}","${(s.preferences||[]).join('; ')}"`).join("\n");
+                  const blob = new Blob([csv], {type:"text/csv"});
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a"); a.href = url; a.download = "lassl-signups.csv"; a.click();
+                }} style={{padding:"6px 14px",background:"#15803d",border:"none",borderRadius:6,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>📥 Export CSV</button>}
+              </div>
             </div>
             <div style={{padding:"16px 20px"}}>
               {signupsLoading ? (
@@ -2584,20 +2593,39 @@ function AdminPage() {
                 const sortedTeams = Object.keys(byTeam).sort();
                 return (
                   <div>
-                    <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",marginBottom:14}}>{signups.length} player{signups.length !== 1 ? "s" : ""} across {sortedTeams.length} team{sortedTeams.length !== 1 ? "s" : ""}</div>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                      <div style={{fontSize:14,color:"rgba(0,0,0,0.4)"}}>{signups.length} player{signups.length !== 1 ? "s" : ""} across {sortedTeams.length} team{sortedTeams.length !== 1 ? "s" : ""}</div>
+                    </div>
                     {sortedTeams.map(team => (
-                      <div key={team} style={{marginBottom:16}}>
-                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                          <TLogo name={team} size={80} />
-                          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111"}}>{team}</span>
-                          <span style={{fontSize:12,color:"rgba(0,0,0,0.35)",fontWeight:600}}>({byTeam[team].length})</span>
+                      <div key={team} style={{marginBottom:20}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,paddingBottom:6,borderBottom:"2px solid rgba(0,0,0,0.06)"}}>
+                          <TLogo name={team} size={32} />
+                          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111"}}>{team}</span>
+                          <span style={{fontSize:13,color:"rgba(0,0,0,0.35)",fontWeight:600}}>({byTeam[team].length})</span>
+                          <button onClick={() => {
+                            const emails = byTeam[team].map(s => s.email).filter(Boolean).join(",");
+                            window.open(`mailto:${emails}?subject=LASSL - ${team}`);
+                          }} style={{marginLeft:"auto",padding:"4px 10px",background:"none",border:"1px solid #0057FF",borderRadius:5,color:"#0057FF",fontSize:11,fontWeight:700,cursor:"pointer"}}>📧 Email Team</button>
                         </div>
                         {byTeam[team].map((s, i) => (
-                          <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 12px",borderBottom:"1px solid rgba(0,0,0,0.04)",fontSize:13}}>
-                            <span style={{fontWeight:600,color:"#111",minWidth:120}}>{s.name}</span>
-                            <a href={`mailto:${s.email}`} style={{color:"#0057FF",minWidth:160}}>{s.email}</a>
-                            <span style={{color:"#555",minWidth:110}}>{s.phone}</span>
-                            <span style={{color:"rgba(0,0,0,0.35)",fontSize:11}}>{(s.preferences || []).join(", ") || "—"}</span>
+                          <div key={s.id||i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderBottom:"1px solid rgba(0,0,0,0.04)",fontSize:13,transition:"background .1s"}}
+                            onMouseEnter={e => e.currentTarget.style.background="rgba(0,0,0,0.02)"}
+                            onMouseLeave={e => e.currentTarget.style.background="transparent"}>
+                            <span style={{fontWeight:700,color:"#111",minWidth:110}}>{s.name}</span>
+                            <a href={`mailto:${s.email}`} style={{color:"#0057FF",minWidth:140,fontSize:12}}>{s.email}</a>
+                            <span style={{color:"#555",minWidth:100,fontSize:12}}>{s.phone}</span>
+                            <span style={{color:"rgba(0,0,0,0.3)",fontSize:11,flex:1}}>{(s.preferences || []).join(", ") || "—"}</span>
+                            <div style={{display:"flex",gap:4,flexShrink:0}}>
+                              <button onClick={() => window.open(`mailto:${s.email}?subject=LASSL`)} style={{padding:"3px 8px",background:"none",border:"1px solid #0057FF",borderRadius:4,color:"#0057FF",fontSize:10,fontWeight:700,cursor:"pointer"}}>Email</button>
+                              <button onClick={() => window.open(`tel:${s.phone}`)} style={{padding:"3px 8px",background:"none",border:"1px solid #15803d",borderRadius:4,color:"#15803d",fontSize:10,fontWeight:700,cursor:"pointer"}}>Call</button>
+                              <button onClick={async () => {
+                                if (!confirm(`Delete ${s.name} from sign-ups?`)) return;
+                                try {
+                                  await fetch('/api/delete-signup', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:s.id}) });
+                                  loadSignups();
+                                } catch(e) { alert('Failed: '+e.message); }
+                              }} style={{padding:"3px 8px",background:"none",border:"1px solid #dc2626",borderRadius:4,color:"#dc2626",fontSize:10,fontWeight:700,cursor:"pointer"}}>Delete</button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -2651,19 +2679,44 @@ function AdminPage() {
         )}
 
         {/* Umpire Schedule view */}
-        {adminView === "umpires" && (
+        {adminView === "umpires" && (() => {
+          const umpSubs = signups.filter(s => s.team === "UMPIRE");
+          return (
           <Card>
-            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:20}}>⚖️</span>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Umpire Schedule</div>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:20}}>⚖️</span>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Umpire Schedule</div>
+              </div>
+              <button onClick={() => { if(signups.length===0) loadSignups(); else loadSignups(); }} style={{padding:"6px 14px",background:"none",border:"1px solid #0057FF",borderRadius:6,color:"#0057FF",fontSize:13,fontWeight:700,cursor:"pointer"}}>↻ Refresh</button>
             </div>
             <div style={{padding:"20px"}}>
-              <p style={{fontSize:14,color:"rgba(0,0,0,0.5)",marginBottom:16}}>Umpire availability submissions will appear here. Changes within 2 weeks of a game day are flagged for Board approval.</p>
-              <div style={{fontSize:14,color:"rgba(0,0,0,0.35)",textAlign:"center",padding:30}}>No submissions yet. Umpires can submit availability from More → Umpires.</div>
-              <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",textAlign:"center",marginTop:10}}>Submissions save to Firebase — will populate when quota resets</div>
+              <p style={{fontSize:14,color:"rgba(0,0,0,0.5)",marginBottom:16}}>Umpire availability submissions. Changes within 2 weeks of a game day are flagged for Board approval.</p>
+              {umpSubs.length === 0 ? (
+                <div style={{textAlign:"center",padding:30}}>
+                  <div style={{fontSize:14,color:"rgba(0,0,0,0.35)"}}>No umpire submissions yet.</div>
+                  <div style={{fontSize:12,color:"rgba(0,0,0,0.25)",marginTop:6}}>Umpires can submit from More → Umpires</div>
+                </div>
+              ) : umpSubs.map((s,i) => (
+                <div key={s.id||i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700,fontSize:16,color:"#111"}}>{s.name}</div>
+                    <div style={{fontSize:13,color:"rgba(0,0,0,0.4)"}}>{s.email} · {s.phone}</div>
+                    <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",marginTop:4}}>Availability: {(s.preferences||[]).join(", ") || "None specified"}</div>
+                  </div>
+                  <div style={{display:"flex",gap:4}}>
+                    <button onClick={() => window.open(`mailto:${s.email}`)} style={{padding:"4px 10px",background:"none",border:"1px solid #0057FF",borderRadius:4,color:"#0057FF",fontSize:11,fontWeight:700,cursor:"pointer"}}>Email</button>
+                    <button onClick={async () => {
+                      if (!confirm(`Delete ${s.name}?`)) return;
+                      try { await fetch('/api/delete-signup', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s.id})}); loadSignups(); } catch(e) {}
+                    }} style={{padding:"4px 10px",background:"none",border:"1px solid #dc2626",borderRadius:4,color:"#dc2626",fontSize:11,fontWeight:700,cursor:"pointer"}}>Delete</button>
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
-        )}
+          );
+        })()}
 
         {/* Alert Banner view */}
         {adminView === "alert" && (() => {
@@ -2878,42 +2931,85 @@ function AdminPage() {
         )}
 
         {/* Contact Manager view */}
-        {adminView === "contacts" && (
+        {adminView === "contacts" && (() => {
+          const playersByTeam = {};
+          signups.filter(s => s.team !== "UMPIRE").forEach(s => { const t = s.team||"Unknown"; if(!playersByTeam[t]) playersByTeam[t]=[]; playersByTeam[t].push(s); });
+          const allEmails = signups.filter(s => s.team !== "UMPIRE" && s.email).map(s => s.email);
+          return (
           <Card>
-            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:20}}>📧</span>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Contact Manager</div>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:20}}>📧</span>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Contact Manager</div>
+              </div>
+              <button onClick={() => { if(signups.length===0) loadSignups(); }} style={{padding:"6px 14px",background:"none",border:"1px solid #0057FF",borderRadius:6,color:"#0057FF",fontSize:13,fontWeight:700,cursor:"pointer"}}>↻ Load Contacts</button>
             </div>
             <div style={{padding:"20px"}}>
+              {signups.length === 0 ? (
+                <div style={{textAlign:"center",padding:30,color:"rgba(0,0,0,0.4)"}}>Click "Load Contacts" to pull sign-up data, or go to Player Sign-Ups first.</div>
+              ) : <>
+              <div style={{fontSize:14,color:"rgba(0,0,0,0.4)",marginBottom:16}}>{allEmails.length} players with email across {Object.keys(playersByTeam).length} teams</div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:10,marginBottom:24}}>
-                <button onClick={() => {}} style={{background:"#0057FF",color:"#fff",border:"none",borderRadius:10,padding:"16px",cursor:"pointer",textAlign:"left"}}>
+                <button onClick={() => { if(allEmails.length) window.open(`mailto:?bcc=${allEmails.join(",")}&subject=LASSL League Update`); else alert("No emails found"); }} style={{background:"#0057FF",color:"#fff",border:"none",borderRadius:10,padding:"16px",cursor:"pointer",textAlign:"left"}}>
                   <div style={{fontSize:20,marginBottom:4}}>📢</div>
                   <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase"}}>Email All Players</div>
-                  <div style={{fontSize:12,opacity:0.7,marginTop:2}}>Send to every signed-up player</div>
+                  <div style={{fontSize:12,opacity:0.7,marginTop:2}}>{allEmails.length} players</div>
                 </button>
-                <button onClick={() => {}} style={{background:"#001a6e",color:"#fff",border:"none",borderRadius:10,padding:"16px",cursor:"pointer",textAlign:"left"}}>
-                  <div style={{fontSize:20,marginBottom:4}}>👥</div>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase"}}>Email All Managers</div>
-                  <div style={{fontSize:12,opacity:0.7,marginTop:2}}>Send to every team captain</div>
-                </button>
-                <button onClick={() => {}} style={{background:"#15803d",color:"#fff",border:"none",borderRadius:10,padding:"16px",cursor:"pointer",textAlign:"left"}}>
-                  <div style={{fontSize:20,marginBottom:4}}>🏟️</div>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase"}}>Email by Division</div>
-                  <div style={{fontSize:12,opacity:0.7,marginTop:2}}>Send to a specific division</div>
-                </button>
+                {Object.entries(divData||DIV).map(([dk,dv]) => {
+                  const divEmails = dv.teams.flatMap(t => (playersByTeam[t.name]||[]).map(s=>s.email).filter(Boolean));
+                  return (
+                    <button key={dk} onClick={() => { if(divEmails.length) window.open(`mailto:?bcc=${divEmails.join(",")}&subject=LASSL Division ${dk}`); else alert("No emails for Division "+dk); }} style={{background:dv.accent,color:"#fff",border:"none",borderRadius:10,padding:"16px",cursor:"pointer",textAlign:"left"}}>
+                      <div style={{fontSize:20,marginBottom:4}}>🏟️</div>
+                      <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase"}}>Division {dk}</div>
+                      <div style={{fontSize:12,opacity:0.7,marginTop:2}}>{divEmails.length} players</div>
+                    </button>
+                  );
+                })}
               </div>
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",color:"#111",marginBottom:12}}>Email One Team</div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:8}}>
-                {Object.entries(divData||DIV).flatMap(([dk,dv]) => dv.teams.map(t => (
-                  <button key={t.name} onClick={() => {}} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f9fb",border:"1px solid rgba(0,0,0,0.08)",borderRadius:8,padding:"10px 12px",cursor:"pointer",transition:"all .15s"}}
-                    onMouseEnter={e => {e.currentTarget.style.background="rgba(0,87,255,0.06)";e.currentTarget.style.borderColor="#0057FF";}}
-                    onMouseLeave={e => {e.currentTarget.style.background="#f8f9fb";e.currentTarget.style.borderColor="rgba(0,0,0,0.08)";}}>
-                    <TLogo name={t.name} size={28} />
-                    <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,textTransform:"uppercase",color:"#111"}}>{t.name}</span>
-                  </button>
-                )))}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+                {Object.entries(divData||DIV).flatMap(([dk,dv]) => dv.teams.map(t => {
+                  const teamEmails = (playersByTeam[t.name]||[]).map(s=>s.email).filter(Boolean);
+                  return (
+                    <button key={t.name} onClick={() => { if(teamEmails.length) window.open(`mailto:?bcc=${teamEmails.join(",")}&subject=LASSL - ${t.name}`); else alert("No sign-ups for "+t.name); }} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f9fb",border:"1px solid rgba(0,0,0,0.08)",borderRadius:8,padding:"10px 12px",cursor:"pointer",transition:"all .15s"}}
+                      onMouseEnter={e => {e.currentTarget.style.background="rgba(0,87,255,0.06)";e.currentTarget.style.borderColor="#0057FF";}}
+                      onMouseLeave={e => {e.currentTarget.style.background="#f8f9fb";e.currentTarget.style.borderColor="rgba(0,0,0,0.08)";}}>
+                      <TLogo name={t.name} size={28} />
+                      <div>
+                        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,textTransform:"uppercase",color:"#111"}}>{t.name}</div>
+                        <div style={{fontSize:10,color:"rgba(0,0,0,0.3)"}}>{teamEmails.length} players</div>
+                      </div>
+                    </button>
+                  );
+                }))}
               </div>
-              <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",textAlign:"center",marginTop:16}}>Email functionality will connect to your sign-up data once Firebase quota resets</div>
+              </>}
+            </div>
+          </Card>
+          );
+        })()}
+
+        {/* Standings view */}
+        {adminView === "standings" && (
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Standings</div>
+            </div>
+            <div style={{padding:"16px 20px"}}>
+              {Object.entries(divData||DIV).map(([dk,dv]) => (
+                <div key={dk} style={{marginBottom:20}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:dv.accent,textTransform:"uppercase",marginBottom:6}}>Division {dk}</div>
+                  {dv.teams.map((t,i) => (
+                    <div key={t.name} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:"1px solid rgba(0,0,0,0.04)"}}>
+                      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,color:i===0?"#0057FF":"rgba(0,0,0,0.2)",width:20}}>{t.seed}</span>
+                      <TLogo name={t.name} size={28} />
+                      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:15,color:"#111",flex:1,textTransform:"uppercase"}}>{t.name}</span>
+                      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,color:"#111"}}>{t.w}-{t.l}</span>
+                      <span style={{fontSize:12,color:"rgba(0,0,0,0.35)",width:50,textAlign:"right"}}>{t.pct}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
           </Card>
         )}
