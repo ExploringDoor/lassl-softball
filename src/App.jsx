@@ -3109,6 +3109,22 @@ function AdminPage() {
                 style={{display:"block",width:"100%",maxWidth:500,margin:"24px auto 0",padding:"14px",background:saving?"#94a3b8":"#0057FF",border:"none",borderRadius:8,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,textTransform:"uppercase",cursor:saving?"not-allowed":"pointer",letterSpacing:".06em",transition:"background .15s"}}>
                 {saving ? "Saving..." : "Save Score & Update Standings"}
               </button>
+              {selGame.done && (
+                <button onClick={async () => {
+                  if (!confirm('Clear this score and reset game to pending? Standings will be reversed.')) return;
+                  setSaving(true);
+                  try {
+                    const r = await fetch('/api/clear-score', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({gameId:selGame.id}) });
+                    const d = await r.json();
+                    if (d.success) { setSaveMsg({ok:true,text:'Score cleared! Game reset to pending.'}); setSelGame(null); loadData(); }
+                    else { setSaveMsg({ok:false,text:d.error||'Failed'}); }
+                  } catch(e) { setSaveMsg({ok:false,text:e.message}); }
+                  setSaving(false);
+                }} disabled={saving}
+                style={{display:"block",width:"100%",maxWidth:500,margin:"12px auto 0",padding:"14px",background:"none",border:"2px solid #dc2626",borderRadius:8,color:"#dc2626",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,textTransform:"uppercase",cursor:"pointer",letterSpacing:".06em"}}>
+                  Reset Game to Pending
+                </button>
+              )}
             </div>
           </Card>
         )}
