@@ -137,7 +137,7 @@ body{display:flex;flex-direction:column}
 .btn-change-pitcher:hover{background:rgba(255,255,255,.22);color:#fff}
 
 /* GAME BOTTOM */
-.game-bottom{flex:1;background:#fff;border-radius:16px 16px 0 0;overflow:hidden;display:flex;flex-direction:column;margin-top:0}
+.game-bottom{flex:1;background:#fff;border-radius:16px 16px 0 0;overflow-y:auto;display:flex;flex-direction:column;margin-top:0;-webkit-overflow-scrolling:touch}
 .action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px 10px 6px;flex-shrink:0}
 .act-btn{min-height:56px;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .1s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;-webkit-tap-highlight-color:transparent}
 .act-btn:active{transform:scale(.93)}
@@ -1320,13 +1320,21 @@ function goBackToCaptain() {
 
 window.goBack = function() {
   if (goBackToCaptain()) return;
-  showScreen('screen-pick');
+  // If opened as standalone, go back to main site
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = '/';
+  }
 };
 
 window.goToPickScreen = function() {
   if (goBackToCaptain()) return;
-  showScreen('screen-pick');
-  renderPickScreen();
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = '/';
+  }
 };
 
 window.resetAndGoBack = function() {

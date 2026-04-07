@@ -2135,7 +2135,9 @@ function CaptainPage() {
     const an = teamName(g.away), hn = teamName(g.home);
     return an === captainTeam || hn === captainTeam || myTeamIds.includes(g.away) || myTeamIds.includes(g.home);
   });
-  const myWeeks = [...new Set(myGames.map(g => g.wk))].sort((a,b) => a - b);
+  const pendingWeeks = [...new Set(myGames.filter(g => !g.done).map(g => g.wk))].sort((a,b) => a - b);
+  const doneWeeks = [...new Set(myGames.filter(g => g.done).map(g => g.wk))].sort((a,b) => b - a);
+  const myWeeks = [...pendingWeeks, ...doneWeeks.filter(w => !pendingWeeks.includes(w))];
 
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
