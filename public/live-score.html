@@ -1320,21 +1320,12 @@ function goBackToCaptain() {
 
 window.goBack = function() {
   if (goBackToCaptain()) return;
-  // If opened as standalone, go back to main site
-  if (window.history.length > 1) {
-    window.history.back();
-  } else {
-    window.location.href = '/';
-  }
+  window.location.href = '/';
 };
 
 window.goToPickScreen = function() {
   if (goBackToCaptain()) return;
-  if (window.history.length > 1) {
-    window.history.back();
-  } else {
-    window.location.href = '/';
-  }
+  window.location.href = '/';
 };
 
 window.resetAndGoBack = function() {

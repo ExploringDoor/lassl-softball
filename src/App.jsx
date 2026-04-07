@@ -2058,12 +2058,15 @@ function CaptainPage() {
   const [fbTeams, setFbTeams] = useState([]);
   const [fbGames, setFbGames] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("MY TEAM");
 
   const [captainGame, setCaptainGame] = useState(null);
   const [captainAway, setCaptainAway] = useState("");
   const [captainHome, setCaptainHome] = useState("");
   const [captainSaving, setCaptainSaving] = useState(false);
   const [captainMsg, setCaptainMsg] = useState(null);
+
+  const TABS = ["MY TEAM","ROSTER","SCHEDULE","SUBMIT SCORE","PAYMENTS","ATTENDANCE","ANNOUNCEMENTS"];
 
   const loadData = () => {
     setLoading(true);
@@ -2559,7 +2562,7 @@ function AdminPage() {
 
         {/* Dashboard Grid */}
         {adminView === "dashboard" && (
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(200px,100%),1fr))",gap:12,overflowX:"hidden"}}>
             {adminCards.map((c,i) => (
               <button key={i} onClick={c.action} style={{
                 background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderTop:`4px solid ${c.borderColor}`,
