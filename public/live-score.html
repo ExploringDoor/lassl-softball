@@ -742,15 +742,20 @@ body{display:flex;flex-direction:column}
 <div class="modal-overlay" id="modal-pitch">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-body">
-      <div class="modal-title">Pitch</div>
-      <div class="modal-subtitle" id="pitch-count-label">Count: 0-0</div>
-      <div class="pitch-grid">
-        <button class="pitch-grid-btn pitch-ball" onclick="recordPitch('ball')">Ball</button>
-        <button class="pitch-grid-btn pitch-strike" onclick="recordPitch('strike')">Strike</button>
-        <button class="pitch-grid-btn pitch-foul" onclick="recordPitch('foul')">Foul</button>
+    <div class="modal-body" style="text-align:center">
+      <div class="modal-title">⚾ Pitch</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0 20px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:48px;color:#1d4ed8" id="pitch-balls">0</span>
+        <span style="font-size:14px;color:var(--muted);font-weight:600">B - S</span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:48px;color:#dc2626" id="pitch-strikes">0</span>
       </div>
-      <button class="btn-continue" onclick="closeModal('modal-pitch')">Close</button>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button onclick="recordPitch('ball')" style="width:100%;padding:16px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">⚪ Ball</button>
+        <button onclick="recordPitch('strike')" style="width:100%;padding:16px;border:none;border-radius:10px;background:#dc2626;color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">✕ Strike — Swinging</button>
+        <button onclick="recordPitch('looking')" style="width:100%;padding:16px;border:none;border-radius:10px;background:#dc2626;color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">✕ Strike — Looking</button>
+        <button onclick="recordPitch('inplay')" style="width:100%;padding:16px;border:none;border-radius:10px;background:#16a34a;color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">🏏 In Play → Pick Result</button>
+        <button onclick="closeModal('modal-pitch')" style="width:100%;padding:14px;border:2px solid var(--navy);border-radius:10px;background:none;color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:4px">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2426,7 +2431,8 @@ function renderCount() {
 // PITCH MODAL
 // ═══════════════════════════════════════════════════════════════════
 window.showPitchModal = function() {
-  document.getElementById('pitch-count-label').textContent = `Count: ${STATE.balls}-${STATE.strikes}`;
+  document.getElementById('pitch-balls').textContent = STATE.balls;
+  document.getElementById('pitch-strikes').textContent = STATE.strikes;
   openModal('modal-pitch');
 };
 
@@ -2434,7 +2440,6 @@ window.recordPitch = function(type) {
   if (type === 'ball') {
     STATE.balls++;
     if (STATE.balls >= 4) {
-      // Walk
       closeModal('modal-pitch');
       STATE.balls = 0;
       STATE.strikes = 0;
@@ -2442,10 +2447,9 @@ window.recordPitch = function(type) {
       handlePlay('BB');
       return;
     }
-  } else if (type === 'strike') {
+  } else if (type === 'strike' || type === 'looking') {
     STATE.strikes++;
     if (STATE.strikes >= 3) {
-      // Strikeout
       closeModal('modal-pitch');
       STATE.balls = 0;
       STATE.strikes = 0;
@@ -2457,9 +2461,14 @@ window.recordPitch = function(type) {
     if (STATE.strikes < 2) {
       STATE.strikes++;
     }
-    // Foul with 2 strikes: no change
+  } else if (type === 'inplay') {
+    // Close pitch modal, let user pick the result from the action buttons
+    closeModal('modal-pitch');
+    showToast('Pick the result below', 'success');
+    return;
   }
-  document.getElementById('pitch-count-label').textContent = `Count: ${STATE.balls}-${STATE.strikes}`;
+  document.getElementById('pitch-balls').textContent = STATE.balls;
+  document.getElementById('pitch-strikes').textContent = STATE.strikes;
   renderCount();
   saveToLocalStorage();
 };
