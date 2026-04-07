@@ -763,7 +763,7 @@ function Navbar({ tab, setTab }) {
                 transition:"color .15s",whiteSpace:"nowrap",
               }}>More ▾</button>
               {moreOpen && (
-                <div style={{position:"absolute",top:"100%",right:0,background:"#fff",border:"1px solid rgba(0,0,0,0.1)",borderRadius:8,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",minWidth:150,zIndex:500,overflow:"hidden",marginTop:4}}>
+                <div style={{position:"absolute",top:"100%",right:0,background:"#fff",border:"1px solid rgba(0,0,0,0.1)",borderRadius:8,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",minWidth:170,zIndex:500,overflow:"hidden",paddingTop:2}}>
                   {moreLinks.map(([id,label]) => (
                     <button key={id} onClick={() => handleNav(id)} style={{
                       display:"block",width:"100%",textAlign:"left",padding:"10px 16px",
@@ -802,8 +802,8 @@ function Navbar({ tab, setTab }) {
       </nav>
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div style={{position:"fixed",top:62,left:0,right:0,bottom:0,zIndex:9999,display:"flex",flexDirection:"column"}}>
-          <div style={{background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 8px 24px rgba(0,0,0,0.2)"}}>
+        <div style={{position:"fixed",top:62,left:0,right:0,bottom:0,zIndex:9999,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+          <div style={{background:"#fff",borderBottom:"3px solid #0057FF",boxShadow:"0 8px 24px rgba(0,0,0,0.2)",overflowY:"auto",maxHeight:"calc(100vh - 62px)"}}>
           <button onClick={() => handleNav("home")} style={{
             display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",
             fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,
@@ -2418,6 +2418,18 @@ function AdminPage() {
           </div>
         </div>
         <div style={{maxWidth:1000,margin:"0 auto",padding:"24px clamp(12px,3vw,40px) 60px"}}>
+          {/* Quick action cards */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10,marginBottom:24}}>
+            <a href="/live-score.html" target="_blank" rel="noopener noreferrer" style={{background:"#0057FF",color:"#fff",border:"none",borderRadius:10,padding:"14px",textDecoration:"none",textAlign:"left"}}>
+              <div style={{fontSize:18,marginBottom:4}}>⚡</div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,textTransform:"uppercase"}}>Live Tracker</div>
+            </a>
+            <div style={{background:"#f8f9fb",border:"1px solid rgba(0,0,0,0.08)",borderRadius:10,padding:"14px"}}>
+              <div style={{fontSize:18,marginBottom:4}}>📊</div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:14,textTransform:"uppercase",color:"#111"}}>Team Record</div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:24,color:"#0057FF",marginTop:4}}>{(() => { const mt = (allTeams||ALL_TEAMS_STATIC).find(t => t.name === captainTeam); return mt ? `${mt.w}-${mt.l}` : "—"; })()}</div>
+            </div>
+          </div>
           <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:36,textTransform:"uppercase",color:"#111",marginBottom:4}}>Scores</h2>
           <div style={{fontSize:15,color:"rgba(0,0,0,0.4)",marginBottom:24}}>Enter and manage game scores</div>
 
