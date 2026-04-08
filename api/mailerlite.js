@@ -7,12 +7,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const API_KEY = process.env.MAILERLITE_API_KEY;
-  const GROUP_ID = process.env.MAILERLITE_GROUP_ID || '184141789042575142';
+  const API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiMzgzYzc0NGFlYzJkYWFjOTA3NDgzY2YzOGFhNzQ1ZDIxNzlkMWIzZDY0YmIwNmM1ZjM1ZGU1YmNlYjc5ODY4OTI3NjEwNmE2YWMxMzYxMTIiLCJpYXQiOjE3NzU2MTA5NzUuMTM2MDAxLCJuYmYiOjE3NzU2MTA5NzUuMTM2MDAzLCJleHAiOjQ5MzEyODQ1NzUuMTI5MTQ3LCJzdWIiOiIyMjcyMTc5Iiwic2NvcGVzIjpbXX0.ai_zNxrFdGYWYrZOI8k6nEPPGzukERNWtMpXvDmv9fARDTR9rw66mSPZo';
+  const GROUP_ID = '184141789042575142';
   const BASE = 'https://connect.mailerlite.com/api';
   const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` };
 
-  if (!API_KEY) return res.status(500).json({ error: 'MailerLite API key not configured' });
 
   const { action } = req.query;
 
