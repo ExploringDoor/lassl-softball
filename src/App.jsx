@@ -1805,6 +1805,8 @@ function SignUpPage({ allTeams }) {
         body: JSON.stringify({ ...form, preferences }),
       });
       if (!r.ok) throw new Error();
+      // Silently add to MailerLite
+      try { fetch(`/api/mailerlite?action=subscribe`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:form.email,name:form.name}) }); } catch(e) {}
       setStatus("done");
     } catch {
       setStatus("error");
@@ -2459,6 +2461,14 @@ function AdminPage() {
   const [alertBlink, setAlertBlink] = useState(false);
   const [alertFont, setAlertFont] = useState("'Barlow Condensed',sans-serif");
   const [alertPosting, setAlertPosting] = useState(false);
+
+  // Email Blast
+  const [blastSubject, setBlastSubject] = useState("");
+  const [blastBody, setBlastBody] = useState("");
+  const [blastSending, setBlastSending] = useState(false);
+  const [blastStatus, setBlastStatus] = useState(null);
+  const [blastPreview, setBlastPreview] = useState(false);
+  const [subscriberCount, setSubscriberCount] = useState(null);
   const [alertPosted, setAlertPosted] = useState(false);
 
   // Firebase data
@@ -2740,6 +2750,7 @@ function AdminPage() {
     { icon: "⚖️", title: "Umpire Schedule", desc: "View umpire availability", color: "#6d28d9", borderColor: "#8b5cf6", action: () => setAdminView("umpires") },
     { icon: "💰", title: "Finances & Payments", desc: "Track fees, payments & balances", color: "#15803d", borderColor: "#22c55e", action: () => setAdminView("finances") },
     { icon: "📧", title: "Contact Manager", desc: "Email players, managers & teams", color: "#6d28d9", borderColor: "#8b5cf6", action: () => setAdminView("contacts") },
+    { icon: "✉️", title: "Email Blast", desc: "Send email to all subscribers", color: "#6d28d9", borderColor: "#8b5cf6", action: () => setAdminView("emailblast") },
     { icon: "📋", title: "Standings", desc: "View current standings", color: "#15803d", borderColor: "#22c55e", action: () => setAdminView("standings") },
   ];
 
@@ -3202,6 +3213,90 @@ function AdminPage() {
           </Card>
           );
         })()}
+
+        {/* Email Blast view */}
+        {adminView === "emailblast" && (
+          <Card>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:20}}>✉️</span>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Email Blast</div>
+              </div>
+              <button onClick={async () => { try { const r = await fetch('/api/mailerlite?action=stats'); const d = await r.json(); setSubscriberCount(d.count); } catch(e) { setSubscriberCount('?'); } }} style={{padding:"6px 14px",background:"none",border:"1px solid #0057FF",borderRadius:6,color:"#0057FF",fontSize:13,fontWeight:700,cursor:"pointer"}}>
+                {subscriberCount !== null ? `${subscriberCount} subscribers` : "Load Count"}
+              </button>
+            </div>
+            <div style={{padding:"20px"}}>
+              <p style={{fontSize:14,color:"rgba(0,0,0,0.5)",marginBottom:16}}>Send an email to all subscribed players in the league. Emails are sent via MailerLite.</p>
+
+              <div style={{marginBottom:12}}>
+                <label style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.4)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:4,display:"block"}}>Subject Line</label>
+                <input value={blastSubject} onChange={e => setBlastSubject(e.target.value)} placeholder="e.g. LASSL Playoff Update — Week 1 Results" style={{width:"100%",padding:"12px 14px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:16,fontFamily:"'Barlow',sans-serif"}} />
+              </div>
+
+              <div style={{marginBottom:16}}>
+                <label style={{fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.4)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:4,display:"block"}}>Message Body</label>
+                <textarea value={blastBody} onChange={e => setBlastBody(e.target.value)} placeholder="Write your email here... HTML is supported." rows={8} style={{width:"100%",padding:"12px 14px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:15,fontFamily:"'Barlow',sans-serif",resize:"vertical"}} />
+              </div>
+
+              {/* Preview */}
+              <button onClick={() => setBlastPreview(!blastPreview)} style={{marginBottom:12,padding:"8px 16px",background:"none",border:"1px solid rgba(0,0,0,0.2)",borderRadius:6,fontSize:13,fontWeight:700,cursor:"pointer",color:"#555"}}>
+                {blastPreview ? "Hide Preview" : "👁 Preview Email"}
+              </button>
+
+              {blastPreview && (
+                <div style={{border:"1px solid rgba(0,0,0,0.1)",borderRadius:10,marginBottom:16,overflow:"hidden"}}>
+                  <div style={{background:"#f8f9fb",padding:"10px 16px",borderBottom:"1px solid rgba(0,0,0,0.06)"}}>
+                    <div style={{fontSize:12,color:"rgba(0,0,0,0.4)"}}>From: <strong>Synagogue Softball</strong> &lt;toddharris1222@gmail.com&gt;</div>
+                    <div style={{fontSize:12,color:"rgba(0,0,0,0.4)"}}>Subject: <strong>{blastSubject || "(no subject)"}</strong></div>
+                  </div>
+                  <div style={{padding:"16px",fontSize:15,lineHeight:1.7,color:"#111"}} dangerouslySetInnerHTML={{__html: blastBody || "<em style='color:rgba(0,0,0,0.3)'>Your message will appear here...</em>"}} />
+                </div>
+              )}
+
+              {blastStatus && (
+                <div style={{background:blastStatus.ok?"#f0fdf4":"#fef2f2",border:`1px solid ${blastStatus.ok?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",marginBottom:16}}>
+                  <span style={{fontSize:14,fontWeight:600,color:blastStatus.ok?"#166534":"#991b1b"}}>{blastStatus.ok?"✓":"✗"} {blastStatus.text}</span>
+                </div>
+              )}
+
+              <button onClick={async () => {
+                if (!blastSubject || !blastBody) { setBlastStatus({ok:false,text:"Subject and body are required"}); return; }
+                if (!confirm(`Send this email to all subscribers?\n\nSubject: ${blastSubject}`)) return;
+                setBlastSending(true);
+                setBlastStatus(null);
+                try {
+                  const htmlContent = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px"><h2 style="color:#0057FF;font-family:'Barlow Condensed',sans-serif">${blastSubject}</h2><div style="font-size:16px;line-height:1.7;color:#333">${blastBody.replace(/\n/g,'<br>')}</div><hr style="border:none;border-top:1px solid #eee;margin:30px 0"><p style="font-size:12px;color:#999;text-align:center">Synagogue Softball League<br>synagoguesoftball.vercel.app</p></div>`;
+                  const r = await fetch('/api/mailerlite?action=send', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({subject:blastSubject,body:htmlContent}),
+                  });
+                  const d = await r.json();
+                  if (d.success) {
+                    setBlastStatus({ok:true,text:"Email sent successfully!"});
+                    setBlastSubject("");
+                    setBlastBody("");
+                  } else {
+                    setBlastStatus({ok:false,text:d.error||"Failed to send"});
+                  }
+                } catch(e) { setBlastStatus({ok:false,text:e.message}); }
+                setBlastSending(false);
+              }} disabled={blastSending||!blastSubject||!blastBody} style={{
+                width:"100%",padding:"16px",
+                background:(!blastSubject||!blastBody)?"rgba(0,0,0,0.15)":"#6d28d9",
+                border:"none",borderRadius:10,color:"#fff",
+                fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,
+                textTransform:"uppercase",cursor:(!blastSubject||!blastBody)?"not-allowed":"pointer",
+                letterSpacing:".06em",
+              }}>
+                {blastSending ? "Sending..." : "Send Email to All Subscribers"}
+              </button>
+
+              <div style={{fontSize:12,color:"rgba(0,0,0,0.3)",textAlign:"center",marginTop:10}}>Sent via MailerLite · From: Synagogue Softball &lt;toddharris1222@gmail.com&gt;</div>
+            </div>
+          </Card>
+        )}
 
         {/* Standings view */}
         {adminView === "standings" && (
