@@ -8,13 +8,72 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { parsed, gameId, awayTeamId, homeTeamId, date, week, field, recap } = req.body;
+  const { action, parsed, gameId, awayTeamId, homeTeamId, date, week, field, recap, games: gamesPayload } = req.body;
   const FB_KEY = process.env.FIREBASE_API_KEY;
   const FB_PROJECT = 'la-softball';
   const FB_BASE = `https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents`;
 
   const results = [];
   const log = (msg) => results.push(msg);
+
+  // Helper: convert a JS value to a Firestore REST value
+  function toFsValueTop(v) {
+    if (typeof v === 'string') return { stringValue: v };
+    if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+    if (typeof v === 'boolean') return { booleanValue: v };
+    if (v === null || v === undefined) return { nullValue: null };
+    return { stringValue: String(v) };
+  }
+  function toFirestoreTop(obj) {
+    const out = {};
+    for (const [k, v] of Object.entries(obj)) out[k] = toFsValueTop(v);
+    return out;
+  }
+
+  // ── Admin actions: delete-games / create-games ──────────
+  if (action === 'delete-games') {
+    try {
+      const ids = req.body.ids || [];
+      for (const id of ids) {
+        const r = await fetch(`${FB_BASE}/games/${id}?key=${FB_KEY}`, { method: 'DELETE' });
+        results.push(`${r.ok ? '✓' : '✗'} delete ${id}`);
+      }
+      return res.status(200).json({ success: true, results });
+    } catch (err) {
+      return res.status(500).json({ error: err.message, results });
+    }
+  }
+  if (action === 'create-games') {
+    try {
+      const games = gamesPayload || [];
+      for (const g of games) {
+        const { id, ...fields } = g;
+        if (!id) { results.push('✗ missing id'); continue; }
+        const body = { fields: toFirestoreTop({
+          wk: fields.wk || 0,
+          date: fields.date || '',
+          away: fields.away || '',
+          home: fields.home || '',
+          away_score: 0,
+          home_score: 0,
+          done: false,
+          time: fields.time || '',
+          field: fields.field || '',
+          season: fields.season || 2026,
+          note: fields.note || '',
+        }) };
+        const r = await fetch(`${FB_BASE}/games/${id}?key=${FB_KEY}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        results.push(`${r.ok ? '✓' : '✗'} create ${id} ${fields.away}@${fields.home}`);
+      }
+      return res.status(200).json({ success: true, results });
+    } catch (err) {
+      return res.status(500).json({ error: err.message, results });
+    }
+  }
 
   try {
     const { awayScore, homeScore, awayBatters, homeBatters, awayPitchers, homePitchers, linescore, notes } = parsed;
