@@ -202,6 +202,19 @@ function useLiveData() {
   return data;
 }
 
+function usePageContent() {
+  const [pages, setPages] = useState({});
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/page-content')
+      .then(r => r.ok ? r.json() : { pages: {} })
+      .then(({ pages }) => { if (!cancelled) setPages(pages || {}); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+  return pages;
+}
+
 const TEAM_COLORS = {
   "VBS":"#1d4ed8","AAE A's":"#b45309","AAE Menchwarmers":"#b45309",
   "Emmanuel":"#15803d","Emanuel":"#15803d","Isaiah-Nouveau":"#ea580c","Isaiah Nouveau":"#ea580c",
@@ -1493,13 +1506,14 @@ const GALLERY_PHOTOS = [
   { src:"/gallery/IMG_2610-1024x768.jpg", caption:"Ron and Avery — Commissioners" },
 ];
 
-function GalleryPage() {
+function GalleryPage({ pageContent = {} }) {
   const [selected, setSelected] = useState(null);
+  const intro = pageContent.intro || "Highlights from LASSL seasons";
   return (
     <div style={{maxWidth:1100,margin:"0 auto",padding:"clamp(16px,4vw,48px) clamp(12px,3vw,32px)"}}>
       <div style={{textAlign:"center",marginBottom:32}}>
         <h1 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"clamp(28px,5vw,44px)",letterSpacing:".04em",textTransform:"uppercase",color:"#001a6e",margin:0}}>Gallery</h1>
-        <p style={{fontFamily:"'Barlow',sans-serif",color:"#777",fontSize:14,marginTop:6}}>Highlights from LASSL seasons</p>
+        <p style={{fontFamily:"'Barlow',sans-serif",color:"#777",fontSize:14,marginTop:6,whiteSpace:"pre-wrap"}}>{intro}</p>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
         {GALLERY_PHOTOS.map((p,i) => (
@@ -1527,11 +1541,18 @@ function GalleryPage() {
 }
 
 /* ─── RULES PAGE ─────────────────────────────────────────────────────────── */
-function RulesPage() {
+function RulesPage({ pageContent = {} }) {
+  const intro = pageContent.intro;
+  const footer = pageContent.footer;
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <PageHero label="LASSL Softball" title="Field Guide" subtitle="Official rules and guidelines for the 2026 season" />
       <div style={{maxWidth:900,margin:"0 auto",padding:"28px clamp(12px,3vw,40px) 60px"}}>
+        {intro && (
+          <Card style={{marginBottom:16}}>
+            <div style={{padding:"20px 24px",fontSize:15,color:"rgba(0,0,0,0.7)",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{intro}</div>
+          </Card>
+        )}
         {/* Jump nav */}
         <Card style={{marginBottom:24}}>
           <div style={{padding:"14px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
@@ -1569,8 +1590,8 @@ function RulesPage() {
           ))}
         </div>
 
-        <div style={{marginTop:20,background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderRadius:10,padding:"14px 20px",textAlign:"center",fontSize:13,color:"rgba(0,0,0,0.4)"}}>
-          Questions? Contact the league coordinator at <a href="https://www.synagoguesoftball.com/contact/" target="_blank" rel="noopener noreferrer" style={{color:"#0057FF",fontWeight:700}}>synagoguesoftball.com/contact</a> · Rules subject to change by league vote.
+        <div style={{marginTop:20,background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderRadius:10,padding:"14px 20px",textAlign:"center",fontSize:13,color:"rgba(0,0,0,0.4)",whiteSpace:"pre-wrap"}}>
+          {footer || <>Questions? Contact the league coordinator at <a href="https://www.synagoguesoftball.com/contact/" target="_blank" rel="noopener noreferrer" style={{color:"#0057FF",fontWeight:700}}>synagoguesoftball.com/contact</a> · Rules subject to change by league vote.</>}
         </div>
       </div>
     </div>
@@ -2469,6 +2490,43 @@ function AdminPage() {
   const [blastStatus, setBlastStatus] = useState(null);
   const [blastPreview, setBlastPreview] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState(null);
+
+  // Page Editor
+  const [pageContent, setPageContent] = useState({});
+  const [selectedPage, setSelectedPage] = useState(null);
+  const [pageEditing, setPageEditing] = useState({});
+  const [pageSaving, setPageSaving] = useState(false);
+  const [pageStatus, setPageStatus] = useState(null);
+
+  const loadPageContent = async () => {
+    try {
+      const r = await fetch('/api/page-content');
+      const d = await r.json();
+      setPageContent(d.pages || {});
+    } catch(e) {}
+  };
+
+  const savePageContent = async (slug, content) => {
+    setPageSaving(true);
+    setPageStatus(null);
+    try {
+      const r = await fetch('/api/page-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: slug, content }),
+      });
+      const d = await r.json();
+      if (d.success) {
+        setPageStatus({ ok: true, text: 'Saved! Changes will appear on the site.' });
+        setPageContent(prev => ({ ...prev, [slug]: content }));
+      } else {
+        setPageStatus({ ok: false, text: d.error || 'Failed to save' });
+      }
+    } catch(e) {
+      setPageStatus({ ok: false, text: e.message });
+    }
+    setPageSaving(false);
+  };
   const [alertPosted, setAlertPosted] = useState(false);
 
   // Firebase data
@@ -2751,6 +2809,7 @@ function AdminPage() {
     { icon: "💰", title: "Finances & Payments", desc: "Track fees, payments & balances", color: "#15803d", borderColor: "#22c55e", action: () => setAdminView("finances") },
     { icon: "📧", title: "Contact Manager", desc: "Email players, managers & teams", color: "#6d28d9", borderColor: "#8b5cf6", action: () => setAdminView("contacts") },
     { icon: "✉️", title: "Email Blast", desc: "Send email to all subscribers", color: "#6d28d9", borderColor: "#8b5cf6", action: () => setAdminView("emailblast") },
+    { icon: "📝", title: "Page Editor", desc: "Edit content on any page", color: "#be123c", borderColor: "#f43f5e", action: () => { setAdminView("pageeditor"); if (Object.keys(pageContent).length === 0) loadPageContent(); } },
     { icon: "📋", title: "Standings", desc: "View current standings", color: "#15803d", borderColor: "#22c55e", action: () => setAdminView("standings") },
   ];
 
@@ -3214,6 +3273,139 @@ function AdminPage() {
           );
         })()}
 
+        {/* Page Editor view */}
+        {adminView === "pageeditor" && (() => {
+          const PAGE_SCHEMAS = {
+            home: {
+              name: "Home Page",
+              icon: "🏠",
+              fields: [
+                { key: "tagline", label: "Hero Tagline", type: "text", placeholder: "Est. 5755 · Celebrating 30 Years" },
+                { key: "announcement", label: "Top Announcement (optional)", type: "text", placeholder: "e.g. Playoffs begin April 19!" },
+              ],
+            },
+            board: {
+              name: "Board Page",
+              icon: "👥",
+              fields: [
+                { key: "description", label: "Description", type: "textarea", placeholder: "Synagogue Softball is an LLC..." },
+                { key: "email", label: "Contact Email", type: "text", placeholder: "ssoftball2022@gmail.com" },
+                { key: "members", label: "Board Members (one per line, format: Name - Role)", type: "textarea", placeholder: "Avery Krut - Board Member\nMarc Canter - Board Member\nRon Kalbrosky - Board Member\nJosh Enbom - Website\nChris Miller - Website" },
+              ],
+            },
+            waiver: {
+              name: "Waiver Form",
+              icon: "📋",
+              fields: [
+                { key: "title", label: "Title", type: "text", placeholder: "Waiver Form" },
+                { key: "body", label: "Waiver Text", type: "textarea", placeholder: "Enter the full waiver text here..." },
+              ],
+            },
+            registration: {
+              name: "Online Registration",
+              icon: "📝",
+              fields: [
+                { key: "title", label: "Title", type: "text", placeholder: "Online Registration" },
+                { key: "body", label: "Description", type: "textarea", placeholder: "Registration information..." },
+                { key: "link", label: "Registration Link (optional)", type: "text", placeholder: "https://..." },
+              ],
+            },
+            rules: {
+              name: "Rules Page",
+              icon: "⚖️",
+              fields: [
+                { key: "intro", label: "Intro Text", type: "textarea", placeholder: "Welcome to the LASSL rules page..." },
+                { key: "footer", label: "Footer Text", type: "textarea", placeholder: "Questions? Contact the Board." },
+              ],
+            },
+            gallery: {
+              name: "Gallery Page",
+              icon: "📸",
+              fields: [
+                { key: "intro", label: "Intro Text", type: "textarea", placeholder: "Photos from the league..." },
+              ],
+            },
+          };
+
+          if (selectedPage) {
+            const schema = PAGE_SCHEMAS[selectedPage];
+            const current = pageEditing[selectedPage] || pageContent[selectedPage] || {};
+            return (
+              <Card>
+                <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <button onClick={() => { setSelectedPage(null); setPageStatus(null); }} style={{padding:"6px 12px",background:"none",border:"1px solid rgba(0,0,0,0.15)",borderRadius:6,fontSize:13,cursor:"pointer"}}>← Back</button>
+                    <span style={{fontSize:20}}>{schema.icon}</span>
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Edit: {schema.name}</div>
+                  </div>
+                </div>
+                <div style={{padding:"20px"}}>
+                  {pageStatus && (
+                    <div style={{background:pageStatus.ok?"#f0fdf4":"#fef2f2",border:`1px solid ${pageStatus.ok?"#bbf7d0":"#fecaca"}`,borderRadius:10,padding:"12px 18px",marginBottom:16}}>
+                      <span style={{fontSize:14,fontWeight:600,color:pageStatus.ok?"#166534":"#991b1b"}}>{pageStatus.ok?"✓":"✗"} {pageStatus.text}</span>
+                    </div>
+                  )}
+                  {schema.fields.map(field => (
+                    <div key={field.key} style={{marginBottom:16}}>
+                      <label style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.5)",textTransform:"uppercase",letterSpacing:".04em",marginBottom:6,display:"block"}}>{field.label}</label>
+                      {field.type === "textarea" ? (
+                        <textarea
+                          value={current[field.key] || ""}
+                          onChange={e => setPageEditing(prev => ({ ...prev, [selectedPage]: { ...current, [field.key]: e.target.value } }))}
+                          placeholder={field.placeholder}
+                          rows={6}
+                          style={{width:"100%",padding:"12px 14px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:15,fontFamily:"'Barlow',sans-serif",resize:"vertical"}}
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          value={current[field.key] || ""}
+                          onChange={e => setPageEditing(prev => ({ ...prev, [selectedPage]: { ...current, [field.key]: e.target.value } }))}
+                          placeholder={field.placeholder}
+                          style={{width:"100%",padding:"12px 14px",borderRadius:8,border:"1px solid rgba(0,0,0,0.15)",fontSize:15,fontFamily:"'Barlow',sans-serif"}}
+                        />
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => savePageContent(selectedPage, pageEditing[selectedPage] || pageContent[selectedPage] || {})}
+                    disabled={pageSaving}
+                    style={{width:"100%",padding:"14px",background:pageSaving?"#94a3b8":"#0057FF",border:"none",borderRadius:10,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:18,textTransform:"uppercase",cursor:pageSaving?"not-allowed":"pointer",letterSpacing:".06em"}}>
+                    {pageSaving ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </Card>
+            );
+          }
+
+          return (
+            <Card>
+              <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:20}}>📝</span>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:22,textTransform:"uppercase",color:"#111"}}>Page Editor</div>
+              </div>
+              <div style={{padding:"20px"}}>
+                <p style={{fontSize:14,color:"rgba(0,0,0,0.5)",marginBottom:20}}>Select a page to edit its content. Changes are saved to Firebase and appear on the live site immediately.</p>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
+                  {Object.entries(PAGE_SCHEMAS).map(([slug, schema]) => (
+                    <button key={slug} onClick={() => { setSelectedPage(slug); setPageEditing({}); setPageStatus(null); }} style={{
+                      background:"#fff",border:"1px solid rgba(0,0,0,0.09)",borderLeft:"4px solid #be123c",
+                      borderRadius:10,padding:"16px",cursor:"pointer",textAlign:"left",transition:"all .15s",
+                    }}
+                    onMouseEnter={e => {e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-2px)";}}
+                    onMouseLeave={e => {e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="none";}}>
+                      <div style={{fontSize:24,marginBottom:6}}>{schema.icon}</div>
+                      <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",color:"#111"}}>{schema.name}</div>
+                      <div style={{fontSize:12,color:"rgba(0,0,0,0.4)",marginTop:4}}>{schema.fields.length} editable field{schema.fields.length !== 1 ? "s" : ""}</div>
+                      {pageContent[slug] && <div style={{fontSize:10,color:"#15803d",marginTop:6,fontWeight:700,textTransform:"uppercase"}}>✓ Has content</div>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          );
+        })()}
+
         {/* Email Blast view */}
         {adminView === "emailblast" && (
           <Card>
@@ -3446,6 +3638,7 @@ export default function App() {
   const [tab, setTab] = useState("home");
   const [teamDetail, setTeamDetail] = useState(null);
   const { div, scores, sched, rosters, loading, live } = useLiveData();
+  const pageContent = usePageContent();
 
   const allTeams = Object.entries(div).flatMap(([dk,d]) =>
     d.teams.map(t => ({...t, divKey:dk, divName:d.name, divAccent:d.accent}))
@@ -3502,54 +3695,96 @@ export default function App() {
       {tab==="standings" && <StandingsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} />}
       {tab==="teams"     && !teamDetail && <TeamsPage setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} />}
       {tab==="teams"     && teamDetail  && <TeamDetailPage teamName={teamDetail} onBack={() => { setTeamDetail(null); window.scrollTo(0,0); }} setTab={handleSetTab} setTeamDetail={handleTeamDetail} div={div} allTeams={allTeams} scores={scores} sched={sched} rosters={rosters} />}
-      {tab==="gallery"   && <GalleryPage />}
+      {tab==="gallery"   && <GalleryPage pageContent={pageContent.gallery || {}} />}
       {tab==="subs"      && <SubBoardPage />}
       {tab==="umpires"   && <UmpirePage />}
-      {tab==="registration" && <div style={{minHeight:"100vh",background:"#f2f4f8"}}><PageHero label="LASSL" title="Online Registration" /><div style={{maxWidth:800,margin:"0 auto",padding:"40px 20px",textAlign:"center"}}><div style={{fontSize:48,marginBottom:16}}>📝</div><div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,color:"#111",marginBottom:8}}>Coming Soon</div><div style={{fontSize:16,color:"rgba(0,0,0,0.45)"}}>Online registration for the upcoming season will be available here. Check back soon!</div></div></div>}
-      {tab==="waiver"    && <div style={{minHeight:"100vh",background:"#f2f4f8"}}><PageHero label="LASSL" title="Waiver Form" /><div style={{maxWidth:800,margin:"0 auto",padding:"40px 20px",textAlign:"center"}}><div style={{fontSize:48,marginBottom:16}}>📋</div><div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,color:"#111",marginBottom:8}}>Coming Soon</div><div style={{fontSize:16,color:"rgba(0,0,0,0.45)"}}>One will be posted for the next season soon.</div></div></div>}
-      {tab==="board"     && <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
-        <PageHero label="LASSL" title="Board" />
-        <div style={{maxWidth:800,margin:"0 auto",padding:"32px clamp(12px,3vw,40px) 60px"}}>
-          <Card>
-            <div style={{padding:"32px clamp(16px,3vw,40px)"}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-                <div style={{width:4,height:32,background:"#0057FF",borderRadius:2}} />
-                <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111"}}>League Leadership</h2>
-              </div>
-              <p style={{fontSize:16,color:"rgba(0,0,0,0.6)",lineHeight:1.8,marginBottom:24}}>
-                Synagogue Softball is an LLC. The Board is responsible for every detail ensuring that our league runs smoothly and effectively. The Board is comprised of the following members and should be contacted by your team's manager if any issues arise during your game. Each member of the Board is responsible for various facets of the league.
-              </p>
-              <div style={{background:"rgba(0,87,255,0.04)",border:"1px solid rgba(0,87,255,0.1)",borderRadius:12,padding:"16px 20px",marginBottom:28,display:"flex",alignItems:"center",gap:10}}>
-                <span style={{fontSize:20}}>✉️</span>
-                <div>
-                  <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",textTransform:"uppercase",letterSpacing:".06em"}}>Contact the Board</div>
-                  <a href="mailto:ssoftball2022@gmail.com" style={{fontSize:18,fontWeight:700,color:"#0057FF",textDecoration:"none"}}>ssoftball2022@gmail.com</a>
-                </div>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:0}}>
-                {[
-                  {name:"Avery Krut",role:"Board Member"},
-                  {name:"Marc Canter",role:"Board Member"},
-                  {name:"Ron Kalbrosky",role:"Board Member"},
-                  {name:"Josh Enbom",role:"Website"},
-                  {name:"Chris Miller",role:"Website"},
-                ].map((m,i) => (
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:14,padding:"16px 0",borderBottom:i<4?"1px solid rgba(0,0,0,0.06)":"none"}}>
+      {tab==="registration" && (() => {
+        const rc = pageContent.registration || {};
+        const title = rc.title || "Online Registration";
+        const body = rc.body || "Online registration for the upcoming season will be available here. Check back soon!";
+        const link = rc.link || "";
+        return (
+          <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+            <PageHero label="LASSL" title={title} />
+            <div style={{maxWidth:800,margin:"0 auto",padding:"40px 20px",textAlign:"center"}}>
+              <div style={{fontSize:48,marginBottom:16}}>📝</div>
+              <div style={{fontSize:16,color:"rgba(0,0,0,0.65)",lineHeight:1.8,whiteSpace:"pre-wrap"}}>{body}</div>
+              {link && <a href={link} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",marginTop:24,background:"#0057FF",color:"#fff",padding:"14px 28px",borderRadius:8,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:16,textTransform:"uppercase",letterSpacing:".06em"}}>Register Now</a>}
+            </div>
+          </div>
+        );
+      })()}
+      {tab==="waiver" && (() => {
+        const wc = pageContent.waiver || {};
+        const title = wc.title || "Waiver Form";
+        const body = wc.body || "One will be posted for the next season soon.";
+        return (
+          <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+            <PageHero label="LASSL" title={title} />
+            <div style={{maxWidth:800,margin:"0 auto",padding:"40px 20px"}}>
+              <div style={{fontSize:48,marginBottom:16,textAlign:"center"}}>📋</div>
+              <div style={{fontSize:16,color:"rgba(0,0,0,0.65)",lineHeight:1.8,whiteSpace:"pre-wrap",background:"#fff",border:"1px solid rgba(0,0,0,0.08)",borderRadius:12,padding:"24px 28px"}}>{body}</div>
+            </div>
+          </div>
+        );
+      })()}
+      {tab==="board" && (() => {
+        const bc = pageContent.board || {};
+        const description = bc.description || "Synagogue Softball is an LLC. The Board is responsible for every detail ensuring that our league runs smoothly and effectively. The Board is comprised of the following members and should be contacted by your team's manager if any issues arise during your game. Each member of the Board is responsible for various facets of the league.";
+        const email = bc.email || "ssoftball2022@gmail.com";
+        const defaultMembers = [
+          {name:"Avery Krut",role:"Board Member"},
+          {name:"Marc Canter",role:"Board Member"},
+          {name:"Ron Kalbrosky",role:"Board Member"},
+          {name:"Josh Enbom",role:"Website"},
+          {name:"Chris Miller",role:"Website"},
+        ];
+        const members = bc.members
+          ? bc.members.split("\n").map(s => s.trim()).filter(Boolean).map(line => {
+              const [name, role] = line.split(" - ").map(s => (s || "").trim());
+              return { name: name || line, role: role || "" };
+            })
+          : defaultMembers;
+        return (
+          <div style={{minHeight:"100vh",background:"#f2f4f8"}}>
+            <PageHero label="LASSL" title="Board" />
+            <div style={{maxWidth:800,margin:"0 auto",padding:"32px clamp(12px,3vw,40px) 60px"}}>
+              <Card>
+                <div style={{padding:"32px clamp(16px,3vw,40px)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+                    <div style={{width:4,height:32,background:"#0057FF",borderRadius:2}} />
+                    <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:28,textTransform:"uppercase",color:"#111"}}>League Leadership</h2>
+                  </div>
+                  <p style={{fontSize:16,color:"rgba(0,0,0,0.6)",lineHeight:1.8,marginBottom:24,whiteSpace:"pre-wrap"}}>
+                    {description}
+                  </p>
+                  <div style={{background:"rgba(0,87,255,0.04)",border:"1px solid rgba(0,87,255,0.1)",borderRadius:12,padding:"16px 20px",marginBottom:28,display:"flex",alignItems:"center",gap:10}}>
+                    <span style={{fontSize:20}}>✉️</span>
                     <div>
-                      <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#111",textTransform:"uppercase"}}>{m.name}</div>
-                      <div style={{fontSize:13,color:"rgba(0,0,0,0.4)",fontWeight:600}}>{m.role}</div>
+                      <div style={{fontSize:13,fontWeight:700,color:"rgba(0,0,0,0.4)",textTransform:"uppercase",letterSpacing:".06em"}}>Contact the Board</div>
+                      <a href={`mailto:${email}`} style={{fontSize:18,fontWeight:700,color:"#0057FF",textDecoration:"none"}}>{email}</a>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                    {members.map((m,i) => (
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:14,padding:"16px 0",borderBottom:i<members.length-1?"1px solid rgba(0,0,0,0.06)":"none"}}>
+                        <div>
+                          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,color:"#111",textTransform:"uppercase"}}>{m.name}</div>
+                          {m.role && <div style={{fontSize:13,color:"rgba(0,0,0,0.4)",fontWeight:600}}>{m.role}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
             </div>
-          </Card>
-        </div>
-      </div>}
+          </div>
+        );
+      })()}
       {tab==="signup"    && <SignUpPage allTeams={allTeams} />}
       {tab==="captain"   && <CaptainPage />}
       {tab==="admin"     && <AdminPage />}
-      {tab==="rules"     && <RulesPage />}
+      {tab==="rules"     && <RulesPage pageContent={pageContent.rules || {}} />}
       <Footer setTab={handleSetTab} />
     </div>
   );
