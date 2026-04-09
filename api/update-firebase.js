@@ -18,6 +18,7 @@ export default async function handler(req, res) {
 
   try {
     const { awayScore, homeScore, awayBatters, homeBatters, awayPitchers, homePitchers, linescore, notes } = parsed;
+    const isTie = awayScore === homeScore;
     const awayWin = awayScore > homeScore;
 
     // ── Helper: Firestore REST API ────────────────────────
@@ -101,12 +102,14 @@ export default async function handler(req, res) {
       const gameDoc = await fsGet(`games/${gameId}`);
       if (gameDoc) {
         const gd = fromFirestore(gameDoc.fields);
-        const flip = gd.away === homeTeamId;
-        await fsPatch(`games/${gameId}`, {
-          away_score: flip ? homeScore : awayScore,
-          home_score: flip ? awayScore : homeScore,
-          done: true
-        });
+        const patch = { done: true };
+        // Optional: rewrite team IDs (used when a scheduled game's teams changed)
+        if (req.body.rewriteAway && awayTeamId) patch.away = awayTeamId;
+        if (req.body.rewriteHome && homeTeamId) patch.home = homeTeamId;
+        const flip = !req.body.rewriteAway && !req.body.rewriteHome && gd.away === homeTeamId;
+        patch.away_score = flip ? homeScore : awayScore;
+        patch.home_score = flip ? awayScore : homeScore;
+        await fsPatch(`games/${gameId}`, patch);
         log(`✓ Game score: ${awayScore}–${homeScore}`);
       }
     }
@@ -120,19 +123,20 @@ export default async function handler(req, res) {
       const win = isAway ? awayWin : !awayWin;
       const scored = isAway ? awayScore : homeScore;
       const conceded = isAway ? homeScore : awayScore;
-      const w = (t.w || 0) + (win ? 1 : 0);
-      const l = (t.l || 0) + (win ? 0 : 1);
+      const w = (t.w || 0) + (isTie ? 0 : (win ? 1 : 0));
+      const l = (t.l || 0) + (isTie ? 0 : (win ? 0 : 1));
+      const tt = (t.t || 0) + (isTie ? 1 : 0);
       const str = t.streak || '';
-      const sl = win ? 'W' : 'L';
+      const sl = isTie ? 'T' : (win ? 'W' : 'L');
       const sn = (str.startsWith(sl) ? parseInt(str.slice(1) || '0') : 0) + 1;
       await fsPatch(`teams/${tid}`, {
-        w, l,
-        pct: w + l > 0 ? Math.round((w / (w + l)) * 1000) / 1000 : 0,
+        w, l, t: tt,
+        pct: (w + l + tt) > 0 ? Math.round(((w + tt * 0.5) / (w + l + tt)) * 1000) / 1000 : 0,
         rs: (t.rs || 0) + scored,
         ra: (t.ra || 0) + conceded,
         streak: `${sl}${sn}`
       });
-      log(`✓ ${t.name || tid}: ${w}-${l} (${sl}${sn})`);
+      log(`✓ ${t.name || tid}: ${w}-${l}${tt ? '-' + tt : ''} (${sl}${sn})`);
     }
 
     // ── 3. Update player stats ────────────────────────────
