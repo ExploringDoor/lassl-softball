@@ -2905,7 +2905,7 @@ function AdminPage() {
                               <button onClick={async () => {
                                 if (!confirm(`Delete ${s.name} from sign-ups?`)) return;
                                 try {
-                                  await fetch('/api/delete-signup', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:s.id}) });
+                                  await fetch('/api/signup', { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:s.id}) });
                                   loadSignups();
                                 } catch(e) { alert('Failed: '+e.message); }
                               }} style={{padding:"3px 8px",background:"none",border:"1px solid #dc2626",borderRadius:4,color:"#dc2626",fontSize:10,fontWeight:700,cursor:"pointer"}}>Delete</button>
@@ -2992,7 +2992,7 @@ function AdminPage() {
                     <button onClick={() => window.open(`mailto:${s.email}`)} style={{padding:"4px 10px",background:"none",border:"1px solid #0057FF",borderRadius:4,color:"#0057FF",fontSize:11,fontWeight:700,cursor:"pointer"}}>Email</button>
                     <button onClick={async () => {
                       if (!confirm(`Delete ${s.name}?`)) return;
-                      try { await fetch('/api/delete-signup', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s.id})}); loadSignups(); } catch(e) {}
+                      try { await fetch('/api/signup', {method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s.id})}); loadSignups(); } catch(e) {}
                     }} style={{padding:"4px 10px",background:"none",border:"1px solid #dc2626",borderRadius:4,color:"#dc2626",fontSize:11,fontWeight:700,cursor:"pointer"}}>Delete</button>
                   </div>
                 </div>
