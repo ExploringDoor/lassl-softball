@@ -878,7 +878,7 @@ function HomePage({ setTab, setTeamDetail, allTeams, scores, sched, div }) {
   const fields = sched[0]?.fields || [];
   const nextGames = fields.flatMap(f => f.games.map(g => ({...g,field:f.name}))).slice(0,5);
   const recent = scores[0]?.games || [];
-  const goTeam = (name) => { setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); };
+  const goTeam = (name) => { setTeamDetail(name); window.scrollTo(0,0); };
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       {/* HERO */}
@@ -967,7 +967,7 @@ function ScoresPage({ setTab, setTeamDetail, scores, allTeams, sched }) {
   const upcomingWeeks = (sched||[]).map(s => ({ week: s.label, games: [], upcoming: true }));
   const allWeeks = [...scores, ...upcomingWeeks];
   const [wk,setWk] = useState(0);
-  const goTeam = (name) => { setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); };
+  const goTeam = (name) => { setTeamDetail(name); window.scrollTo(0,0); };
   const current = allWeeks[wk];
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
@@ -1207,7 +1207,7 @@ function SchedulePage({ setTab, setTeamDetail, sched, allTeams, scores, divData 
   const week = !isPlayoffs ? (sched[wk] || { label: "", fields: [] }) : null;
   const games = !isPlayoffs ? (week.fields || []).flatMap(f => f.games.map(g => ({...g,field:f.name}))) : [];
   const dateStr = !isPlayoffs ? (week.label.split("–")[1]?.trim()||"") : "";
-  const goTeam = (name) => { setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); };
+  const goTeam = (name) => { setTeamDetail(name); window.scrollTo(0,0); };
 
   const getTeam = (name) => (allTeams||[]).find(t => t.name === name || t.name.toLowerCase().startsWith(name.toLowerCase().substring(0,5))) || {};
   const getStreak = (name) => {
@@ -1362,7 +1362,7 @@ function TeamDetailPage({ teamName, onBack, setTab, setTeamDetail, div, allTeams
   const teamGames = scores.flatMap(w => w.games.filter(g => g.away===teamName||g.home===teamName)).slice(0,5);
   const fields = sched[0]?.fields || [];
   const upcoming = fields.flatMap(f => f.games.map(g=>({...g,field:f.name}))).filter(g=>g.away===teamName||g.home===teamName);
-  const goTeam = (name) => { if(setTeamDetail){ setTeamDetail(name); setTab("teams"); window.scrollTo(0,0); } };
+  const goTeam = (name) => { if(setTeamDetail){ setTeamDetail(name); window.scrollTo(0,0); } };
   return (
     <div style={{minHeight:"100vh",background:"#f2f4f8",overflowX:"hidden",width:"100%"}}>
       <div style={{background:`linear-gradient(135deg, ${color}15 0%, #fff 60%)`,borderBottom:"3px solid #0057FF",padding:"12px clamp(12px,3vw,40px)"}}>
