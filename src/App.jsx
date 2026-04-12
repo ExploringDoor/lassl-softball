@@ -1152,15 +1152,19 @@ function PlayoffBracket({ allTeams, divData }) {
   const BracketContent = ({ divKey, data, large }) => {
     const info = PLAYOFF_INFO[divKey];
     if (!info) return null;
-    const nameSize = large ? 24 : 16;
-    const subSize = large ? 13 : 10;
+    const nameSize = large ? 28 : 16;
     return (
       <>
-        <div style={{marginBottom:large?16:8,marginTop:2}}>
+        <div style={{marginBottom:large?20:8,marginTop:2}}>
           <div style={{fontFamily:font,fontWeight:800,fontSize:nameSize,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>{data?.name || `Division ${divKey}`}</div>
-          <div style={{fontSize:subSize,color:"rgba(255,255,255,0.35)",marginTop:3,lineHeight:1.6}}>
+          <div style={{display:"flex",flexDirection:"column",gap:large?6:3,marginTop:large?10:4}}>
             {info.rounds.map((r,i) => (
-              <span key={i}>{i > 0 ? " → " : ""}<span style={{color:"rgba(255,215,0,0.5)",fontWeight:700}}>{r.label}</span> {r.date}{r.time ? ` ${r.time}` : ""}{r.field ? ` · ${r.field}` : ""}</span>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:large?10:6,flexWrap:"wrap"}}>
+                <span style={{fontFamily:font,fontWeight:900,fontSize:large?15:12,color:"#FFD700",textTransform:"uppercase",letterSpacing:".04em",minWidth:large?140:90}}>{r.label}</span>
+                <span style={{fontFamily:font,fontWeight:700,fontSize:large?15:12,color:"rgba(255,255,255,0.8)"}}>{r.date}</span>
+                {r.time && <span style={{fontSize:large?14:11,color:"rgba(255,255,255,0.55)",fontWeight:600}}>{r.time}</span>}
+                {r.field && <span style={{fontSize:large?13:11,color:"rgba(255,255,255,0.4)",fontStyle:"italic"}}>{r.field}</span>}
+              </div>
             ))}
           </div>
         </div>
