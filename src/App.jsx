@@ -1085,7 +1085,15 @@ function PlayoffBracket({ allTeams, divData }) {
           </div>
         </div>
         <HLine />
-        <Matchup label="Championship" sub={info.rounds[1].date} team1={null} seed1={null} team2={null} seed2={null} />
+        <div style={{display:"flex",flexDirection:"column",gap:2}}>
+          <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>Championship</div>
+          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date}</div>
+          <TeamSlot team={t[0]||null} seed={1} />
+          <div style={{fontFamily:font,fontSize:10,color:"rgba(255,255,255,0.2)",textAlign:"center",padding:"2px 0"}}>vs</div>
+          <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
+            <span style={{fontFamily:font,fontWeight:800,fontSize:13,color:"rgba(255,255,255,0.25)",textTransform:"uppercase"}}>Winner #2 vs #3</span>
+          </div>
+        </div>
         <HLine />
         <Trophy />
       </div>
@@ -1114,8 +1122,22 @@ function PlayoffBracket({ allTeams, divData }) {
         </div>
         <HLine />
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
-          <Matchup label="Semi 1" sub={info.rounds[1].date} team1={null} seed1={null} team2={null} seed2={null} />
-          <Matchup label="Semi 2" sub={info.rounds[1].date} team1={null} seed1={null} team2={null} seed2={null} />
+          <div style={{display:"flex",flexDirection:"column",gap:2}}>
+            <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>Semi 1</div>
+            <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date}</div>
+            <TeamSlot team={t[0]||null} seed={1} />
+            <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
+              <span style={{fontFamily:font,fontWeight:800,fontSize:12,color:"rgba(255,255,255,0.25)",textTransform:"uppercase"}}>Winner #4 vs #5</span>
+            </div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:2}}>
+            <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>Semi 2</div>
+            <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date}</div>
+            <TeamSlot team={t[1]||null} seed={2} />
+            <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
+              <span style={{fontFamily:font,fontWeight:800,fontSize:12,color:"rgba(255,255,255,0.25)",textTransform:"uppercase"}}>Winner #3 vs #6</span>
+            </div>
+          </div>
         </div>
         <HLine />
         <Matchup label="Championship" sub={info.rounds[2].date} team1={null} seed1={null} team2={null} seed2={null} />
