@@ -1029,25 +1029,25 @@ function PlayoffBracket({ allTeams, divData }) {
   /* ── Playoff schedule data per division ── */
   const PLAYOFF_INFO = {
     C: { teams: 4, rounds: [
-      { label: "Semi-Finals", date: "Apr 26", field: "Mar Vista #3", games: [{ label: "Semi 1", s1: 4, s2: 1 }, { label: "Semi 2", s1: 3, s2: 2 }] },
-      { label: "Championship", date: "May 3", field: "Cheviot #2" },
+      { label: "Semi-Finals", date: "Apr 26", field: "Mar Vista #3", games: [{ label: "Semi 1", s1: 4, s2: 1, time: "9:00 AM" }, { label: "Semi 2", s1: 3, s2: 2, time: "11:00 AM" }] },
+      { label: "Championship", date: "May 3", field: "Cheviot #2", time: "11:00 AM" },
     ]},
     A: { teams: 4, rounds: [
-      { label: "Semi-Finals", date: "May 3", field: "Hjelte #3", games: [{ label: "Semi 1", s1: 4, s2: 1 }, { label: "Semi 2", s1: 3, s2: 2 }] },
-      { label: "Championship", date: "May 17", field: "Hjelte #3" },
+      { label: "Semi-Finals", date: "May 3", field: "Hjelte #3", games: [{ label: "Semi 1", s1: 4, s2: 1, time: "9:00 AM" }, { label: "Semi 2", s1: 3, s2: 2, time: "11:00 AM" }] },
+      { label: "Championship", date: "May 17", field: "Hjelte #3", time: "11:00 AM" },
     ]},
     B: { teams: 4, rounds: [
-      { label: "Semi-Finals", date: "May 3", field: "Mar Vista #3", games: [{ label: "Semi 1", s1: 3, s2: 2 }, { label: "Semi 2", s1: 4, s2: 1 }] },
-      { label: "Championship", date: "May 17", field: "Cheviot #2" },
+      { label: "Semi-Finals", date: "May 3", field: "Mar Vista #3", games: [{ label: "Semi 1", s1: 3, s2: 2, time: "9:00 AM" }, { label: "Semi 2", s1: 4, s2: 1, time: "11:00 AM" }] },
+      { label: "Championship", date: "May 17", field: "Cheviot #2", time: "11:00 AM" },
     ]},
     E: { teams: 3, rounds: [
-      { label: "Semi-Final", date: "May 3", field: "Cheviot #1", games: [{ label: "Semi", s1: 3, s2: 2, note: "#1 Seed gets bye" }] },
-      { label: "Championship", date: "May 17", field: "Cheviot #1" },
+      { label: "Semi-Final", date: "May 3", field: "Cheviot #1", games: [{ label: "Semi", s1: 3, s2: 2, time: "11:00 AM" }] },
+      { label: "Championship", date: "May 17", field: "Cheviot #1", time: "11:00 AM" },
     ]},
     D: { teams: 6, rounds: [
-      { label: "Quarter-Finals", date: "May 17", games: [{ label: "QF 1", s1: 5, s2: 4 }, { label: "QF 2", s1: 6, s2: 3 }] },
-      { label: "Semi-Finals", date: "May 31", field: "Cheviot #2/#3" },
-      { label: "Championship", date: "Jun 7", field: "Cheviot #2" },
+      { label: "Quarter-Finals", date: "May 17", games: [{ label: "QF 1", s1: 5, s2: 4, time: "9:00 AM", field: "Cheviot #1" }, { label: "QF 2", s1: 6, s2: 3, time: "9:00 AM", field: "Hjelte #3" }] },
+      { label: "Semi-Finals", date: "May 31", field: "Cheviot #2/#3", time: "11:00 AM / 1:00 PM" },
+      { label: "Championship", date: "Jun 7", field: "Cheviot #2", time: "11:00 AM" },
     ]},
   };
 
@@ -1058,11 +1058,11 @@ function PlayoffBracket({ allTeams, divData }) {
     return (
       <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div style={{display:"flex",flexDirection:"column",gap:16}}>
-          <Matchup label={r1.games[0].label} sub={r1.date} team1={t[0]||null} seed1={1} team2={t[3]||null} seed2={4} />
-          <Matchup label={r1.games[1].label} sub={r1.date} team1={t[1]||null} seed1={2} team2={t[2]||null} seed2={3} />
+          <Matchup label={r1.games[0].label} sub={`${r1.date} · ${r1.games[0].time}`} team1={t[0]||null} seed1={1} team2={t[3]||null} seed2={4} />
+          <Matchup label={r1.games[1].label} sub={`${r1.date} · ${r1.games[1].time}`} team1={t[1]||null} seed1={2} team2={t[2]||null} seed2={3} />
         </div>
         <HLine />
-        <Matchup label="Championship" sub={info.rounds[1].date} team1={null} seed1={null} team2={null} seed2={null} />
+        <Matchup label="Championship" sub={`${info.rounds[1].date} · ${info.rounds[1].time||""}`} team1={null} seed1={null} team2={null} seed2={null} />
         <HLine />
         <Trophy />
       </div>
@@ -1075,7 +1075,7 @@ function PlayoffBracket({ allTeams, divData }) {
     return (
       <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          <Matchup label="Semi-Final" sub={info.rounds[0].date} team1={t[1]||null} seed1={2} team2={t[2]||null} seed2={3} />
+          <Matchup label="Semi-Final" sub={`${info.rounds[0].date} · ${info.rounds[0].games[0].time}`} team1={t[1]||null} seed1={2} team2={t[2]||null} seed2={3} />
           <div style={{textAlign:"center",padding:"8px 12px",background:"rgba(255,215,0,0.1)",borderRadius:6,border:"1px solid rgba(255,215,0,0.15)"}}>
             <div style={{fontSize:9,fontWeight:700,color:"rgba(255,215,0,0.5)",textTransform:"uppercase",letterSpacing:".08em"}}>Bye to Final</div>
             <div style={{display:"flex",alignItems:"center",gap:6,justifyContent:"center",marginTop:4}}>
@@ -1087,7 +1087,7 @@ function PlayoffBracket({ allTeams, divData }) {
         <HLine />
         <div style={{display:"flex",flexDirection:"column",gap:2}}>
           <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>Championship</div>
-          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date}</div>
+          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date} · {info.rounds[1].time||""}</div>
           <TeamSlot team={t[0]||null} seed={1} />
           <div style={{fontFamily:font,fontSize:10,color:"rgba(255,255,255,0.2)",textAlign:"center",padding:"2px 0"}}>vs</div>
           <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
@@ -1106,8 +1106,8 @@ function PlayoffBracket({ allTeams, divData }) {
     return (
       <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <Matchup label="QF 1" sub={info.rounds[0].date} team1={t[3]||null} seed1={4} team2={t[4]||null} seed2={5} />
-          <Matchup label="QF 2" sub={info.rounds[0].date} team1={t[2]||null} seed1={3} team2={t[5]||null} seed2={6} />
+          <Matchup label="QF 1" sub={`${info.rounds[0].date} · ${info.rounds[0].games[0].time} · ${info.rounds[0].games[0].field||""}`} team1={t[3]||null} seed1={4} team2={t[4]||null} seed2={5} />
+          <Matchup label="QF 2" sub={`${info.rounds[0].date} · ${info.rounds[0].games[1].time} · ${info.rounds[0].games[1].field||""}`} team1={t[2]||null} seed1={3} team2={t[5]||null} seed2={6} />
           <div style={{textAlign:"center",padding:"6px 10px",background:"rgba(255,215,0,0.08)",borderRadius:6,border:"1px solid rgba(255,215,0,0.12)"}}>
             <div style={{fontSize:9,fontWeight:700,color:"rgba(255,215,0,0.5)",textTransform:"uppercase",letterSpacing:".06em"}}>Seeds 1 & 2 → Semis</div>
             <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:4}}>
@@ -1124,7 +1124,7 @@ function PlayoffBracket({ allTeams, divData }) {
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           <div style={{display:"flex",flexDirection:"column",gap:2}}>
             <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>Semi 1</div>
-            <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date}</div>
+            <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date} · {info.rounds[1].time||""}</div>
             <TeamSlot team={t[0]||null} seed={1} />
             <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
               <span style={{fontFamily:font,fontWeight:800,fontSize:12,color:"rgba(255,255,255,0.25)",textTransform:"uppercase"}}>Winner #4 vs #5</span>
@@ -1132,7 +1132,7 @@ function PlayoffBracket({ allTeams, divData }) {
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:2}}>
             <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>Semi 2</div>
-            <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date}</div>
+            <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date} · {info.rounds[1].time||""}</div>
             <TeamSlot team={t[1]||null} seed={2} />
             <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
               <span style={{fontFamily:font,fontWeight:800,fontSize:12,color:"rgba(255,255,255,0.25)",textTransform:"uppercase"}}>Winner #3 vs #6</span>
@@ -1140,7 +1140,7 @@ function PlayoffBracket({ allTeams, divData }) {
           </div>
         </div>
         <HLine />
-        <Matchup label="Championship" sub={info.rounds[2].date} team1={null} seed1={null} team2={null} seed2={null} />
+        <Matchup label="Championship" sub={`${info.rounds[2].date} · ${info.rounds[2].time||""}`} team1={null} seed1={null} team2={null} seed2={null} />
         <HLine />
         <Trophy />
       </div>
@@ -1159,7 +1159,7 @@ function PlayoffBracket({ allTeams, divData }) {
           <div style={{fontFamily:font,fontWeight:800,fontSize:16,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>{data?.name || `Division ${divKey}`}</div>
           <div style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginTop:3}}>
             {info.rounds.map((r,i) => (
-              <span key={i}>{i > 0 ? " → " : ""}<span style={{color:"rgba(255,215,0,0.5)",fontWeight:700}}>{r.label}</span> {r.date}{r.field ? ` · ${r.field}` : ""}</span>
+              <span key={i}>{i > 0 ? " → " : ""}<span style={{color:"rgba(255,215,0,0.5)",fontWeight:700}}>{r.label}</span> {r.date}{r.time ? ` ${r.time}` : ""}{r.field ? ` · ${r.field}` : ""}</span>
             ))}
           </div>
         </div>
