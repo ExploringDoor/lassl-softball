@@ -995,6 +995,7 @@ function ScoresPage({ setTab, setTeamDetail, scores, allTeams, sched }) {
 /* ─── PLAYOFF BRACKET ────────────────────────────────────────────────────── */
 function PlayoffBracket({ allTeams, divData }) {
   const font = "'Barlow Condensed',sans-serif";
+  const [expandedDiv, setExpandedDiv] = useState(null);
   // Flip to true once regular season ends to show actual team names/logos
   const SEEDS_LOCKED = false;
 
@@ -1147,26 +1148,56 @@ function PlayoffBracket({ allTeams, divData }) {
     );
   };
 
-  /* ── Division Card ── */
-  const DivisionCard = ({ divKey, data }) => {
+  /* ── Bracket content (reused in card and modal) ── */
+  const BracketContent = ({ divKey, data, large }) => {
     const info = PLAYOFF_INFO[divKey];
     if (!info) return null;
-    const teamCount = data?.teams?.length || 0;
+    const nameSize = large ? 24 : 16;
+    const subSize = large ? 13 : 10;
     return (
-      <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"10px 14px 14px",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"#FFD700",borderRadius:"12px 12px 0 0"}} />
-        <div style={{marginBottom:8,marginTop:2}}>
-          <div style={{fontFamily:font,fontWeight:800,fontSize:16,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>{data?.name || `Division ${divKey}`}</div>
-          <div style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginTop:3}}>
+      <>
+        <div style={{marginBottom:large?16:8,marginTop:2}}>
+          <div style={{fontFamily:font,fontWeight:800,fontSize:nameSize,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>{data?.name || `Division ${divKey}`}</div>
+          <div style={{fontSize:subSize,color:"rgba(255,255,255,0.35)",marginTop:3,lineHeight:1.6}}>
             {info.rounds.map((r,i) => (
               <span key={i}>{i > 0 ? " → " : ""}<span style={{color:"rgba(255,215,0,0.5)",fontWeight:700}}>{r.label}</span> {r.date}{r.time ? ` ${r.time}` : ""}{r.field ? ` · ${r.field}` : ""}</span>
             ))}
           </div>
         </div>
-        <div style={{overflowX:"auto",paddingBottom:4}}>
+        <div style={{overflowX:"auto",paddingBottom:4,transform:large?"scale(1.15)":"none",transformOrigin:"left center"}}>
           {info.teams === 6 ? <SixTeamBracket teams={data?.teams} info={info} />
            : info.teams === 3 ? <ThreeTeamBracket teams={data?.teams} info={info} />
            : <FourTeamBracket teams={data?.teams} info={info} />}
+        </div>
+      </>
+    );
+  };
+
+  /* ── Division Card ── */
+  const DivisionCard = ({ divKey, data }) => {
+    const info = PLAYOFF_INFO[divKey];
+    if (!info) return null;
+    return (
+      <div onClick={() => setExpandedDiv(divKey)} style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"10px 14px 14px",position:"relative",overflow:"hidden",cursor:"pointer",transition:"transform .15s,box-shadow .15s"}}
+        onMouseEnter={e => {e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 30px rgba(255,215,0,0.15)";}}
+        onMouseLeave={e => {e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="none";}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"#FFD700",borderRadius:"12px 12px 0 0"}} />
+        <BracketContent divKey={divKey} data={data} />
+        <div style={{textAlign:"center",marginTop:6}}>
+          <span style={{fontSize:10,color:"rgba(255,215,0,0.4)",fontFamily:font,fontWeight:700,textTransform:"uppercase",letterSpacing:".08em"}}>Tap to expand</span>
+        </div>
+      </div>
+    );
+  };
+
+  /* ── Fullscreen Modal ── */
+  const ExpandedModal = () => {
+    if (!expandedDiv || !divData?.[expandedDiv]) return null;
+    return (
+      <div onClick={() => setExpandedDiv(null)} style={{position:"fixed",inset:0,zIndex:2000,background:"rgba(0,0,0,0.92)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",backdropFilter:"blur(8px)",animation:"slideIn 0.3s ease"}}>
+        <div onClick={e => e.stopPropagation()} style={{background:"#0a0a1a",border:"2px solid rgba(255,215,0,0.25)",borderRadius:20,padding:"clamp(24px,4vw,48px)",maxWidth:900,width:"100%",maxHeight:"90vh",overflowY:"auto",position:"relative",boxShadow:"0 0 80px rgba(255,215,0,0.1)"}}>
+          <button onClick={() => setExpandedDiv(null)} style={{position:"absolute",top:16,right:16,background:"rgba(255,255,255,0.1)",border:"none",color:"#fff",borderRadius:8,width:36,height:36,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>✕</button>
+          <BracketContent divKey={expandedDiv} data={divData[expandedDiv]} large />
         </div>
       </div>
     );
@@ -1174,11 +1205,12 @@ function PlayoffBracket({ allTeams, divData }) {
 
   return (
     <div style={{background:"#0a0a1a",borderRadius:20,padding:"clamp(16px,4vw,40px)",position:"relative",overflow:"hidden"}}>
+      <ExpandedModal />
       {/* Title */}
       <div style={{textAlign:"center",marginBottom:24,position:"relative"}}>
         <h2 style={{fontFamily:font,fontWeight:900,fontSize:36,textTransform:"uppercase",lineHeight:1,letterSpacing:".08em",margin:0,background:"linear-gradient(90deg,#FFD700,#fff,#FFD700)",backgroundSize:"200% auto",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",animation:"shimmer 3s linear infinite"}}>2026 Playoffs</h2>
         <div style={{width:320,height:3,margin:"8px auto 0",borderRadius:1,background:"linear-gradient(90deg,transparent,#FFD700,transparent)",animation:"shimmer 2s linear infinite",backgroundSize:"200% auto"}} />
-        <div style={{fontSize:12,color:"rgba(255,255,255,0.3)",marginTop:8}}>Single elimination · Seeds determined by regular season record</div>
+        <div style={{fontSize:12,color:"rgba(255,255,255,0.3)",marginTop:8}}>Single elimination · Seeds determined by regular season record · Tap a division to expand</div>
       </div>
 
       {/* Grid: Top row = C, A, B | Bottom row = D (wider), E */}
