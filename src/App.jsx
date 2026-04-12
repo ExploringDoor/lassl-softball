@@ -995,13 +995,17 @@ function ScoresPage({ setTab, setTeamDetail, scores, allTeams, sched }) {
 /* ─── PLAYOFF BRACKET ────────────────────────────────────────────────────── */
 function PlayoffBracket({ allTeams, divData }) {
   const font = "'Barlow Condensed',sans-serif";
+  // Flip to true once regular season ends to show actual team names/logos
+  const SEEDS_LOCKED = false;
 
   const TeamSlot = ({ team, seed }) => (
     <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
-      {seed != null && <span style={{fontFamily:font,fontWeight:900,fontSize:12,color:"#FFD700",width:14,textAlign:"center",flexShrink:0}}>{seed}</span>}
-      {team ? <TLogo name={team.name} size={32} /> : <div style={{width:32,height:32,borderRadius:4,background:"rgba(255,255,255,0.06)",flexShrink:0}} />}
-      <span style={{fontFamily:font,fontWeight:800,fontSize:15,color:team?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.25)",textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1,minWidth:0}}>{team?.name || "TBD"}</span>
-      {team && <span style={{fontSize:12,color:"rgba(255,255,255,0.4)",flexShrink:0}}>{team.w}-{team.l}{team.t ? `-${team.t}` : ""}</span>}
+      {seed != null && <span style={{fontFamily:font,fontWeight:900,fontSize:12,color:"#FFD700",width:14,textAlign:"center",flexShrink:0}}>#{seed}</span>}
+      {SEEDS_LOCKED && team ? <TLogo name={team.name} size={32} /> : <div style={{width:32,height:32,borderRadius:4,background:"rgba(255,255,255,0.06)",flexShrink:0}} />}
+      <span style={{fontFamily:font,fontWeight:800,fontSize:15,color:SEEDS_LOCKED && team?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.25)",textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1,minWidth:0}}>
+        {SEEDS_LOCKED && team ? team.name : seed != null ? `Seed #${seed}` : "TBD"}
+      </span>
+      {SEEDS_LOCKED && team && <span style={{fontSize:12,color:"rgba(255,255,255,0.4)",flexShrink:0}}>{team.w}-{team.l}{team.t ? `-${team.t}` : ""}</span>}
     </div>
   );
 
@@ -1049,13 +1053,13 @@ function PlayoffBracket({ allTeams, divData }) {
 
   /* ── 4-team bracket ── */
   const FourTeamBracket = ({ teams, info }) => {
-    const t = teams || [];
+    const t = SEEDS_LOCKED ? (teams || []) : [];
     const r1 = info.rounds[0];
     return (
       <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div style={{display:"flex",flexDirection:"column",gap:16}}>
-          <Matchup label={r1.games[0].label} sub={r1.date} team1={t[0]} seed1={1} team2={t[3]} seed2={4} />
-          <Matchup label={r1.games[1].label} sub={r1.date} team1={t[1]} seed1={2} team2={t[2]} seed2={3} />
+          <Matchup label={r1.games[0].label} sub={r1.date} team1={t[0]||null} seed1={1} team2={t[3]||null} seed2={4} />
+          <Matchup label={r1.games[1].label} sub={r1.date} team1={t[1]||null} seed1={2} team2={t[2]||null} seed2={3} />
         </div>
         <HLine />
         <Matchup label="Championship" sub={info.rounds[1].date} team1={null} seed1={null} team2={null} seed2={null} />
@@ -1067,16 +1071,16 @@ function PlayoffBracket({ allTeams, divData }) {
 
   /* ── 3-team bracket (E: #1 bye, #2 vs #3) ── */
   const ThreeTeamBracket = ({ teams, info }) => {
-    const t = teams || [];
+    const t = SEEDS_LOCKED ? (teams || []) : [];
     return (
       <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          <Matchup label="Semi-Final" sub={info.rounds[0].date} team1={t[1]} seed1={2} team2={t[2]} seed2={3} />
+          <Matchup label="Semi-Final" sub={info.rounds[0].date} team1={t[1]||null} seed1={2} team2={t[2]||null} seed2={3} />
           <div style={{textAlign:"center",padding:"8px 12px",background:"rgba(255,215,0,0.1)",borderRadius:6,border:"1px solid rgba(255,215,0,0.15)"}}>
             <div style={{fontSize:9,fontWeight:700,color:"rgba(255,215,0,0.5)",textTransform:"uppercase",letterSpacing:".08em"}}>Bye to Final</div>
             <div style={{display:"flex",alignItems:"center",gap:6,justifyContent:"center",marginTop:4}}>
-              {t[0] && <TLogo name={t[0].name} size={24} />}
-              <span style={{fontFamily:font,fontWeight:800,fontSize:14,color:"rgba(255,255,255,0.7)",textTransform:"uppercase"}}>{t[0]?.name || "TBD"} <span style={{color:"#FFD700",fontSize:11}}>#1</span></span>
+              {SEEDS_LOCKED && t[0] && <TLogo name={t[0].name} size={24} />}
+              <span style={{fontFamily:font,fontWeight:800,fontSize:14,color:"rgba(255,255,255,0.7)",textTransform:"uppercase"}}>{SEEDS_LOCKED && t[0] ? t[0].name : "Seed #1"} <span style={{color:"#FFD700",fontSize:11}}>#1</span></span>
             </div>
           </div>
         </div>
@@ -1090,19 +1094,19 @@ function PlayoffBracket({ allTeams, divData }) {
 
   /* ── 6-team bracket (D: QFs → Semis → Final) ── */
   const SixTeamBracket = ({ teams, info }) => {
-    const t = teams || [];
+    const t = SEEDS_LOCKED ? (teams || []) : [];
     return (
       <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <Matchup label="QF 1" sub={info.rounds[0].date} team1={t[3]} seed1={4} team2={t[4]} seed2={5} />
-          <Matchup label="QF 2" sub={info.rounds[0].date} team1={t[2]} seed1={3} team2={t[5]} seed2={6} />
+          <Matchup label="QF 1" sub={info.rounds[0].date} team1={t[3]||null} seed1={4} team2={t[4]||null} seed2={5} />
+          <Matchup label="QF 2" sub={info.rounds[0].date} team1={t[2]||null} seed1={3} team2={t[5]||null} seed2={6} />
           <div style={{textAlign:"center",padding:"6px 10px",background:"rgba(255,215,0,0.08)",borderRadius:6,border:"1px solid rgba(255,215,0,0.12)"}}>
             <div style={{fontSize:9,fontWeight:700,color:"rgba(255,215,0,0.5)",textTransform:"uppercase",letterSpacing:".06em"}}>Seeds 1 & 2 → Semis</div>
             <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:4}}>
-              {[t[0],t[1]].map((tm,i) => (
-                <div key={i} style={{display:"flex",alignItems:"center",gap:4}}>
-                  {tm && <TLogo name={tm.name} size={20} />}
-                  <span style={{fontFamily:font,fontWeight:800,fontSize:12,color:"rgba(255,255,255,0.6)",textTransform:"uppercase"}}>{tm?.name?.split(" ")[0] || "TBD"}</span>
+              {[1,2].map(s => (
+                <div key={s} style={{display:"flex",alignItems:"center",gap:4}}>
+                  {SEEDS_LOCKED && t[s-1] && <TLogo name={t[s-1].name} size={20} />}
+                  <span style={{fontFamily:font,fontWeight:800,fontSize:12,color:"rgba(255,255,255,0.6)",textTransform:"uppercase"}}>{SEEDS_LOCKED && t[s-1] ? t[s-1].name.split(" ")[0] : `Seed #${s}`}</span>
                 </div>
               ))}
             </div>
@@ -1129,12 +1133,13 @@ function PlayoffBracket({ allTeams, divData }) {
     return (
       <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"10px 14px 14px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"#FFD700",borderRadius:"12px 12px 0 0"}} />
-        <div style={{marginBottom:8,marginTop:2,display:"flex",alignItems:"baseline",justifyContent:"space-between"}}>
-          <div>
-            <div style={{fontFamily:font,fontWeight:800,fontSize:16,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>{data?.name || `Division ${divKey}`}</div>
-            <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",marginTop:1}}>{info.teams} teams qualify</div>
+        <div style={{marginBottom:8,marginTop:2}}>
+          <div style={{fontFamily:font,fontWeight:800,fontSize:16,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>{data?.name || `Division ${divKey}`}</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginTop:3}}>
+            {info.rounds.map((r,i) => (
+              <span key={i}>{i > 0 ? " → " : ""}<span style={{color:"rgba(255,215,0,0.5)",fontWeight:700}}>{r.label}</span> {r.date}{r.field ? ` · ${r.field}` : ""}</span>
+            ))}
           </div>
-          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"right"}}>{info.rounds.map(r => r.date).join(" → ")}</div>
         </div>
         <div style={{overflowX:"auto",paddingBottom:4}}>
           {info.teams === 6 ? <SixTeamBracket teams={data?.teams} info={info} />
