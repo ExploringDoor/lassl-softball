@@ -1012,8 +1012,8 @@ function PlayoffBracket({ allTeams, divData }) {
 
   const Matchup = ({ label, sub, team1, seed1, team2, seed2 }) => (
     <div style={{display:"flex",flexDirection:"column",gap:2}}>
-      <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>{label}</div>
-      {sub && <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{sub}</div>}
+      <div style={{fontFamily:font,fontSize:13,fontWeight:900,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em",marginBottom:1,textAlign:"center"}}>{label}</div>
+      {sub && <div style={{fontSize:12,fontWeight:700,color:"#f43f5e",textAlign:"center",marginBottom:3}}>{sub}</div>}
       <TeamSlot team={team1} seed={seed1} />
       <TeamSlot team={team2} seed={seed2} />
     </div>
@@ -1088,7 +1088,7 @@ function PlayoffBracket({ allTeams, divData }) {
         <HLine />
         <div style={{display:"flex",flexDirection:"column",gap:2}}>
           <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>Championship</div>
-          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date} · {info.rounds[1].time||""}</div>
+          <div style={{fontSize:12,fontWeight:700,color:"#f43f5e",textAlign:"center",marginBottom:3}}>{info.rounds[1].date} · {info.rounds[1].time||""}</div>
           <TeamSlot team={t[0]||null} seed={1} />
           <div style={{fontFamily:font,fontSize:10,color:"rgba(255,255,255,0.2)",textAlign:"center",padding:"2px 0"}}>vs</div>
           <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
@@ -1125,7 +1125,7 @@ function PlayoffBracket({ allTeams, divData }) {
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           <div style={{display:"flex",flexDirection:"column",gap:2}}>
             <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>Semi 1</div>
-            <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date} · {info.rounds[1].time||""}</div>
+            <div style={{fontSize:12,fontWeight:700,color:"#f43f5e",textAlign:"center",marginBottom:3}}>{info.rounds[1].date} · {info.rounds[1].time||""}</div>
             <TeamSlot team={t[0]||null} seed={1} />
             <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
               <span style={{fontFamily:font,fontWeight:800,fontSize:12,color:"rgba(255,255,255,0.25)",textTransform:"uppercase"}}>Winner #4 vs #5</span>
@@ -1133,7 +1133,7 @@ function PlayoffBracket({ allTeams, divData }) {
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:2}}>
             <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>Semi 2</div>
-            <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{info.rounds[1].date} · {info.rounds[1].time||""}</div>
+            <div style={{fontSize:12,fontWeight:700,color:"#f43f5e",textAlign:"center",marginBottom:3}}>{info.rounds[1].date} · {info.rounds[1].time||""}</div>
             <TeamSlot team={t[1]||null} seed={2} />
             <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
               <span style={{fontFamily:font,fontWeight:800,fontSize:12,color:"rgba(255,255,255,0.25)",textTransform:"uppercase"}}>Winner #3 vs #6</span>
