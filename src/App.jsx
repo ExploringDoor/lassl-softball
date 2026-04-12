@@ -994,161 +994,173 @@ function ScoresPage({ setTab, setTeamDetail, scores, allTeams, sched }) {
 /* ─── SCHEDULE PAGE ───────────────────────────────────────────────────────── */
 /* ─── PLAYOFF BRACKET ────────────────────────────────────────────────────── */
 function PlayoffBracket({ allTeams, divData }) {
-
   const font = "'Barlow Condensed',sans-serif";
 
-  /* ── Team Slot ── */
-  const TeamSlot = ({ team, seed, small }) => {
-    const h = small ? 30 : 38;
-    const logo = small ? 24 : 32;
-    const nameSize = small ? 12 : 15;
-    const recSize = small ? 10 : 12;
-    const seedSize = small ? 10 : 12;
-    return (
-    <div style={{
-      display:"flex",alignItems:"center",gap:6,height:h,
-      background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",
-      borderRadius:6,padding:small?"4px 8px":"6px 12px",boxSizing:"border-box",minWidth:0,
-    }}>
-      {seed != null && (
-        <span style={{fontFamily:font,fontWeight:900,fontSize:seedSize,color:"#FFD700",width:14,textAlign:"center",flexShrink:0}}>
-          {seed}
-        </span>
-      )}
-      {team ? <TLogo name={team.name} size={logo} /> : <div style={{width:logo,height:logo,borderRadius:4,background:"rgba(255,255,255,0.06)",flexShrink:0}} />}
-      <span style={{fontFamily:font,fontWeight:800,fontSize:nameSize,color:team?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.25)",textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1,minWidth:0}}>
-        {team?.name || "TBD"}
-      </span>
-      {team && <span style={{fontSize:recSize,color:"rgba(255,255,255,0.4)",flexShrink:0}}>{team.w}-{team.l}</span>}
+  const TeamSlot = ({ team, seed }) => (
+    <div style={{display:"flex",alignItems:"center",gap:6,height:38,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:6,padding:"6px 12px",boxSizing:"border-box",minWidth:0}}>
+      {seed != null && <span style={{fontFamily:font,fontWeight:900,fontSize:12,color:"#FFD700",width:14,textAlign:"center",flexShrink:0}}>{seed}</span>}
+      {team ? <TLogo name={team.name} size={32} /> : <div style={{width:32,height:32,borderRadius:4,background:"rgba(255,255,255,0.06)",flexShrink:0}} />}
+      <span style={{fontFamily:font,fontWeight:800,fontSize:15,color:team?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.25)",textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1,minWidth:0}}>{team?.name || "TBD"}</span>
+      {team && <span style={{fontSize:12,color:"rgba(255,255,255,0.4)",flexShrink:0}}>{team.w}-{team.l}{team.t ? `-${team.t}` : ""}</span>}
     </div>
-    );
-  };
+  );
 
-  /* ── Matchup: two team slots stacked with label ── */
-  const Matchup = ({ label, team1, seed1, team2, seed2, small }) => (
+  const Matchup = ({ label, sub, team1, seed1, team2, seed2 }) => (
     <div style={{display:"flex",flexDirection:"column",gap:2}}>
-      <div style={{fontFamily:font,fontSize:small?9:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>
-        {label}
-      </div>
-      <TeamSlot team={team1} seed={seed1} small={small} />
-      <TeamSlot team={team2} seed={seed2} small={small} />
+      <div style={{fontFamily:font,fontSize:11,fontWeight:700,color:"rgba(255,215,0,0.7)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:2,textAlign:"center"}}>{label}</div>
+      {sub && <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"center",marginBottom:2}}>{sub}</div>}
+      <TeamSlot team={team1} seed={seed1} />
+      <TeamSlot team={team2} seed={seed2} />
     </div>
   );
 
-  /* ── Horizontal connector line ── */
-  const HLine = ({ small }) => (
-    <div style={{width:small?14:24,height:2,background:"linear-gradient(90deg,rgba(255,215,0,0.3),rgba(255,215,0,0.1))",flexShrink:0,alignSelf:"center",borderRadius:1}} />
-  );
-
-  /* ── Champion badge ── */
-  const WinnerBadge = () => (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
-      <div style={{fontSize:18,lineHeight:1}}>🥇</div>
-      <div style={{fontFamily:font,fontWeight:900,fontSize:10,color:"#FFD700",textTransform:"uppercase",letterSpacing:".06em"}}>Winner</div>
+  const HLine = () => <div style={{width:24,height:2,background:"linear-gradient(90deg,rgba(255,215,0,0.3),rgba(255,215,0,0.1))",flexShrink:0,alignSelf:"center",borderRadius:1}} />;
+  const Trophy = () => (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+      <div style={{fontSize:18,lineHeight:1}}>🏆</div>
+      <div style={{fontFamily:font,fontWeight:900,fontSize:10,color:"#FFD700",textTransform:"uppercase",letterSpacing:".06em"}}>Champion</div>
     </div>
   );
 
-  /* ── 4-Team Horizontal Bracket (A, B, C, E) ── */
-  const FourTeamBracket = ({ teams }) => {
+  /* ── Playoff schedule data per division ── */
+  const PLAYOFF_INFO = {
+    C: { teams: 4, rounds: [
+      { label: "Semi-Finals", date: "Apr 26", field: "Mar Vista #3", games: [{ label: "Semi 1", s1: 4, s2: 1 }, { label: "Semi 2", s1: 3, s2: 2 }] },
+      { label: "Championship", date: "May 3", field: "Cheviot #2" },
+    ]},
+    A: { teams: 4, rounds: [
+      { label: "Semi-Finals", date: "May 3", field: "Hjelte #3", games: [{ label: "Semi 1", s1: 4, s2: 1 }, { label: "Semi 2", s1: 3, s2: 2 }] },
+      { label: "Championship", date: "May 17", field: "Hjelte #3" },
+    ]},
+    B: { teams: 4, rounds: [
+      { label: "Semi-Finals", date: "May 3", field: "Mar Vista #3", games: [{ label: "Semi 1", s1: 3, s2: 2 }, { label: "Semi 2", s1: 4, s2: 1 }] },
+      { label: "Championship", date: "May 17", field: "Cheviot #2" },
+    ]},
+    E: { teams: 3, rounds: [
+      { label: "Semi-Final", date: "May 3", field: "Cheviot #1", games: [{ label: "Semi", s1: 3, s2: 2, note: "#1 Seed gets bye" }] },
+      { label: "Championship", date: "May 17", field: "Cheviot #1" },
+    ]},
+    D: { teams: 6, rounds: [
+      { label: "Quarter-Finals", date: "May 17", games: [{ label: "QF 1", s1: 5, s2: 4 }, { label: "QF 2", s1: 6, s2: 3 }] },
+      { label: "Semi-Finals", date: "May 31", field: "Cheviot #2/#3" },
+      { label: "Championship", date: "Jun 7", field: "Cheviot #2" },
+    ]},
+  };
+
+  /* ── 4-team bracket ── */
+  const FourTeamBracket = ({ teams, info }) => {
     const t = teams || [];
+    const r1 = info.rounds[0];
     return (
-      <div style={{display:"flex",alignItems:"center",gap:0}}>
+      <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div style={{display:"flex",flexDirection:"column",gap:16}}>
-          <Matchup label="Semi 1" team1={t[0]} seed1={1} team2={t[3]} seed2={4} />
-          <Matchup label="Semi 2" team1={t[1]} seed1={2} team2={t[2]} seed2={3} />
+          <Matchup label={r1.games[0].label} sub={r1.date} team1={t[0]} seed1={1} team2={t[3]} seed2={4} />
+          <Matchup label={r1.games[1].label} sub={r1.date} team1={t[1]} seed1={2} team2={t[2]} seed2={3} />
         </div>
         <HLine />
-        <Matchup label="Final" team1={null} seed1={null} team2={null} seed2={null} />
+        <Matchup label="Championship" sub={info.rounds[1].date} team1={null} seed1={null} team2={null} seed2={null} />
         <HLine />
-        <WinnerBadge />
+        <Trophy />
       </div>
     );
   };
 
-  /* ── 6-Team Horizontal Bracket (Division D) ── */
-  const SixTeamBracket = ({ teams }) => {
+  /* ── 3-team bracket (E: #1 bye, #2 vs #3) ── */
+  const ThreeTeamBracket = ({ teams, info }) => {
     const t = teams || [];
     return (
-      <div style={{display:"flex",alignItems:"center",gap:0}}>
-        {/* Round 1: QFs + Seeding */}
+      <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <Matchup label="Semi-Final" sub={info.rounds[0].date} team1={t[1]} seed1={2} team2={t[2]} seed2={3} />
+          <div style={{textAlign:"center",padding:"8px 12px",background:"rgba(255,215,0,0.1)",borderRadius:6,border:"1px solid rgba(255,215,0,0.15)"}}>
+            <div style={{fontSize:9,fontWeight:700,color:"rgba(255,215,0,0.5)",textTransform:"uppercase",letterSpacing:".08em"}}>Bye to Final</div>
+            <div style={{display:"flex",alignItems:"center",gap:6,justifyContent:"center",marginTop:4}}>
+              {t[0] && <TLogo name={t[0].name} size={24} />}
+              <span style={{fontFamily:font,fontWeight:800,fontSize:14,color:"rgba(255,255,255,0.7)",textTransform:"uppercase"}}>{t[0]?.name || "TBD"} <span style={{color:"#FFD700",fontSize:11}}>#1</span></span>
+            </div>
+          </div>
+        </div>
+        <HLine />
+        <Matchup label="Championship" sub={info.rounds[1].date} team1={null} seed1={null} team2={null} seed2={null} />
+        <HLine />
+        <Trophy />
+      </div>
+    );
+  };
+
+  /* ── 6-team bracket (D: QFs → Semis → Final) ── */
+  const SixTeamBracket = ({ teams, info }) => {
+    const t = teams || [];
+    return (
+      <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <Matchup label="QF 1" team1={t[2]} seed1={3} team2={t[5]} seed2={6} />
-          <Matchup label="QF 2" team1={t[3]} seed1={4} team2={t[4]} seed2={5} />
-          <Matchup label="Seeding" team1={t[0]} seed1={1} team2={t[1]} seed2={2} />
+          <Matchup label="QF 1" sub={info.rounds[0].date} team1={t[3]} seed1={4} team2={t[4]} seed2={5} />
+          <Matchup label="QF 2" sub={info.rounds[0].date} team1={t[2]} seed1={3} team2={t[5]} seed2={6} />
+          <div style={{textAlign:"center",padding:"6px 10px",background:"rgba(255,215,0,0.08)",borderRadius:6,border:"1px solid rgba(255,215,0,0.12)"}}>
+            <div style={{fontSize:9,fontWeight:700,color:"rgba(255,215,0,0.5)",textTransform:"uppercase",letterSpacing:".06em"}}>Seeds 1 & 2 → Semis</div>
+            <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:4}}>
+              {[t[0],t[1]].map((tm,i) => (
+                <div key={i} style={{display:"flex",alignItems:"center",gap:4}}>
+                  {tm && <TLogo name={tm.name} size={20} />}
+                  <span style={{fontFamily:font,fontWeight:800,fontSize:12,color:"rgba(255,255,255,0.6)",textTransform:"uppercase"}}>{tm?.name?.split(" ")[0] || "TBD"}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
         <HLine />
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          <Matchup label="Semi 1" team1={null} seed1={null} team2={null} seed2={null} />
-          <Matchup label="Semi 2" team1={null} seed1={null} team2={null} seed2={null} />
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <Matchup label="Semi 1" sub={info.rounds[1].date} team1={null} seed1={null} team2={null} seed2={null} />
+          <Matchup label="Semi 2" sub={info.rounds[1].date} team1={null} seed1={null} team2={null} seed2={null} />
         </div>
         <HLine />
-        <Matchup label="Final" team1={null} seed1={null} team2={null} seed2={null} />
+        <Matchup label="Championship" sub={info.rounds[2].date} team1={null} seed1={null} team2={null} seed2={null} />
         <HLine />
-        <WinnerBadge />
+        <Trophy />
       </div>
     );
   };
 
   /* ── Division Card ── */
   const DivisionCard = ({ divKey, data }) => {
+    const info = PLAYOFF_INFO[divKey];
+    if (!info) return null;
     const teamCount = data?.teams?.length || 0;
-    const accent = "#FFD700";
-    const isSix = divKey === "D" && teamCount >= 6;
     return (
-      <div style={{
-        background:"rgba(255,255,255,0.04)",border:"none",
-        borderRadius:12,padding:"10px 14px 14px",position:"relative",overflow:"hidden",
-      }}>
-        {/* Accent bar */}
-        <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:accent,borderRadius:"12px 12px 0 0"}} />
-        {/* Division header */}
-        <div style={{marginBottom:8,marginTop:2}}>
-          <div style={{fontFamily:font,fontWeight:800,fontSize:16,color:accent,textTransform:"uppercase",letterSpacing:".08em"}}>
-            {data?.name || `Division ${divKey}`}
+      <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"10px 14px 14px",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"#FFD700",borderRadius:"12px 12px 0 0"}} />
+        <div style={{marginBottom:8,marginTop:2,display:"flex",alignItems:"baseline",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontFamily:font,fontWeight:800,fontSize:16,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>{data?.name || `Division ${divKey}`}</div>
+            <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",marginTop:1}}>{info.teams} teams qualify</div>
           </div>
-          <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",marginTop:1}}>{teamCount} teams</div>
+          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",textAlign:"right"}}>{info.rounds.map(r => r.date).join(" → ")}</div>
         </div>
-        {/* Bracket */}
-        <div style={{overflowX:"hidden"}}>
-          {isSix ? <SixTeamBracket teams={data?.teams} /> : <FourTeamBracket teams={data?.teams} />}
+        <div style={{overflowX:"auto",paddingBottom:4}}>
+          {info.teams === 6 ? <SixTeamBracket teams={data?.teams} info={info} />
+           : info.teams === 3 ? <ThreeTeamBracket teams={data?.teams} info={info} />
+           : <FourTeamBracket teams={data?.teams} info={info} />}
         </div>
       </div>
     );
   };
 
   return (
-    <div style={{
-      background:"#0a0a1a",
-      borderRadius:20,padding:"clamp(16px,4vw,40px)",position:"relative",overflow:"hidden",
-    }}>
-
+    <div style={{background:"#0a0a1a",borderRadius:20,padding:"clamp(16px,4vw,40px)",position:"relative",overflow:"hidden"}}>
       {/* Title */}
       <div style={{textAlign:"center",marginBottom:24,position:"relative"}}>
-        <h2 style={{
-          fontFamily:font,fontWeight:900,
-          fontSize:36,textTransform:"uppercase",
-          lineHeight:1,letterSpacing:".08em",margin:0,
-          background:"linear-gradient(90deg,#FFD700,#fff,#FFD700)",
-          backgroundSize:"200% auto",
-          WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",
-          animation:"shimmer 3s linear infinite",
-        }}>2026 Postseason</h2>
-        <div style={{
-          width:320,height:3,margin:"8px auto 0",borderRadius:1,
-          background:"linear-gradient(90deg,transparent,#FFD700,transparent)",
-          animation:"shimmer 2s linear infinite",backgroundSize:"200% auto",
-        }} />
+        <h2 style={{fontFamily:font,fontWeight:900,fontSize:36,textTransform:"uppercase",lineHeight:1,letterSpacing:".08em",margin:0,background:"linear-gradient(90deg,#FFD700,#fff,#FFD700)",backgroundSize:"200% auto",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",animation:"shimmer 3s linear infinite"}}>2026 Playoffs</h2>
+        <div style={{width:320,height:3,margin:"8px auto 0",borderRadius:1,background:"linear-gradient(90deg,transparent,#FFD700,transparent)",animation:"shimmer 2s linear infinite",backgroundSize:"200% auto"}} />
+        <div style={{fontSize:12,color:"rgba(255,255,255,0.3)",marginTop:8}}>Single elimination · Seeds determined by regular season record</div>
       </div>
 
-      {/* Grid: Top row = A, B, C | Bottom row = D (wider), E */}
+      {/* Grid: Top row = C, A, B | Bottom row = D (wider), E */}
       <div style={{position:"relative"}}>
-        {/* Top row: 3 columns */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:14,marginBottom:14}}>
-          {["A","B","C"].filter(k => divData?.[k]).map(k => (
+          {["C","A","B"].filter(k => divData?.[k]).map(k => (
             <DivisionCard key={k} divKey={k} data={divData[k]} />
           ))}
         </div>
-        {/* Bottom row: D wider, E */}
         <div style={{display:"grid",gridTemplateColumns:"3fr 2fr",gap:14}}>
           {["D","E"].filter(k => divData?.[k]).map(k => (
             <DivisionCard key={k} divKey={k} data={divData[k]} />
@@ -1156,44 +1168,9 @@ function PlayoffBracket({ allTeams, divData }) {
         </div>
       </div>
 
-      {/* League Championship Bracket */}
-      <div style={{marginTop:24,background:"linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,215,0,0.02))",border:"2px solid rgba(255,215,0,0.2)",borderRadius:16,padding:"20px clamp(12px,2vw,24px)"}}>
-        <div style={{textAlign:"center",marginBottom:16}}>
-          <div style={{fontSize:32,marginBottom:4}}>🏆</div>
-          <div style={{fontFamily:font,fontWeight:900,fontSize:24,color:"#FFD700",textTransform:"uppercase",letterSpacing:".08em"}}>League Championship</div>
-          <div style={{fontSize:12,color:"rgba(255,255,255,0.3)",marginTop:4}}>5 Division Winners compete for the title</div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:0,flexWrap:"wrap"}}>
-          {/* Round 1: 4 teams play, 1 gets bye */}
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            <Matchup label="Round 1" team1={null} seed1={"A"} team2={null} seed2={"D"} />
-            <Matchup label="Round 1" team1={null} seed1={"B"} team2={null} seed2={"E"} />
-            <div style={{textAlign:"center",padding:"6px 10px",background:"rgba(255,215,0,0.1)",borderRadius:6,border:"1px solid rgba(255,215,0,0.15)"}}>
-              <div style={{fontSize:9,fontWeight:700,color:"rgba(255,215,0,0.5)",textTransform:"uppercase",letterSpacing:".08em"}}>Bye</div>
-              <div style={{fontFamily:font,fontWeight:800,fontSize:13,color:"rgba(255,255,255,0.6)",marginTop:2}}>Div C Winner</div>
-            </div>
-          </div>
-          <HLine />
-          {/* Semis */}
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            <Matchup label="Semi 1" team1={null} seed1={null} team2={null} seed2={null} />
-            <Matchup label="Semi 2" team1={null} seed1={null} team2={null} seed2={null} />
-          </div>
-          <HLine />
-          {/* Final */}
-          <Matchup label="Championship" team1={null} seed1={null} team2={null} seed2={null} />
-          <HLine />
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-            <div style={{fontSize:36,filter:"drop-shadow(0 0 12px rgba(255,215,0,0.6))"}}>🏆</div>
-            <div style={{fontFamily:font,fontWeight:900,fontSize:14,color:"#FFD700",textTransform:"uppercase",letterSpacing:".1em"}}>Champion</div>
-          </div>
-        </div>
-        <div style={{textAlign:"center",marginTop:12,fontSize:11,color:"rgba(255,255,255,0.2)"}}>Seeding and bye determined by regular season record · Format may be adjusted by the Board</div>
-      </div>
-
       {/* Footer */}
       <div style={{textAlign:"center",marginTop:20,fontSize:11,color:"rgba(255,255,255,0.15)",position:"relative"}}>
-        All teams qualify &middot; Single elimination &middot; 7 innings minimum &middot; Division winners advance to League Championship
+        Brackets update as seeds are finalized &middot; Dates subject to change by the Board
       </div>
     </div>
   );
